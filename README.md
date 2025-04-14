@@ -14,6 +14,7 @@
 - [알고리즘정리초급](https://github.com/yoon0416/java_2025/blob/main/%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%20%EC%A0%95%EB%A6%AC(%EC%B4%88%EA%B8%89).md)
 - [데이터정규화유튜브](https://youtu.be/Y1FbowQRcmI?si=uGIWDYPTpNVdiFUn)
 - [NF 개념](https://github.com/yoon0416/java_2025/blob/main/NF%EA%B0%9C%EB%85%90.md)
+- [부트스트랩](https://www.w3schools.com/bootstrap/bootstrap_ver.asp)
 ---
 
 ## 🔥 주요 기능
