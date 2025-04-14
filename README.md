@@ -5,7 +5,7 @@
 
 ---
 
-## 📌 활용 사이트
+## 📌 활용 사이트 및 활용코드
 - [스탯티즈 - 선수 기록](https://statiz.sporki.com/?team=NC&year=2023)
 - [SSG 랜더스 공식사이트 - 경기 일정](https://www.ssglanders.com/game/schedule)
 - [참고 자료 (ERD 등)](https://hi-sally03915.tistory.com/1724)
