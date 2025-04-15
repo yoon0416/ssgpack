@@ -2,22 +2,32 @@
 
 package com.ssgpack.ssgfc.user;
 
+import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import com.ssgpack.ssgfc.board.Board;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
-@Entity  @Getter  @Setter
+@Entity  
+@Getter  
+@Setter 
+@ToString(exclude = "board")
 public class User {
-	@Id		//기본키 설정
-	@GeneratedValue(strategy = GenerationType.IDENTITY)//auto
-	private Long id;       //<유저id>
+	//PK
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id; 
 	
 	@Column(unique=true, nullable = false)  
 	private String email; //이메일
@@ -28,13 +38,24 @@ public class User {
 	@Column(nullable = false)
 	private String pwd; //비번
 	
+	@Column(updatable = false)
 	private String ip; //가입할 때 ip
 	
+	@Column(updatable = false)
+	private LocalDateTime createDate = LocalDateTime.now(); //가입날짜
 	
-	@Column(updatable = false)  //한번 db에 저장되면 그 이후 update쿼리에서 제외
-	private LocalDateTime udate = LocalDateTime.now(); //가입날짜
+	@OneToMany(mappedBy = "user")
+	List<Board> board = new ArrayList<>();
 	
-	
+	//ip생성하는 생성자
+	public void setIp() {
+		try {
+			this.ip = InetAddress.getLocalHost().getHostAddress();
+		} catch(Exception e) {
+			e.printStackTrace();
+			this.ip = null;
+		}
+	}
 	
 	/*
 	@Column(nullable = false)
