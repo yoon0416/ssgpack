@@ -10,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.ssgpack.ssgfc.user.User;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,17 +19,17 @@ import lombok.ToString;
 @Entity
 @Getter
 @Setter
-@ToString//(exclude = "user")
+@ToString(exclude = "user")
 
 public class Board {
 	//PK
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id; 
 	
-	@Column(length=200)
+	@Column(length=200, nullable = false)
 	private String title;
 	
-	@Column(columnDefinition = "text")
+	@Column(columnDefinition = "text", nullable = false)
 	private String content;
 	
 	@Column(updatable = false)
@@ -40,8 +42,8 @@ public class Board {
 	
 	private String img;
 	
-	//@ManyToOne   
-	//private  User user;
+	@ManyToOne   
+	private  User user;
 
 	//ip생성하는 생성자
 	public void setIp() {
