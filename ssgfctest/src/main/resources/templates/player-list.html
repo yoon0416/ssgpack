@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SSG 선수 목록</title>
+</head>
+<body>
+    <h1>SSG 선수 목록</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>이름</th>
+                <th>팀</th>
+                <th>타율(AVG)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="player : ${players}">
+                <td th:text="${player.name}"></td>
+                <td th:text="${player.position}"></td>
+                <td th:text="${player.avg}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

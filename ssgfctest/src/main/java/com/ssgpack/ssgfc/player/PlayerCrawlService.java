@@ -1,45 +1,65 @@
 package com.ssgpack.ssgfc.player;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PlayerCrawlService {
 
-	public Player crawlPlayer(String playerId) throws IOException {
-        String url = "https://statiz.sporki.com/player/?m=playerinfo&p_no=" + playerId;
-        Document doc = Jsoup.connect(url).userAgent("Mozilla").get();
+    public List<Player> crawlSSGPlayers() {
+        List<Player> players = new ArrayList<>();
 
-        // 이름
-        String name = doc.selectFirst("div.subhead > h1").text();
+        System.setProperty("webdriver.chrome.driver", "C:\\chromedriver-win64\\chromedriver.exe");
 
-        // 테이블 정보
-        Elements rows = doc.select("div.playerinfo_box table tr");
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new"); // 중요! 기존 headless는 오류 발생
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+        options.setExperimentalOption("useAutomationExtension", false);
 
-        String birth = null, position = null, debut = null;
-        for (Element row : rows) {
-            Elements tds = row.select("td");
-            if (tds.size() == 2) {
-                String key = tds.get(0).text().trim();
-                String value = tds.get(1).text().trim();
+        WebDriver driver = new ChromeDriver(options);
 
-                switch (key) {
-                    case "출생":
-                        birth = value;
-                        break;
-                    case "포지션":
-                        position = value;
-                        break;
-                    case "데뷔":
-                        debut = value;
-                        break;
+        try {
+            driver.get("https://www.koreabaseball.com/Record/Player/HitterBasic/Basic1.aspx?teamCode=SSG");
+
+            List<WebElement> rows = driver.findElements(By.cssSelector("table.tData tbody tr"));
+
+            for (WebElement row : rows) {
+                List<WebElement> cols = row.findElements(By.tagName("td"));
+                if (cols.size() > 3) {
+                    String name = cols.get(1).getText().trim();
+                    String avgStr = cols.get(3).getText().trim();
+
+                    Player player = new Player();
+                    player.setName(name);
+                    player.setPosition("SSG");
+                    try {
+                        player.setAvg(Double.parseDouble(avgStr));
+                    } catch (NumberFormatException e) {
+                        player.setAvg(0.0);
+                    }
+
+                    System.out.println("✅ 이름: " + player.getName() + ", 타율: " + player.getAvg());
+                    players.add(player);
                 }
             }
+
+        } catch (Exception e) {
+            System.out.println("❌ 크롤링 실패: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            driver.quit();
         }
 
-        return new Player(null, name, birth, position, debut);
+        return players;
     }
 }
