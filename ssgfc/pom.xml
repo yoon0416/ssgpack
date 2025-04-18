@@ -83,18 +83,20 @@
          <artifactId>spring-boot-starter-test</artifactId>
          <scope>test</scope>
       </dependency>
-
-      <!-- Spring Security: 로그인, 권한 관리 -->
+ 
+ 
+     <!-- Spring Security: 로그인, 권한 관리 -->
       <dependency>
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-security</artifactId>
       </dependency>
 
-      <!-- Thymeleaf + Spring Security 통합: 로그인 상태에 따라 화면 제어 -->
+     <!--  Thymeleaf + Spring Security 통합: 로그인 상태에 따라 화면 제어 -->
       <dependency>
          <groupId>org.thymeleaf.extras</groupId>
          <artifactId>thymeleaf-extras-springsecurity5</artifactId>
-      </dependency>
+      </dependency> 
+
 
       <!-- Bean Validation: @Valid, @NotNull 등 유효성 검사 -->
       <dependency>
