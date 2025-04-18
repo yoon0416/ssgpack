@@ -7,10 +7,12 @@
 			style="background-color: #d50032; border-radius: 10px;">
 
 			<!-- 위쪽: 로고 + 로그인/회원가입/마이페이지 -->
-			<a class="navbar-brand" href="#"> <img
-				src="https://www.ssglanders.com/img/wyverns/emblem/new/emblem_01.png"
-				alt="SSG로고이미지" style="width: 70px;" class="rounded-pill">
-			</a>
+			<a class="navbar-brand" th:href="@{/}">
+    <img
+        src="https://www.ssglanders.com/img/wyverns/emblem/new/emblem_01.png"
+        alt="SSG로고이미지" style="width: 70px;" class="rounded-pill"> 
+        <a class="navbar-brand" th:href="@{/}" style="cursor: pointer;">
+</a>
 			<ul class="navbar-nav ms-auto">
 				<li class="nav-item"><a class="nav-link text-white" th:href="@{/login}">로그인</a></li>
 				<li class="nav-item"><a class="nav-link text-white" href="#">회원가입</a></li>
@@ -76,7 +78,7 @@
 				<li class="nav-item px-3"><a class="nav-link text-white"
 					href="#">선수목록</a></li>
 				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">쓱일정</a></li>
+					th:href="@{/game-schedule}">쓱일정</a></li>
 				<li class="nav-item px-3"><a class="nav-link text-white"
 					href="#">응원게시판</a></li>
 				<li class="nav-item px-3"><a class="nav-link text-white"

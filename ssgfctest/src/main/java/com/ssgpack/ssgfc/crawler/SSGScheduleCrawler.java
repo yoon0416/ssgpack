@@ -13,10 +13,13 @@ public class SSGScheduleCrawler {
     public static void main(String[] args) {
         try {
             String url = "https://statiz.sporki.com/schedule/?year=2025&month=4";
+            
+            // ✅ 브라우저처럼 위장
             Document doc = Jsoup.connect(url)
-                                .timeout(10000)
-                                .userAgent("Mozilla/5.0")
-                                .get();
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36")
+                    .referrer("https://www.google.com/")
+                    .timeout(15000)
+                    .get();
 
             Elements gameCells = doc.select("div.calendar_area td");
 
@@ -25,18 +28,20 @@ public class SSGScheduleCrawler {
             int month = 4;
 
             for (Element cell : gameCells) {
+
+                // ✅ 요청 간 딜레이 (1.5초)
+                Thread.sleep(1500);
+
                 String dayStr = cell.select("span.day").text();
                 if (dayStr == null || dayStr.isEmpty()) continue;
 
                 int dayInt = Integer.parseInt(dayStr);
                 LocalDate gameDate = LocalDate.of(year, month, dayInt);
 
-                // 월요일은 스킵
+                // 월요일 스킵
                 if (gameDate.getDayOfWeek() == DayOfWeek.MONDAY) continue;
 
                 Elements games = cell.select("div.games li");
-
-                boolean ssgPrinted = false;
 
                 for (Element game : games) {
                     Elements teams = game.select("span.team");
@@ -50,8 +55,6 @@ public class SSGScheduleCrawler {
                         String score2 = scores.size() >= 2 ? scores.get(1).text() : "";
 
                         if (team1.contains("SSG") || team2.contains("SSG")) {
-                            ssgPrinted = true;
-
                             // 오늘 이전
                             if (gameDate.isBefore(today)) {
                                 if (!score1.isEmpty() && !score2.isEmpty()) {
@@ -59,19 +62,16 @@ public class SSGScheduleCrawler {
                                 } else {
                                     System.out.println("4월 " + dayStr + "일 | 경기 취소");
                                 }
-                            }
-                            // 오늘 이후
-                            else {
+                            } else {
                                 System.out.println("4월 " + dayStr + "일 | 경기 예정");
                             }
                         }
                     }
                 }
-
-                // games에 SSG 경기가 없고, 날짜가 오늘 이후일 경우라도 팀 정보가 아예 없으면 무시
             }
 
         } catch (Exception e) {
+            System.err.println("⚠ 크롤링 중 오류 발생");
             e.printStackTrace();
         }
     }

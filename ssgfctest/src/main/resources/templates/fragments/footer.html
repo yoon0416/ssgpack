@@ -1,34 +1,26 @@
 <th:block th:fragment="footer">
-  <footer class="footer text-center p-4 mt-auto" style="background-color: #343a40; color: white;">
+  <footer class="footer text-center py-3 mt-auto" style="background-color: #343a40; color: white; font-size: 0.85rem;">
     <div class="container">
 
-      <!-- 티켓 & 굿즈 링크 -->
-      <div class="mb-3">
-        <a href="https://tickets.interpark.com/contents/search?keyword=%EC%95%BC%EA%B5%AC" target="_blank" class="text-white me-3">티켓 예매</a>
-        <a href="https://store.ssglanders.com/" target="_blank" class="text-white me-3">온라인샵</a>
+      <!-- 링크 줄 하나로 압축 -->
+      <div class="d-flex flex-wrap justify-content-center mb-2">
+        <a href="https://tickets.interpark.com/contents/search?keyword=%EC%95%BC%EA%B5%AC" target="_blank" class="text-white mx-2">티켓 예매</a>
+        <a href="https://store.ssglanders.com/" target="_blank" class="text-white mx-2">온라인샵</a>
+        <a href="https://www.ssglanders.com" target="_blank" class="text-white mx-2">SSG Landers</a>
+        <a href="https://www.instagram.com/ssglanders.incheon/?hl=ko" target="_blank" class="text-white mx-2">인스타그램</a>
+        <a href="https://www.youtube.com/@SSGLANDERS" target="_blank" class="text-white mx-2">유튜브</a>
       </div>
 
-      <!-- SNS 링크 -->
-      <div class="mb-3">
-        <a href="https://www.ssglanders.com" target="_blank" class="text-white me-3">SSG Landers</a>
-        <a href="https://www.instagram.com/ssglanders.incheon/?hl=ko" target="_blank" class="text-white me-3">인스타그램</a>
-        <a href="https://www.youtube.com/@SSGLANDERS" target="_blank" class="text-white">유튜브</a>
+      <!-- 하단 정책 및 카피라이트 -->
+      <div class="d-flex justify-content-center align-items-center flex-wrap mb-1">
+        <a href="#" class="text-white mx-2">개인정보처리방침</a>
+        <span class="text-white mx-2">© 2025 Yoon All rights reserved.</span>
       </div>
-
-      <!-- 개인정보방침 등 -->
-      <div class="mb-2" style="font-size: 0.8rem;">
-        <a href="#" class="text-white me-2">개인정보처리방침</a> 
-      </div>
-
-      <!-- 카피라이트 -->
-      <p class="mb-2" style="font-size: 0.9rem;">
-        &copy; 2025 Yoon All rights reserved.
-      </p>
 
       <!-- 맨 위로 -->
-      <a href="#top" class="small text-white text-decoration-underline">
-        Back to top ↑
-      </a>
+      <div class="text-end">
+        <a href="#top" class="text-white text-decoration-underline small">Back to top ↑</a>
+      </div>
 
     </div>
   </footer>
