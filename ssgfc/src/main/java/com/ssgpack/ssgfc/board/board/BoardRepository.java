@@ -1,4 +1,4 @@
-package com.ssgpack.ssgfc.board;
+package com.ssgpack.ssgfc.board.board;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

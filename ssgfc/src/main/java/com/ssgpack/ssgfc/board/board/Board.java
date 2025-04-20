@@ -1,16 +1,21 @@
-package com.ssgpack.ssgfc.board;
+package com.ssgpack.ssgfc.board.board;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 
+import com.ssgpack.ssgfc.board.comment.Comment;
 import com.ssgpack.ssgfc.user.User;
 
 import lombok.Getter;
@@ -48,6 +53,9 @@ public class Board {
 	@ManyToOne   
 	private  User user;
 
+	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Comment> comments = new ArrayList<>();
+	
 	//ip생성하는 생성자
 	public void setIp() {
 		try {
