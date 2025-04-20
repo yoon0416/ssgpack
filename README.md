@@ -13,7 +13,6 @@
 - [스탯티즈 - 선수 기록](https://statiz.sporki.com/?team=NC&year=2023)
 - [SSG 랜더스 공식사이트 - 경기 일정](https://www.ssglanders.com/game/schedule)
 - [쌤과 CRUD 정리](https://hi-sally03915.tistory.com/1724)
-- [시큐리티없는게시판](https://github.com/yoon0416/java_2025/blob/main/%EC%8B%9C%ED%81%90%EB%A6%AC%ED%8B%B0%EC%97%86%EB%8A%94board.md)
 - [자바라이브러리정리](https://github.com/yoon0416/java_2025/blob/main/%EC%9E%90%EB%B0%94%20%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%20%EC%A0%95%EB%A6%AC.md)
 - [알고리즘정리초급](https://github.com/yoon0416/java_2025/blob/main/%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%20%EC%A0%95%EB%A6%AC(%EC%B4%88%EA%B8%89).md)
 - [데이터정규화유튜브](https://youtu.be/Y1FbowQRcmI?si=uGIWDYPTpNVdiFUn)
