@@ -1,11 +1,14 @@
-package com.ssgpack.ssgfc.board;
+package com.ssgpack.ssgfc.board.board;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 @Service
+@Transactional
 public class BoardService {
 
     @Autowired
@@ -29,5 +32,10 @@ public class BoardService {
 
     public void delete(Long id) {
         br.deleteById(id);
+    }
+    
+    public Board findById(Long id) {
+        return br.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 없음"));
     }
 }

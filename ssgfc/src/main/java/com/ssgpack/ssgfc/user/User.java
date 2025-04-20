@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,7 +15,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import com.ssgpack.ssgfc.board.Board;
+import com.ssgpack.ssgfc.board.board.Board;
+import com.ssgpack.ssgfc.board.comment.Comment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -46,6 +48,9 @@ public class User {
 	
 	@OneToMany(mappedBy = "user")
 	List<Board> board = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Comment> comments = new ArrayList<>();
 	
 	private int role;  //권한 ex)admin=0,1,2,3,4 멤버 : 5
 	
