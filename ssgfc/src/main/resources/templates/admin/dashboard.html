@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/Layout}"
@@ -44,19 +44,19 @@
             <div class="admin-title">관리자 대시보드</div>
             <div class="admin-buttons">
 
-                마스터 관리자 전용
+                <!-- 마스터 관리자 전용 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'')')}" th:href="@{/admin/master}" >👑 마스터 관리자 페이지</a>
 
-                유저 관리자
+                <!-- 유저 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_USER_MANAGER'')')}" th:href="@{/admin/user}">👤 유저 관리</a>
 
-                선수 관리자
+                <!-- 선수 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_PLAYER_MANAGER'')')}" th:href="@{/admin/player}">⚾ 선수 정보 관리</a>
 
-                게시판 관리자
+                <!-- 게시판 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_BOARD_MANAGER'')')}" th:href="@{/admin/board}">📝 게시판 관리</a>
 
-                경기 일정 관리자
+                <!-- 경기 일정 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" th:href="@{/admin/game}">📅 경기 일정 관리</a>
 
             </div>
@@ -65,4 +65,3 @@
 </div>
 </body>
 </html>
- -->
