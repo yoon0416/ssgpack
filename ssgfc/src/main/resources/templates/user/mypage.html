@@ -55,11 +55,16 @@
           <span class="mypage-value" th:text="${user.nick_name}"></span>
         </div>
 
-        <div class="mypage-item">
-          <span class="mypage-label">권한</span>
-          <span class="mypage-value" th:if="${user.role == 1}" th:text="'일반회원'"></span>
-          <span class="mypage-value" th:if="${user.role == 0}" th:text="'관리자'"></span>
-        </div>
+		<div class="mypage-item">
+		  <span class="mypage-label">권한</span>
+		  <span class="mypage-value" th:text="${roleName}"></span>
+		</div>
+		<a th:href="@{/admin/dashboard}" 
+   class="btn btn-outline-primary"
+   sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_USER_MANAGER', 'ROLE_PLAYER_MANAGER', 'ROLE_BOARD_MANAGER', 'ROLE_GAME_MANAGER')">
+   🔧 관리자 페이지
+</a>
+		
 
         <div class="mypage-buttons mt-4">
           <a th:href="@{/user/logout}" class="btn btn-outline-danger">로그아웃</a>

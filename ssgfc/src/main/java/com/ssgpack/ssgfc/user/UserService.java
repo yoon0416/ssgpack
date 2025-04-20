@@ -20,7 +20,7 @@ public class UserService {
     public User insertMember(User user) {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
         user.setIp();          // IP 자동 저장
-        user.setRole(1);       // 기본: 일반 사용자 (admin은 직접 DB에서 넣거나 따로 설정)
+        user.setRole(5);       // 디폴트값 5 멤버
         return userRepository.save(user);
     }
 
