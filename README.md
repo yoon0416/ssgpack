@@ -49,9 +49,13 @@
 - JPA (Hibernate)
 - Maven
 
-## 크롤링 (JSOUP 사용)
+---
+
+## 크롤링 (JSOUP 사용 아마?)
 - 선수목록
 - 경기일정
+
+---
 
 ## 사용 api
 - 네이버 메일 api
@@ -86,4 +90,5 @@ com.ssgpack.ssgfc
 └── SsgfcApplication.java        # 메인 실행 파일
 
 ---
+
 ## 웹접근성에 맞게 홈페이지 구현
