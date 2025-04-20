@@ -24,22 +24,21 @@ public class UserController {
     @Autowired
     private UserService service;
 
-    //  루트 URL 접근 시 로그인 페이지로 이동
+    // 루트 URL 접근 시 로그인 페이지로 이동
     @RequestMapping("/")
     public String main() {
         return "user/login";
     }
 
-    //  마이페이지 출력 (닉네임, 이메일, 권한 이름 포함)
+    // 마이페이지 출력
     @GetMapping("/user/mypage")
     public String user(Model model, Principal principal) {
-        User user = service.findByEmail(principal.getName());
+    	User user = service.findByUsername(principal.getName());
 
         if (user == null) {
             throw new UsernameNotFoundException("유저 없음");
         }
 
-        // 권한 코드 → 텍스트 이름 변환
         String roleName = "";
         switch (user.getRole()) {
             case 0: roleName = "마스터 관리자"; break;
@@ -56,40 +55,39 @@ public class UserController {
         return "user/mypage";
     }
 
-    //  로그인 페이지 출력
+    // 로그인 페이지 출력
     @GetMapping("/user/login")
     public String login() {
         return "user/login";
     }
 
-    //  회원가입 페이지 출력
+    // 회원가입 폼 출력
     @GetMapping("/user/join")
     public String join(UserForm userForm) {
         return "user/join";
     }
 
-    //  회원가입 처리
+    // 회원가입 처리
     @PostMapping("/user/join")
     public String join(@Valid UserForm userForm, BindingResult bindingResult) {
-        // 유효성 검사 실패 시 다시 회원가입 폼으로 이동
         if (bindingResult.hasErrors()) {
             return "user/join";
         }
 
-        // 비밀번호 일치 확인
         if (!userForm.getPwd().equals(userForm.getPwd2())) {
             bindingResult.rejectValue("pwd2", "passwordInCorrect", "패스워드를 확인해주세요");
             return "user/join";
         }
 
         try {
-            // 회원 정보 생성 및 저장
             User user = new User();
             user.setEmail(userForm.getEmail());
             user.setNick_name(userForm.getNick_name());
             user.setPwd(userForm.getPwd());
-            user.setRole(UserRole.MEMBER.getCode()); // 기본 권한: 일반 사용자
-            user.setIp();    // 가입 IP 저장
+            user.setRole(UserRole.MEMBER.getCode());
+            user.setIp(); // IP 저장
+
+            // ✅ username은 service에서 자동 생성됨
             service.insertMember(user);
         } catch (DataIntegrityViolationException e) {
             e.printStackTrace();
@@ -101,32 +99,25 @@ public class UserController {
             return "user/join";
         }
 
-        // 성공 시 로그인 페이지로 이동
         return "redirect:/user/login";
     }
 
-    //  로그인 성공 시 메인 페이지로 이동
+    // 메인 페이지
     @GetMapping("/main")
     public String mainPage() {
-        return "main"; // templates/main.html
+        return "main";
     }
 
-    //  로그아웃 처리 (세션 무효화 및 시큐리티 초기화)
+    // 수동 로그아웃
     @GetMapping("/user/logout")
     public String manualLogout(HttpServletRequest request, HttpServletResponse response) {
-        // 기존 세션 종료
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
 
-        // Spring Security 컨텍스트 초기화
         SecurityContextHolder.clearContext();
-
-        // 새로운 세션 생성 (인증된 세션 아님)
         request.getSession(true);
-
-        // 로그인 페이지로 리다이렉트
         return "redirect:/user/login";
     }
 }

@@ -1,5 +1,3 @@
-//유저 엔티티
-
 package com.ssgpack.ssgfc.user;
 
 import java.net.InetAddress;
@@ -25,62 +23,59 @@ import lombok.ToString;
 @Setter 
 @ToString(exclude = "board")
 public class User {
-	//PK
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id; 
-	
-	@Column(unique=true, nullable = false)  
-	private String email; //이메일
-	
-	@Column(unique=true, nullable = false)   
-	private String nick_name; //닉네임
-	
+
+	// PK
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(unique = true, nullable = false)
+	private String email; // 이메일
+
+	@Column(unique = true, nullable = false)
+	private String nick_name; // 닉네임
+
 	@Column(nullable = false)
-	private String pwd; //비번
-	
+	private String pwd; // 비밀번호
+
 	@Column(updatable = false)
-	private String ip; //가입할 때 ip
-	
+	private String ip; // 가입할 때 IP
+
 	@Column(updatable = false)
-	private LocalDateTime createDate = LocalDateTime.now(); //가입날짜
-	
+	private LocalDateTime createDate = LocalDateTime.now(); // 가입일
+
 	@OneToMany(mappedBy = "user")
 	List<Board> board = new ArrayList<>();
-	
-	private int role;  //권한 ex)admin=0,1,2,3,4 멤버 : 5
-	
-	//ip생성하는 생성자
+
+	private int role; // 권한 ex) 0~4: 관리자, 5: 일반유저
+
+	//  추가됨: Spring Security 식별용 username 필드
+	@Column(unique = true, nullable = false)
+	private String username;
+
+	// IP 자동 설정 메서드
 	public void setIp() {
 		try {
 			this.ip = InetAddress.getLocalHost().getHostAddress();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			this.ip = null;
 		}
 	}
-	
+
 	/*
 	@Column(nullable = false)
-	private String phone_num; //전번
+	private String phone_num; // 전번
+
 	@Column(columnDefinition = "TEXT")
-	private String introduce; //소개글
+	private String introduce; // 소개글
+
 	@Column(nullable = false)
-	private int sex; //성별 남자0 여자1
-	
-	private String profile_img; //프사 이미지링크
-	private int post_num; //우편번호
-	private String adr; //주소
-	private String adr_detail; //상세주소
+	private int sex; // 성별 남자0 여자1
+
+	private String profile_img; // 프사 이미지 링크
+	private int post_num; // 우편번호
+	private String adr; // 주소
+	private String adr_detail; // 상세주소
 	*/
-	
 }
-
-
-
-
-
-
-
-
-
-
