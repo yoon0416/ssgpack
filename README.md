@@ -3,6 +3,10 @@
 팬들과 소통하고, SSG 랜더스를 응원하는 커뮤니티 플랫폼입니다.
 경기일정 조회, 응원 게시판, 투표 시스템 등을 제공합니다.
 
+📎 [트러블슈팅 모음 바로가기](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)
+
+📦 [버전 히스토리 보기](https://github.com/yoon0416/ssgpack/blob/main/version.md)
+
 ---
 
 ## 📌 활용 사이트 및 활용코드
