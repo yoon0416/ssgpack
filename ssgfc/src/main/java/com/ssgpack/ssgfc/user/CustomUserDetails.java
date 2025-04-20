@@ -1,15 +1,12 @@
+// ✅ CustomUserDetails.java
 package com.ssgpack.ssgfc.user;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import lombok.Getter;
-
-@Getter
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
@@ -18,10 +15,13 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String roleName = UserRole.fromCode(user.getRole()).getRoleName();
-        return Collections.singletonList(new SimpleGrantedAuthority(roleName));
+        return Collections.singleton(() -> UserRole.fromCode(user.getRole()).getRoleName());
     }
 
     @Override
@@ -31,7 +31,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUsername();  // ✅ 이제 username 필드 반환
+        return user.getEmail();
     }
 
     @Override

@@ -1,8 +1,11 @@
 package com.ssgpack.ssgfc.user;
 
 import java.util.List;
-import java.util.UUID;
 
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,44 +15,46 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    @Lazy
     private final PasswordEncoder passwordEncoder;
 
-    // 회원가입 (비밀번호 암호화 + IP + 기본 권한 + username 생성)
+    // 🔐 로그인 인증 처리 (Spring Security가 호출)
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> new UsernameNotFoundException("잘못된 로그인 정보입니다."));
+        return new CustomUserDetails(user); // ← 커스텀 UserDetails로 감싸서 리턴
+    }
+
+    // ✅ 회원가입 (비밀번호 암호화 + IP + 기본 권한)
     public User insertMember(User user) {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
-        user.setIp();          // IP 자동 저장
-        user.setRole(5);       // 디폴트값 5: 일반 멤버
-
-        // ✅ username 자동 생성 (중복 방지를 위해 UUID 일부 사용)
-        if (user.getUsername() == null || user.getUsername().isBlank()) {
-            String uuid = UUID.randomUUID().toString().substring(0, 8);
-            user.setUsername("user_" + uuid);
-        }
-
+        user.setIp();         // IP 자동 저장
+        user.setRole(5);      // 디폴트값 5 멤버
         return userRepository.save(user);
     }
 
-    // 전체 유저 조회
+    // ✅ 전체 유저 조회
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    // ID 기준 유저 조회
+    // ✅ ID 기준 유저 조회
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + id));
     }
 
-    // 이메일 기준 유저 조회
+    // ✅ 이메일 기준 유저 조회
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
     }
 
-    // 유저 정보 수정 (비밀번호 암호화 포함)
+    // ✅ 유저 정보 수정 (비밀번호 암호화 포함)
     public User update(Long id, User updatedUser) {
         User user = findById(id);
 
@@ -58,19 +63,11 @@ public class UserService {
         user.setIp(updatedUser.getIp());
         user.setRole(updatedUser.getRole());
 
-        // 🔥 선택: username은 기본적으로 수정 안 함 (원하면 여기 추가 가능)
-
         return user;
     }
 
-    // 유저 삭제
+    // ✅ 유저 삭제
     public void delete(Long id) {
         userRepository.deleteById(id);
     }
-    
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. username: " + username));
-    }
-
 }

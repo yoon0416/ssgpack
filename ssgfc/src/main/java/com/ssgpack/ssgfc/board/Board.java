@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotBlank;
 
 import com.ssgpack.ssgfc.user.User;
 
@@ -26,9 +27,11 @@ public class Board {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id; 
 	
+	@NotBlank(message = "제목은 필수입니다.")
 	@Column(length=200, nullable = false)
 	private String title;
 	
+	@NotBlank(message = "내용은 필수입니다.")
 	@Column(columnDefinition = "text", nullable = false)
 	private String content;
 	

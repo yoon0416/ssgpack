@@ -94,34 +94,14 @@
       <dependency>
          <groupId>org.thymeleaf.extras</groupId>
          <artifactId>thymeleaf-extras-springsecurity5</artifactId>
-      </dependency> 
+      </dependency>
 
       <!-- Bean Validation: @Valid, @NotNull 등 유효성 검사 -->
       <dependency>
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-validation</artifactId>
       </dependency>
-      
-          <!-- HttpClient 의존성 추가 -->
-    <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.13</version> <!-- 최신 버전으로 설정할 수 있음 -->
-    </dependency>
-    
-    <!-- JSON 처리를 위한 의존성 추가 (예: Jackson) -->
-    <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.12.5</version> <!-- 최신 버전으로 설정 가능 -->
-    </dependency>
-      
-     <dependency>
-    <groupId>org.jsoup</groupId>
-    <artifactId>jsoup</artifactId>
-    <version>1.15.3</version> <!-- 최신 버전으로 변경 가능 -->
-</dependency> 
-      
+
    </dependencies>
 
    <build>
