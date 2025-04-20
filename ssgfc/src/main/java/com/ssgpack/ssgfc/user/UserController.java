@@ -88,7 +88,7 @@ public class UserController {
             user.setEmail(userForm.getEmail());
             user.setNick_name(userForm.getNick_name());
             user.setPwd(userForm.getPwd());
-            user.setRole(1); // 기본 권한: 일반 사용자 (MEMBER)
+            user.setRole(UserRole.MEMBER.getCode()); // 기본 권한: 일반 사용자
             user.setIp();    // 가입 IP 저장
             service.insertMember(user);
         } catch (DataIntegrityViolationException e) {
