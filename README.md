@@ -40,7 +40,7 @@
 - JPA (Hibernate)
 - Maven
 
-## 크롤링
+## 크롤링 (JSOUP 사용)
 - 선수목록
 - 경기일정
 
