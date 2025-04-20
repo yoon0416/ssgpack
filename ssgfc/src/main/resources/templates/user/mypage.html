@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/Layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>마이페이지</title>
+  <style>
+    .mypage-container {
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+    .mypage-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      border-left: 5px solid #C8102E;
+      padding-left: 12px;
+      color: #333;
+    }
+    .mypage-item {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+    .mypage-label {
+      display: inline-block;
+      font-weight: 600;
+      width: 80px;
+      color: #555;
+    }
+    .mypage-value {
+      color: #222;
+    }
+    .mypage-buttons a {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div layout:fragment="content">
+    <div class="container mt-5" style="max-width: 700px;">
+      <div class="mypage-container">
+        <div class="mypage-title">마이페이지</div>
+
+        <div class="mypage-item">
+          <span class="mypage-label">이메일</span>
+          <span class="mypage-value" sec:authentication="principal.username"></span>
+        </div>
+
+        <div class="mypage-item">
+          <span class="mypage-label">닉네임</span>
+          <span class="mypage-value" th:text="${user.nick_name}"></span>
+        </div>
+
+		<div class="mypage-item">
+		  <span class="mypage-label">권한</span>
+		  <span class="mypage-value" th:text="${roleName}"></span>
+		</div>
+		<a th:href="@{/admin/dashboard}" 
+   class="btn btn-outline-primary"
+   sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_USER_MANAGER', 'ROLE_PLAYER_MANAGER', 'ROLE_BOARD_MANAGER', 'ROLE_GAME_MANAGER')">
+   🔧 관리자 페이지
+</a>
+		
+
+        <div class="mypage-buttons mt-4">
+          <a th:href="@{/user/logout}" class="btn btn-outline-danger">로그아웃</a>
+          <a th:href="@{/main}" class="btn btn-outline-secondary">메인으로</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
