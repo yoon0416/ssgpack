@@ -47,6 +47,8 @@ public class User {
 	@OneToMany(mappedBy = "user")
 	List<Board> board = new ArrayList<>();
 	
+	private int role;  //권한 ex)admin=0,1,2,3,4 멤버 : 5
+	
 	//ip생성하는 생성자
 	public void setIp() {
 		try {
@@ -64,7 +66,7 @@ public class User {
 	private String introduce; //소개글
 	@Column(nullable = false)
 	private int sex; //성별 남자0 여자1
-	private int role;  //권한 ex)admin=0 일반유저=1
+	
 	private String profile_img; //프사 이미지링크
 	private int post_num; //우편번호
 	private String adr; //주소

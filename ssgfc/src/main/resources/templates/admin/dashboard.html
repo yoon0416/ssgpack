@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/Layout}"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 대시보드</title>
+    <style>
+        .admin-box {
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .admin-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #C8102E;
+            margin-bottom: 1.5rem;
+        }
+        .admin-buttons a {
+            display: block;
+            margin-bottom: 12px;
+            padding: 0.75rem 1.2rem;
+            border: 1px solid #C8102E;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #C8102E;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .admin-buttons a:hover {
+            background-color: #C8102E;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-5" style="max-width: 600px;">
+        <div class="admin-box">
+            <div class="admin-title">관리자 대시보드</div>
+            <div class="admin-buttons">
+
+                <!-- 마스터 관리자 전용 -->
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'')')}" th:href="@{/admin/master}" >👑 마스터 관리자 페이지</a>
+
+                <!-- 유저 관리자 -->
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_USER_MANAGER'')')}" th:href="@{/admin/user}">👤 유저 관리</a>
+
+                <!-- 선수 관리자 -->
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_PLAYER_MANAGER'')')}" th:href="@{/admin/player}">⚾ 선수 정보 관리</a>
+
+                <!-- 게시판 관리자 -->
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_BOARD_MANAGER'')')}" th:href="@{/admin/board}">📝 게시판 관리</a>
+
+                <!-- 경기 일정 관리자 -->
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" th:href="@{/admin/game}">📅 경기 일정 관리</a>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
