@@ -27,8 +27,17 @@
 - 야구장 날씨 조회
   - 기상청 api 사용
 - 팬 투표 시스템
-- 굿즈사이트 따로 구현
 
+---
+
+## 🛡️ 보안 설정
+- Spring Security 기반 로그인/로그아웃 구현
+- 사용자 역할(Role)에 따라 접근 제어
+  - 일반 유저: 게시글 작성/수정
+  - 관리자: 선수/일정 등록, 관리자 페이지 접근 가능
+- 본인만 글 수정/삭제 가능하도록 컨트롤러에서 인증 처리
+- 로그인하지 않은 사용자는 게시글 작성/수정 불가능
+  
 ---
 
 ## 🛠️ 사용 기술
@@ -52,12 +61,29 @@
   - 간편 로그인
 - 기상청 api
   - 야구에서 날씨는 중요한 포인트이기 때문에 경기장 날씨 보여주기
-    
-## 웹접근성에 맞게 홈페이지 구현
 
 ---
 
-## 📂 프로젝트 구조 (예정)
+## 📂 프로젝트 구조 (25.04.20 기준)
 
 
+com.ssgpack.ssgfc  
+├── admin                        # 관리자 전용 컨트롤러  
+│   └── AdminDashboardController.java  
+├── board                        # 게시판 도메인  
+│   ├── Board.java  
+│   ├── BoardController.java  
+│   ├── BoardService.java  
+│   └── BoardRepository.java  
+├── user                         # 사용자 및 인증 관련  
+│   ├── User.java  
+│   ├── UserController.java  
+│   ├── UserService.java  
+│   ├── UserRepository.java  
+│   ├── CustomUserDetails.java  
+│   ├── SecurityConfig.java  
+│   └── UserDetailsService.java  
+└── SsgfcApplication.java        # 메인 실행 파일
 
+---
+## 웹접근성에 맞게 홈페이지 구현
