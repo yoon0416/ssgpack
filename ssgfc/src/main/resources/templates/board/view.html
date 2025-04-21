@@ -41,7 +41,7 @@
                     <p class="mb-1" th:text="${comment.content}">내용</p>
 
                     <!-- 로그인 유저가 작성자일 때만 삭제 가능 -->
-                    <form th:if="${comment.user != null and #authentication.principal?.user?.id == comment.user.id}"
+                    <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
                           th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
                           method="post" style="display: inline;">
                         <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
@@ -50,8 +50,8 @@
             </ul>
         </div>
 
-        <!-- 댓글 작성 폼 -->
-        <div class="comment-form mt-4">
+        <!-- 댓글 작성 폼 (로그인 사용자만 노출) -->
+        <div class="comment-form mt-4" th:if="${#authorization.expression('isAuthenticated()')}">
             <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
                 <div class="form-group">
                     <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
