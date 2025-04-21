@@ -21,12 +21,23 @@
             <span class="ms-3">조회수: <span th:text="${board.hit}">0</span></span>
         </div>
 
-        <!-- 내용 -->
+        <!-- 본문 내용 -->
         <div class="mb-4 border p-3" style="min-height: 150px;" th:text="${board.content}">내용</div>
 
         <!-- 이미지 -->
         <div th:if="${board.img != null}">
             <img th:src="@{'/uploads/' + ${board.img}}" alt="이미지" class="img-fluid mb-4">
+        </div>
+
+        <!-- 좋아요 기능 -->
+        <div class="mb-3">
+            <form th:action="@{'/board/' + ${board.id} + '/like'}" method="post">
+                <button type="submit"
+                        th:classappend="${liked} ? 'btn btn-danger' : 'btn btn-outline-danger'">
+                    <span th:text="${liked} ? '♥ 좋아요 취소' : '♡ 좋아요'">♥ 좋아요</span>
+                </button>
+                <span class="ms-2 text-muted">총 <span th:text="${likeCount}">0</span>명</span>
+            </form>
         </div>
 
         <!-- 댓글 목록 -->
@@ -41,7 +52,7 @@
                     </div>
                     <p class="mb-1" th:text="${comment.content}">내용</p>
 
-                    <!-- 로그인 유저가 작성자일 때만 삭제 가능 -->
+                    <!-- 댓글 삭제 버튼 (본인만 보임) -->
                     <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
                           th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
                           method="post" style="display: inline;">
@@ -61,12 +72,13 @@
             </form>
         </div>
 
-        <!-- 버튼: 목록 / 수정 / 삭제 -->
+        <!-- 목록 / 수정 / 삭제 버튼 -->
         <div class="d-flex justify-content-between mt-4">
             <a th:href="@{/board/list}" class="btn btn-secondary">목록</a>
             <div th:if="${currentUserId != null and currentUserId == board.user.id}">
                 <a th:href="@{'/board/edit/' + ${board.id}}" class="btn btn-outline-primary">수정</a>
-                <a th:href="@{'/board/delete/' + ${board.id}}" class="btn btn-outline-danger"
+                <a th:href="@{'/board/delete/' + ${board.id}}"
+                   class="btn btn-outline-danger"
                    onclick="return confirm('삭제하시겠습니까?')">삭제</a>
             </div>
         </div>

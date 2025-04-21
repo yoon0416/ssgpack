@@ -20,6 +20,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests(authorize -> authorize
+            		.antMatchers("/admin/dashboard")
+            		    .hasAnyAuthority(
+            		        UserRole.MASTER.getRoleName(),
+            		        UserRole.USER_MANAGER.getRoleName(),
+            		        UserRole.PLAYER_MANAGER.getRoleName(),
+            		        UserRole.BOARD_MANAGER.getRoleName(),
+            		        UserRole.GAME_MANAGER.getRoleName()
+            		    )
+
 
                 // 🔐 마스터 관리자 전용
                 .antMatchers("/admin/master/**")
