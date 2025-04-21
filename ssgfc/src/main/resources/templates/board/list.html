@@ -10,9 +10,11 @@
 <div class="container mt-5">
     <h2 class="mb-4">📋 게시판 목록</h2>
 
-    <div class="text-end mb-3">
-        <a th:href="@{/board/write}" class="btn btn-primary">글쓰기</a>
-    </div>
+	    <!--  로그인한 사용자만 글쓰기 버튼 보이게 -->
+	<div class="text-end mb-3" sec:authorize="isAuthenticated()">
+	    <a th:href="@{/board/write}" class="btn btn-primary">글쓰기</a>
+	</div>
+
 
     <table class="table table-bordered table-hover align-middle text-center">
         <thead class="table-light">

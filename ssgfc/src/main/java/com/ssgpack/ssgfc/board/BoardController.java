@@ -46,7 +46,7 @@ public class BoardController {
             board.setImg(filename);
         }
 
-        User user = userDetails.getUser(); // 🔐 로그인 유저 객체
+        User user = userDetails.getUser();
         board.setIp();
         board.setUser(user);
         boardService.insert(board, user.getId());
@@ -55,15 +55,28 @@ public class BoardController {
     }
 
     @GetMapping("/view/{id}")
-    public String view(@PathVariable Long id, Model model) {
+    public String view(@PathVariable Long id, Model model,
+                       @AuthenticationPrincipal CustomUserDetails userDetails) {
         Board board = boardService.find(id);
         model.addAttribute("board", board);
+
+        // 현재 로그인한 사용자의 ID를 전달 (비로그인 상태면 null)
+        if (userDetails != null) {
+            model.addAttribute("currentUserId", userDetails.getUser().getId());
+        }
+
         return "board/view";
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id, Model model,
+                           @AuthenticationPrincipal CustomUserDetails userDetails) {
         Board board = boardService.find(id);
+
+        if (!board.getUser().getId().equals(userDetails.getUser().getId())) {
+            return "redirect:/board/list";
+        }
+
         model.addAttribute("board", board);
         return "board/edit";
     }
@@ -73,6 +86,12 @@ public class BoardController {
                              BindingResult result,
                              @RequestParam("file") MultipartFile file,
                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Board original = boardService.find(board.getId());
+
+        if (!original.getUser().getId().equals(userDetails.getUser().getId())) {
+            return "redirect:/board/list";
+        }
+
         if (result.hasErrors()) {
             return "board/edit";
         }
@@ -82,7 +101,7 @@ public class BoardController {
             board.setImg(filename);
         }
 
-        User user = userDetails.getUser(); // 🔐 로그인 유저 객체
+        User user = userDetails.getUser();
         board.setIp();
         board.setUser(user);
         boardService.insert(board, user.getId());
@@ -91,7 +110,14 @@ public class BoardController {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id,
+                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Board board = boardService.find(id);
+
+        if (!board.getUser().getId().equals(userDetails.getUser().getId())) {
+            return "redirect:/board/list";
+        }
+
         boardService.delete(id);
         return "redirect:/board/list";
     }
