@@ -1,7 +1,7 @@
 ## ⚾ SSG Fan Community 프로젝트 업데이트 내역
 > **마지막 업데이트 : 2025.04.21**
 
- 업데이트는 메인 브런치 기준으로 함
+ - 업데이트는 메인 브런치 기준으로 함
 📌 [트러블슈팅 목록 바로가기](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)  
 📌 [버전 기록 보기](./version.md)
 
