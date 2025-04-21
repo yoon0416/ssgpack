@@ -12,12 +12,20 @@
 
         <!-- 작성자 및 기타 정보 -->
         <div class="mb-3 text-muted">
+<<<<<<< HEAD
             <span>작성자:
                 <b th:text="${board.user != null ? board.user.nick_name : '익명'}">닉네임</b>
             </span>
             <span class="ms-3">
                 작성일:
                 <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}">날짜</span>
+=======
+            <span>작성자: 
+                <b th:text="${board.user != null ? board.user.nick_name : '익명'}">닉네임</b>
+            </span>
+            <span class="ms-3">
+                작성일: <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}">날짜</span>
+>>>>>>> main
             </span>
             <span class="ms-3">조회수: <span th:text="${board.hit}">0</span></span>
         </div>
@@ -42,7 +50,11 @@
                     <p class="mb-1" th:text="${comment.content}">내용</p>
 
                     <!-- 로그인 유저가 작성자일 때만 삭제 가능 -->
+<<<<<<< HEAD
                     <form th:if="${comment.user != null and #authentication?.principal?.user?.id == comment.user.id}"
+=======
+                    <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
+>>>>>>> main
                           th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
                           method="post" style="display: inline;">
                         <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
@@ -51,8 +63,13 @@
             </ul>
         </div>
 
+<<<<<<< HEAD
         <!-- 댓글 작성 폼 -->
         <div class="comment-form mt-4" sec:authorize="isAuthenticated()">
+=======
+        <!-- 댓글 작성 폼 (로그인 사용자만 노출) -->
+        <div class="comment-form mt-4" th:if="${#authorization.expression('isAuthenticated()')}">
+>>>>>>> main
             <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
                 <div class="form-group">
                     <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
