@@ -1,4 +1,4 @@
-package com.ssgpack.ssgfc.board;
+package com.ssgpack.ssgfc.board.board;
 
 import com.ssgpack.ssgfc.user.CustomUserDetails;
 import com.ssgpack.ssgfc.user.User;

@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.ssgpack.ssgfc.board.Board;
-import com.ssgpack.ssgfc.board.BoardRepository;
+import com.ssgpack.ssgfc.board.board.Board;
+import com.ssgpack.ssgfc.board.board.BoardRepository;
 import com.ssgpack.ssgfc.user.User;
 import com.ssgpack.ssgfc.user.UserRepository;
 
