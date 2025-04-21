@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>선수 상세정보</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    .record-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .record-table th, .record-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    .record-table th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+<th:block layout:fragment="content">
+
+  <!-- ✅ footer에 영향 주지 않도록 container는 여기까지만 사용 -->
+  <div class="container my-5 p-4 bg-white shadow-sm rounded">
+    <h1 id="playerName">선수 이름</h1>
+    <p id="playerInfo">선수 기본 정보 표시 예정</p>
+
+    <h2>주요 기록</h2>
+    <table class="record-table table table-bordered mt-4" id="recordTable">
+      <thead class="table-light">
+        <tr>
+          <th>연도</th>
+          <th>WAR</th>
+          <th>타율</th>
+          <th>홈런</th>
+          <th>타점</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const pathParts = window.location.pathname.split("/");
+    const pNo = pathParts[pathParts.length - 1];
+
+    fetch(`/api/players/${pNo}`)
+      .then(res => res.json())
+      .then(player => {
+        document.getElementById('playerName').textContent = player.name;
+        document.getElementById('playerInfo').textContent =
+          `등번호: ${player.backNumber ?? '정보 없음'} / 생년월일: ${player.birthDate ?? '정보 없음'} / 학교: ${player.school ?? '정보 없음'}`;
+
+        const tbody = document.querySelector('#recordTable tbody');
+        (player.stats ?? []).forEach(stat => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${stat.season}</td>
+            <td>${stat.war}</td>
+            <td>${stat.avg ?? '-'}</td>
+            <td>${stat.obp ?? '-'}</td>
+            <td>${stat.slg ?? '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        console.error('선수 정보 로딩 실패:', err);
+        document.getElementById('playerName').textContent = '❌ 선수 정보 없음';
+      });
+  </script>
+
+</th:block>
+</body>
+</html>
