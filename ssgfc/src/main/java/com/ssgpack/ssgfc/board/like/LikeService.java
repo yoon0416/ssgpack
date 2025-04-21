@@ -1,35 +1,36 @@
 package com.ssgpack.ssgfc.board.like;
 
 import com.ssgpack.ssgfc.board.board.Board;
-import com.ssgpack.ssgfc.board.board.BoardRepository;
 import com.ssgpack.ssgfc.user.User;
-import com.ssgpack.ssgfc.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LikeService {
-
     private final LikeRepository likeRepository;
-    private final BoardRepository boardRepository;
-    private final UserRepository userRepository;
 
-    public boolean toggleLike(Long boardId, Long userId) {
-        if (likeRepository.existsByBoardIdAndUserId(boardId, userId)) {
-            likeRepository.deleteByBoardIdAndUserId(boardId, userId);
-            return false;
+    @Transactional
+    public void toggleLike(User user, Board board) {
+        Like like = likeRepository.findByBoardAndUser(board, user).orElse(null);
+
+        if (like != null) {
+            likeRepository.delete(like); // 좋아요 취소
         } else {
-            Board board = boardRepository.findById(boardId).orElseThrow();
-            User user = userRepository.findById(userId).orElseThrow();
-            likeRepository.save(Like.builder().board(board).user(user).build());
-            return true;
+            Like newLike = Like.builder()
+                    .user(user)
+                    .board(board)
+                    .build();
+            likeRepository.save(newLike); // 좋아요 추가
         }
     }
 
-    public long countLikes(Long boardId) {
-        return likeRepository.countByBoardId(boardId);
+    public boolean isLikedByUser(Board board, User user) {
+        return likeRepository.existsByBoardAndUser(board, user);
+    }
+
+    public long countByBoard(Board board) {
+        return likeRepository.countByBoard(board);
     }
 }

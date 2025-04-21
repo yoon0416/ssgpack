@@ -1,11 +1,9 @@
 package com.ssgpack.ssgfc.board.board;
 
+import com.ssgpack.ssgfc.board.like.LikeService;
 import com.ssgpack.ssgfc.user.CustomUserDetails;
 import com.ssgpack.ssgfc.user.User;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,12 +11,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/board")
 public class BoardController {
 
-    @Autowired
-    private BoardService boardService;
+    private final BoardService boardService;
+    private final LikeService likeService;
 
     @GetMapping("/list")
     public String list(Model model) {
@@ -42,8 +43,7 @@ public class BoardController {
         }
 
         if (!file.isEmpty()) {
-            String filename = file.getOriginalFilename();
-            board.setImg(filename);
+            board.setImg(file.getOriginalFilename());
         }
 
         User user = userDetails.getUser();
@@ -55,21 +55,30 @@ public class BoardController {
     }
 
     @GetMapping("/view/{id}")
-    public String view(@PathVariable Long id, Model model,
-                       @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public String view(@PathVariable Long id,
+                       @AuthenticationPrincipal CustomUserDetails userDetails,
+                       Model model) {
+
         Board board = boardService.find(id);
         model.addAttribute("board", board);
 
-        // 현재 로그인한 사용자의 ID를 전달 (비로그인 상태면 null)
-        if (userDetails != null) {
-            model.addAttribute("currentUserId", userDetails.getUser().getId());
+        User user = userDetails != null ? userDetails.getUser() : null;
+        boolean liked = (user != null) && likeService.isLikedByUser(board, user);
+        long likeCount = likeService.countByBoard(board);
+
+        model.addAttribute("liked", liked);
+        model.addAttribute("likeCount", likeCount);
+
+        if (user != null) {
+            model.addAttribute("currentUserId", user.getId());
         }
 
         return "board/view";
     }
 
     @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model,
+    public String editForm(@PathVariable Long id,
+                           Model model,
                            @AuthenticationPrincipal CustomUserDetails userDetails) {
         Board board = boardService.find(id);
 
@@ -97,8 +106,7 @@ public class BoardController {
         }
 
         if (!file.isEmpty()) {
-            String filename = file.getOriginalFilename();
-            board.setImg(filename);
+            board.setImg(file.getOriginalFilename());
         }
 
         User user = userDetails.getUser();

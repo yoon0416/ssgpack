@@ -1,39 +1,43 @@
 package com.ssgpack.ssgfc.board.like;
 
-import com.ssgpack.ssgfc.board.board.Board;
-import com.ssgpack.ssgfc.user.User;
-import lombok.*;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import com.ssgpack.ssgfc.board.board.Board;
+import com.ssgpack.ssgfc.user.User;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Table(name = "likes")
+@Builder
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Table(name = "board_like", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"board_id", "user_id"})
-})
+@IdClass(LikeId.class)
 public class Like {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private LocalDateTime createDate;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
 
+    @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createDate = LocalDateTime.now();
-    }
+    private LocalDateTime likedAt = LocalDateTime.now();
 }

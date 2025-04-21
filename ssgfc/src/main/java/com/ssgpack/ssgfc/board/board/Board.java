@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 
 import com.ssgpack.ssgfc.board.comment.Comment;
+import com.ssgpack.ssgfc.board.like.Like;
 import com.ssgpack.ssgfc.user.User;
 
 import lombok.Getter;
@@ -66,4 +67,6 @@ public class Board {
 		}
 	}
 	
+	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+	private List<Like> likes;
 }

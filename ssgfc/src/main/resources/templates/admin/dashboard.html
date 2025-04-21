@@ -53,8 +53,11 @@
                 <!-- 선수 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_PLAYER_MANAGER'')')}" th:href="@{/admin/player}">⚾ 선수 정보 관리</a>
 
-                <!-- 게시판 관리자 -->
-                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_BOARD_MANAGER'')')}" th:href="@{/admin/board}">📝 게시판 관리</a>
+                <!-- 게시판 관리자 + 마스터 둘 다 가능 -->
+				<a th:if="${#authorization.expression('hasAnyAuthority(''ROLE_MASTER'', ''ROLE_BOARD_MANAGER'')')}" 
+				   th:href="@{/admin/board/list}">
+				    📝 게시판 관리
+				</a>
 
                 <!-- 경기 일정 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" th:href="@{/admin/game}">📅 경기 일정 관리</a>
