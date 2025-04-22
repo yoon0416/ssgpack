@@ -65,6 +65,35 @@
 1. 당장 수정해야할 것:
    - 현재 공지사항을 올릴 시 공지사항처럼 안보이고 일반 게시물처럼 보임 + 공지사항은 맨 위에 뜨게
    - 
+---
+SSG v1.3.0 (2025.04.22)
+🔹 카카오 로그인 기능 도입 (OAuth2 기반)
+
+KakaoLoginService, KakaoLoginController 모듈 분리 구성
+
+카카오 API 연동하여 access token 발급 후 사용자 정보 조회
+
+이메일 미제공 시 kakaouser랜덤번호@kakao.com 형식으로 임시 이메일 자동 생성
+
+🔹 카카오 로그인 사용자 자동 회원가입 처리
+
+기존 회원(email 중복 시)과 연동하여 로그인
+
+중복 방지를 위해 email, kakao_id는 유니크 설정 유지, nick_name은 유니크 해제
+
+🔹 닉네임 중복 문제 해결
+
+nick_name 유니크 제약 해제 (@Column(unique = false))
+
+기존 DB 인덱스는 직접 ALTER TABLE user DROP INDEX ... 쿼리로 삭제
+
+🔹 Spring Security 수동 인증 처리
+
+로그인 성공 시 SecurityContextHolder에 직접 사용자 인증 객체 등록
+
+🛠 기타 개선
+
+사용자 IP 자동 기록 기능 유지 (user.setIp())
 
 ---
 
