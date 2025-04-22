@@ -30,8 +30,8 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    // 닉네임 (유니크, 필수)
-    @Column(unique = true, nullable = false)
+    // 닉네임 (중복허용, 필수)
+    @Column(nullable = false)
     private String nick_name;
 
     // 비밀번호
@@ -49,6 +49,11 @@ public class User {
     // 권한 (admin=0~4, member=5)
     private int role;
 
+    //카카오 id
+    @Column(name = "kakao_id", unique = true, nullable = true)
+    private Long kakaoId;
+ 
+    
     // 연관 게시글
     @OneToMany(mappedBy = "user")
     private List<Board> board = new ArrayList<>();
