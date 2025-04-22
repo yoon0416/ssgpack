@@ -1,0 +1,24 @@
+<!-- templates/vote/list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
+<head>
+<title>투표 목록</title>
+</head>
+
+<body>
+	<section layout:fragment="content">
+		<div class="container mt-4">
+			<h2>투표 목록</h2>
+			<div class="mb-3">
+				<a class="btn btn-success" href="/vote/create">+ 투표 생성</a>
+			</div>
+			<ul class="list-group">
+				<li class="list-group-item" th:each="vote : ${votes}"><a
+					th:href="@{|/vote/${vote.id}|}" th:text="${vote.title}">투표 제목</a></li>
+			</ul>
+		</div>
+	</section>
+</body>
+</html>
