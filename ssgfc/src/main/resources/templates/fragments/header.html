@@ -1,41 +1,49 @@
 <th:block th:fragment="header">
 
-  <!-- 상단 헤더 -->
-  <nav class="navbar navbar-expand-sm" style="background-color: white; border-bottom: 2px solid #d50032;">
-    <div class="container py-2">
-
+  <!-- 상단 네비게이션 -->
+  <nav class="navbar navbar-expand-sm bg-white border-bottom shadow-sm py-2">
+    <div class="container d-flex justify-content-between align-items-center">
       <!-- 로고 -->
       <a class="navbar-brand" href="/">
         <img src="https://www.ssglanders.com/img/wyverns/emblem/new/emblem_01.png"
-             alt="SSG 로고" style="width: 55px;">
+             alt="SSG 로고" style="width: 48px;">
       </a>
 
-      <!-- 로그인/회원가입/마이페이지 -->
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link text-danger" th:href="@{/user/login}" sec:authorize="isAnonymous()">로그인</a></li>
-        <li class="nav-item"><a class="nav-link text-danger" th:href="@{/user/join}" sec:authorize="isAnonymous()">회원가입</a></li>
-        <li class="nav-item"><a class="nav-link text-danger" th:href="@{/user/logout}" sec:authorize="isAuthenticated()">로그아웃</a></li>
-        <li class="nav-item"><a class="nav-link text-danger" th:href="@{/user/mypage}" sec:authorize="isAuthenticated()">마이페이지</a></li>
+      <!-- 로그인/회원 관련 -->
+      <ul class="navbar-nav d-flex flex-row gap-3">
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/login}" sec:authorize="isAnonymous()">로그인</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/join}" sec:authorize="isAnonymous()">회원가입</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/logout}" sec:authorize="isAuthenticated()">로그아웃</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/mypage}" sec:authorize="isAuthenticated()">마이페이지</a>
+        </li>
       </ul>
-
     </div>
   </nav>
 
   <!-- 슬라이드 배너 -->
-  <div class="container mt-3">
-    <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
-      <div class="carousel-inner rounded-3 overflow-hidden shadow-sm" style="height: 220px;">
-        <div class="carousel-item active">
-          <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg" class="d-block w-100" style="object-fit: cover;">
+  <div class="container mt-4">
+    <div id="mainCarousel" class="carousel slide rounded-4 shadow overflow-hidden banner-wrapper" data-bs-ride="carousel" style="height: 220px;">
+      <div class="carousel-inner h-100">
+        <div class="carousel-item active h-100">
+          <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
         </div>
-        <div class="carousel-item">
-          <img src="https://cdn.incheontoday.com/news/photo/202501/261780_257882_1951.jpg" class="d-block w-100" style="object-fit: cover;">
+        <div class="carousel-item h-100">
+          <img src="https://cdn.incheontoday.com/news/photo/202501/261780_257882_1951.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
         </div>
-        <div class="carousel-item">
-          <img src="https://i.ytimg.com/vi/ztBkXy1OS7o/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGGUgRihGMA8=&rs=AOn4CLCuPz--4AAyW-sNiAtgqBPL3LzQlw" class="d-block w-100" style="object-fit: cover;">
+        <div class="carousel-item h-100">
+          <img src="https://i.ytimg.com/vi/ztBkXy1OS7o/hq720.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
         </div>
       </div>
-
       <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
         <span class="carousel-control-prev-icon"></span>
       </button>
@@ -45,31 +53,69 @@
     </div>
   </div>
 
- <!-- ✅ 메뉴 영역 (슬라이드처럼 여백 생기게 container로 감싸기) -->
-<div class="container mt-4">
-  <div class="bg-danger rounded-3 py-2 px-4 shadow-sm">
-    <ul class="nav justify-content-center gap-3 m-0">
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" th:href="@{/players}">🧢 선수목록</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" href="#">🗓️ 쓱일정</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" th:href="@{/board/list}">📣 응원게시판</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" href="#">✅ 투표</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" href="#">🧾 오늘경기요약</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fw-semibold" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">🌤 야구장날씨</a>
-      </li>
-    </ul>
+  <!-- 메뉴 바 -->
+  <div class="container">
+    <div class="menu-bar d-flex rounded-4 shadow-sm overflow-hidden menu-bar-wrapper">
+      <a class="menu-tab" th:href="@{/players}"
+         th:classappend="${#request.requestURI == '/players'} ? 'active'">선수목록</a>
+      <a class="menu-tab" href="#">쓱일정</a>
+      <a class="menu-tab" th:href="@{/board/list}"
+         th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
+      <a class="menu-tab" th:href="@{/vote}">투표</a>
+      <a class="menu-tab" href="#">오늘 경기요약</a>
+      <a class="menu-tab" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">야구장 날씨</a>
+    </div>
   </div>
-</div>
 
+  <!-- 메뉴 스타일 -->
+  <style>
+    .banner-wrapper {
+      margin-bottom: 36px; /* ✅ 배너 아래 간격 */
+    }
+
+    .menu-bar-wrapper {
+      margin-top: 0px; /* ✅ 메뉴 위쪽 간격 제거 */
+    }
+
+    .menu-bar {
+      display: flex;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .menu-tab {
+      flex: 1;
+      text-align: center;
+      padding: 14px 0;
+      font-weight: 500;
+      font-size: 15.5px;
+      letter-spacing: -0.3px;
+      color: #000;
+      background-color: #fff;
+      text-decoration: none;
+      border-right: 1px solid #eee;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      display: block;
+    }
+
+    .menu-tab:last-child {
+      border-right: none;
+    }
+
+    .menu-tab:hover {
+      background-color: #f8f9fa;
+      color: #d50032;
+    }
+
+    .menu-tab.active {
+      background-color: #d50032;
+      color: #fff !important;
+      font-weight: 600;
+    }
+  </style>
 
 </th:block>
