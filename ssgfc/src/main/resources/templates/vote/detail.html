@@ -1,0 +1,44 @@
+<!-- templates/vote/detail.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
+<head>
+<title>투표</title>
+</head>
+
+<body>
+	<section layout:fragment="content">
+		<div class="container mt-4">
+			<h2>투표</h2>
+			<h3 class="mt-4">실시간 투표 현황</h3>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>선택지</th>
+						<th>득표 수</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="entry : ${result}">
+						<td th:text="${entry.key}">선택지</td>
+						<td th:text="${entry.value}">0</td>
+					</tr>
+				</tbody>
+			</table>
+			<form method="post" th:action="@{/vote/submit}">
+				<input type="hidden" name="voteTitleId" th:value="${voteTitleId}" />
+
+				<div class="form-check" th:each="content : ${contents}">
+					<input class="form-check-input" type="radio" name="voteContentId"
+						th:value="${content.id}" id="opt-[[${content.id}]]" /> <label
+						class="form-check-label" th:for="'opt-' + ${content.id}"
+						th:text="${content.content}">선택지</label>
+				</div>
+
+				<button type="submit" class="btn btn-primary mt-3">투표하기</button>
+			</form>
+		</div>
+	</section>
+</body>
+</html>
