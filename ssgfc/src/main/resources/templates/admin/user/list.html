@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
+<head>
+<title>사용자 관리자 페이지</title>
+</head>
+<body>
+	<th:block layout:fragment="content">
+		<div class="container mt-5">
+			<h2 class="mb-4">👥 사용자 목록</h2>
+
+			<table
+				class="table table-bordered table-hover align-middle text-center">
+				<thead class="table-light">
+					<tr>
+						<th>ID</th>
+						<th>이메일</th>
+						<th>닉네임</th>
+						<th>가입일</th>
+						<th>권한</th>
+						<th>IP</th>
+						<th>관리</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="user : ${userList}">
+						<td th:text="${user.id}">1</td>
+						<td th:text="${user.email}">email@example.com</td>
+						<td th:text="${user.nick_name}">닉네임</td>
+						<td th:text="${#temporals.format(user.createDate, 'yyyy-MM-dd')}">2025-04-22</td>
+						<td th:text="${user.role}">5</td>
+						<td th:text="${user.ip}">192.168.0.1</td>
+						<td>
+							<div th:if="${user.role != 0}">
+								<a th:href="@{'/admin/user/view/' + ${user.id}}"
+									class="btn btn-sm btn-outline-primary">상세</a>
+								<form th:action="@{'/admin/user/delete/' + ${user.id}}"
+									method="post" style="display: inline;"
+									onsubmit="return confirm('정말 삭제하시겠습니까?')">
+									<button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+								</form>
+							</div>
+							<div th:if="${user.role == 0}" class="text-muted small">수정
+								불가</div>
+						</td>
+
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</th:block>
+</body>
+</html>

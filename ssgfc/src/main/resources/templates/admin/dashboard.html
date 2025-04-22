@@ -48,7 +48,7 @@
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'')')}" th:href="@{/admin/master}" >👑 마스터 관리자 페이지</a>
 
                 <!-- 유저 관리자 -->
-                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_USER_MANAGER'')')}" th:href="@{/admin/user}">👤 유저 관리</a>
+                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_USER_MANAGER'')')}" th:href="@{/admin/user/list}">👤 유저 관리</a>
 
                 <!-- 선수 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_PLAYER_MANAGER'')')}" th:href="@{/admin/player}">⚾ 선수 정보 관리</a>
