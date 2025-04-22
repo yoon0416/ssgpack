@@ -54,20 +54,27 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
     }
 
-    // ✅ 유저 정보 수정 (비밀번호 암호화 포함)
+    //유저정보 업데이트
     public User update(Long id, User updatedUser) {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
-        user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
-        user.setIp(updatedUser.getIp());
+
+        // 비밀번호가 비어있지 않으면만 변경
+        if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
+            user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
+        }
+
+        user.setIp(updatedUser.getIp()); // 필요 시 유지 or 생략 가능
         user.setRole(updatedUser.getRole());
 
         return user;
     }
 
+
     // ✅ 유저 삭제
     public void delete(Long id) {
         userRepository.deleteById(id);
     }
+    
 }
