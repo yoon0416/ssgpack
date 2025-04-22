@@ -62,11 +62,12 @@
 		<a th:href="@{/admin/dashboard}" 
    class="btn btn-outline-primary"
    sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_USER_MANAGER', 'ROLE_PLAYER_MANAGER', 'ROLE_BOARD_MANAGER', 'ROLE_GAME_MANAGER')">
-   🔧 관리자 페이지
+   관리자 페이지
 </a>
 		
 
         <div class="mypage-buttons mt-4">
+          <a th:href="@{/user/mypage/edit}" class="btn btn-primary">정보 수정</a>
           <a th:href="@{/user/logout}" class="btn btn-outline-danger">로그아웃</a>
           <a th:href="@{/main}" class="btn btn-outline-secondary">메인으로</a>
         </div>

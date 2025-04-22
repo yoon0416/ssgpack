@@ -21,7 +21,7 @@ public class UserService implements UserDetailsService {
     @Lazy
     private final PasswordEncoder passwordEncoder;
 
-    // 🔐 로그인 인증 처리 (Spring Security가 호출)
+    //  로그인 인증 처리 (Spring Security가 호출)
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email.trim())
@@ -29,7 +29,7 @@ public class UserService implements UserDetailsService {
         return new CustomUserDetails(user); // ← 커스텀 UserDetails로 감싸서 리턴
     }
 
-    // ✅ 회원가입 (비밀번호 암호화 + IP + 기본 권한)
+    //  회원가입 (비밀번호 암호화 + IP + 기본 권한)
     public User insertMember(User user) {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
         user.setIp();         // IP 자동 저장
@@ -37,18 +37,18 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    // ✅ 전체 유저 조회
+    //  전체 유저 조회
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    // ✅ ID 기준 유저 조회
+    //  ID 기준 유저 조회
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + id));
     }
 
-    // ✅ 이메일 기준 유저 조회
+    //  이메일 기준 유저 조회
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
@@ -72,9 +72,34 @@ public class UserService implements UserDetailsService {
     }
 
 
-    // ✅ 유저 삭제
+    //  유저 삭제
     public void delete(Long id) {
         userRepository.deleteById(id);
     }
+    
+    //  마이페이지 정보 수정 (닉네임 / 비번만)
+    public void updateUser(Long id, User updatedUser) {
+        User user = findById(id);
+
+        user.setNick_name(updatedUser.getNick_name());
+
+        //  이메일이 바뀌었는지 확인
+        String newEmail = updatedUser.getEmail().trim();
+        if (!newEmail.equals(user.getEmail())) {
+            //  이미 존재하는 이메일인지 확인
+            if (userRepository.findByEmail(newEmail).isPresent()) {
+                throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+            }
+            user.setEmail(newEmail);
+        }
+
+        //  비밀번호 입력된 경우에만 변경
+        if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
+            user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
+        }
+    }
+
+
+
     
 }

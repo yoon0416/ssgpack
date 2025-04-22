@@ -9,12 +9,14 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -23,6 +25,7 @@ public class UserController {
 
     @Autowired
     private UserService service;
+    
 
     //  루트 URL 접근 시 로그인 페이지로 이동
     @RequestMapping("/")
@@ -129,4 +132,33 @@ public class UserController {
         // 로그인 페이지로 리다이렉트
         return "redirect:/user/login";
     }
+    @GetMapping("/user/mypage/edit")
+    public String editForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("user", userDetails.getUser());
+        return "user/edit"; // edit.html 렌더링
+    }
+
+    @PostMapping("/user/mypage/edit")
+    public String editSubmit(@ModelAttribute("user") User updated,
+                             @AuthenticationPrincipal CustomUserDetails userDetails,
+                             HttpServletRequest request,
+                             Model model) {
+        try {
+            service.updateUser(userDetails.getUser().getId(), updated);
+        } catch (IllegalArgumentException e) {
+            // 예외 메시지 전달
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("user", updated); // 사용자 입력값 유지
+            return "user/edit";
+        }
+
+        // tp션 만료 + 시큐리티 컨텍스트 초기화 = 강제 로그아웃
+        request.getSession().invalidate();
+        SecurityContextHolder.clearContext();
+
+        // 로그인 페이지로 리다이렉트 + 안내용 파라미터
+        return "redirect:/user/login?updated=true";
+    }
+
+
 }
