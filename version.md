@@ -110,6 +110,7 @@
 - 🔹 UI 개선
   - 관리자 페이지 내 버튼 접근 조건 정리
   - `list`, `view`, `edit` 페이지에서 마스터 관리자에 대한 UI 처리 명확히 분리
+  - `header`, `footer` UI 변경
 
 - 🔹 보안 설정 보완
   - `application.properties`에서 카카오 API Key 등 민감 정보 제거
