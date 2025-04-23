@@ -3,75 +3,113 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSG 랜더스 선수 정보</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
-        .card h2 {
-            margin-top: 0;
-        }
-        .card p {
-            margin: 5px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSG 랜더스 선수 정보</title>
+
+
 </head>
+
 <body>
 <th:block layout:fragment="content">
-    <div class="container">
-        <h1>SSG 랜더스 선수 정보</h1>
-        <div class="grid" id="playerGrid"></div>
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 선수 이름을 입력하세요" />
+      <button id="searchButton">검색</button>
     </div>
+    <div id="accordionContainer"></div>
+  </div>
+	
 
-    <script>
-		// 실제 서버에서 API로 데이터를 불러오는 예시
-		fetch('/api/players')
-		  .then(res => res.json())
-		  .then(players => {
-		    const grid = document.getElementById('playerGrid');
-		    players.forEach(player => {
-		      const card = document.createElement('div');
-		      card.className = 'card';
-		      card.innerHTML = `
-		        <a href="/players/${player.pno}" style="text-decoration: none; color: inherit;">
-		          <h2>${player.name}</h2>
-		          <p><strong>등번호:</strong> ${player.backNumber}</p>
-		          <p><strong>생년월일:</strong> ${player.birthDate || '정보 없음'}</p>
-		          <p><strong>출신학교:</strong> ${player.school || '정보 없음'}</p>
-		        </a>
-		      `;
-		      grid.appendChild(card);
-		    });
-		  })
-		  .catch(err => {
-		    console.error('선수 정보를 불러오는 중 오류 발생:', err);
-		  });
 
-    </script>
+  <script>
+    let allPlayers = [];
+
+    function createAccordion(pos, players) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'accordion';
+
+      const header = document.createElement('div');
+      header.className = 'accordion-header';
+      header.innerHTML = `${pos} <span class="sub-label">[click]</span>`;
+
+      const content = document.createElement('div');
+      content.className = 'accordion-content';
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      players.forEach(player => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <a href="/players/${player.pno}" style="text-decoration: none; color: inherit; position: relative;">
+            <img src="${player.imageUrl}" alt="${player.name} 이미지"
+                 style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 10px;"
+                 onerror="this.src='/images/players/default.png'">
+            <h2>${player.name}</h2>
+            <p style="color:red"><strong>NO.${player.backNumber}</strong></p>
+            <div class="info-overlay">
+              <p><strong>포지션:</strong> ${player.position}</p>
+              <p><strong>생년월일:</strong> ${player.birthDate}</p>
+              <p><strong>학교:</strong> ${player.school}</p>
+              <p><strong>활약연도:</strong> ${player.activeYears}</p>
+            </div>
+          </a>
+        `;
+        grid.appendChild(card);
+      });
+
+      content.appendChild(grid);
+
+      header.addEventListener('click', () => {
+        const isVisible = content.style.display === 'block';
+        content.style.display = isVisible ? 'none' : 'block';
+      });
+
+      wrapper.appendChild(header);
+      wrapper.appendChild(content);
+      return wrapper;
+    }
+
+    document.getElementById('searchButton').addEventListener('click', () => {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const filtered = allPlayers.filter(player =>
+        player.name.toLowerCase().includes(keyword)
+      );
+      renderFilteredAccordions(filtered);
+    });
+
+    function renderFilteredAccordions(filteredPlayers) {
+      const container = document.getElementById('accordionContainer');
+      container.innerHTML = '';
+
+      const grouped = {};
+      filteredPlayers.forEach(player => {
+        const pos = player.position?.trim() || '기타';
+        if (!grouped[pos]) grouped[pos] = [];
+        grouped[pos].push(player);
+      });
+
+      const order = ['투수', '포수', '내야수', '외야수', '기타'];
+      order.forEach(pos => {
+        if (grouped[pos]) {
+          const accordion = createAccordion(pos, grouped[pos]);
+          container.appendChild(accordion);
+        }
+      });
+    }
+
+    fetch('/api/players')
+      .then(res => res.json())
+      .then(players => {
+        allPlayers = players;
+        renderFilteredAccordions(players);
+      })
+      .catch(err => {
+        console.error('선수 정보를 불러오는 중 오류 발생:', err);
+      });
+  </script>
+</th:block>
 </body>
 </html>

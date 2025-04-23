@@ -59,7 +59,9 @@ public class PlayerCrawlingService {
                 System.out.println("⚠ 생일 파싱 실패: " + birthRaw);
             }
         }
-
+        // 등번호에 따라 이미지 URL 생성
+        String imageUrl = "/images/players/" + backNumber + ".png";
+        
         // Player 객체 생성 및 저장
         Player player = Player.builder()
                 .name(koreanName)
@@ -70,6 +72,7 @@ public class PlayerCrawlingService {
                 .draftInfo(draft)
                 .activeYears(years)
                 .teams(teams)
+                .imageUrl(imageUrl)
                 .build();
 
         return playerRepository.save(player);
