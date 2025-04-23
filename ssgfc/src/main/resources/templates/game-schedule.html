@@ -1,0 +1,184 @@
+!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>📅 SSG 경기일정</title>
+    <link href="/css/calendar-custom.css" rel="stylesheet">
+    <link href="/lib/fullcalendar/main.min.css" rel="stylesheet">
+    <style>
+        .fc-daygrid-day {
+            min-height: 120px !important;
+        }
+
+        .fc .fc-daygrid-day-frame {
+            height: 100% !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .fc .fc-daygrid-day-number {
+            color: black !important;
+        }
+
+        .fc-day-sun .fc-daygrid-day-number {
+            color: #e74c3c !important;
+        }
+
+        .fc-day-sat .fc-daygrid-day-number {
+            color: #2980b9 !important;
+        }
+
+        .fc-day-sun .fc-col-header-cell-cushion {
+            color: #e74c3c !important;
+        }
+
+        .fc-day-sat .fc-col-header-cell-cushion {
+            color: #2980b9 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<section class="container mt-5" layout:fragment="content">
+    <h2 class="text-center mb-4">📅 SSG 랜더스 경기 일정</h2>
+    <div id="calendar"></div>
+</section>
+
+<th:block layout:fragment="script">
+    <script src="/lib/fullcalendar/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        const teamLogos = {
+            "DOOSAN": "/images/logo/DOOSAN.png",
+            "삼성": "/images/logo/SAMSUNG.png",
+            "KIA": "/images/logo/KIA.png",
+            "LG": "/images/logo/LG.png",
+            "한화": "/images/logo/HANWHA.png",
+            "NC": "/images/logo/NC.png",
+            "키움": "/images/logo/KIWOOM.png",
+            "LOTTE": "/images/logo/LOTTE.png",
+            "KT": "/images/logo/KT.png"
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                height: 'auto',
+                firstDay: 1,
+                aspectRatio: 1.2,
+
+                eventDidMount: function(info) {
+                    const title = info.event.title;
+                    const status = info.event.extendedProps.status || '';
+                    const team1 = info.event.extendedProps.team1;
+                    const team2 = info.event.extendedProps.team2;
+                    const color = info.event.textColor || 'black';
+
+                    const rawOpponent = team1 === "SSG" ? team2 : team1;
+                    const opponent = rawOpponent.toUpperCase();
+                    const logoUrl = teamLogos[opponent];
+
+                    const wrapper = document.createElement('div');
+                    wrapper.style.display = 'flex';
+                    wrapper.style.flexDirection = 'column';
+                    wrapper.style.justifyContent = 'space-between';
+                    wrapper.style.alignItems = 'center';
+                    wrapper.style.height = '100%';
+
+                    if (logoUrl) {
+                        const logoImg = document.createElement('img');
+                        logoImg.src = logoUrl;
+                        logoImg.alt = opponent;
+                        logoImg.style.height = '48px';
+                        logoImg.style.marginTop = '6px';
+                        wrapper.appendChild(logoImg);
+                    }
+
+                    const text = document.createElement('div');
+                    text.innerHTML = `
+                        <div style="color:${color}; font-size:13px; text-align:center;">${title}</div>
+                        <div style="color:${color}; font-size:12px; text-align:center;">${status}</div>
+                    `;
+                    text.style.marginBottom = '4px';
+                    wrapper.appendChild(text);
+
+                    info.el.innerHTML = '';
+                    info.el.appendChild(wrapper);
+                },
+
+                events: function (fetchInfo, successCallback, failureCallback) {
+                    axios.get('/games')
+                        .then(response => {
+                            const today = new Date();
+                            const events = response.data.map(game => {
+                                const gameDate = new Date(game.gameDate);
+                                const hasScore = game.score1 !== null && game.score2 !== null;
+
+                                let rawTitle = '';
+                                let status = '';
+                                let textColor = '#C8102E';
+                                const backgroundColor = 'white';
+                                const borderColor = 'white';
+
+                                if (hasScore) {
+                                    rawTitle = `${game.team1} ${game.score1} vs ${game.team2} ${game.score2}`;
+                                    const ssgIsFirst = game.team1.includes("SSG");
+                                    const ssgScore = ssgIsFirst ? game.score1 : game.score2;
+                                    const oppScore = ssgIsFirst ? game.score2 : game.score1;
+
+                                    if (ssgScore > oppScore) {
+                                        status = '(승)';
+                                    } else if (ssgScore < oppScore) {
+                                        status = '(패)';
+                                    } else {
+                                        status = '(무)';
+                                    }
+                                } else if (gameDate < today) {
+                                    rawTitle = `${game.team1} vs ${game.team2}`;
+                                    status = '(취소)';
+                                } else {
+                                    rawTitle = `${game.team1} vs ${game.team2}`;
+                                    status = '(예정)';
+                                    textColor = 'black';
+                                }
+
+                                return {
+                                    title: rawTitle,
+                                    start: game.gameDate,
+                                    allDay: true,
+                                    backgroundColor: backgroundColor,
+                                    borderColor: borderColor,
+                                    textColor: textColor,
+                                    extendedProps: {
+                                        status: status,
+                                        team1: game.team1,
+                                        team2: game.team2
+                                    }
+                                };
+                            });
+
+                            successCallback(events);
+                        })
+                        .catch(error => {
+                            console.error("일정 로딩 실패", error);
+                            failureCallback(error);
+                        });
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

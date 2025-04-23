@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>오늘의 경기 요약</title>
+    <link rel="stylesheet" href="/lib/fullcalendar/main.min.css">
+    <style>
+        .content-wrapper {
+            display: flex;
+            gap: 30px;
+            padding: 30px;
+        }
+        .calendar-box {
+            width: 260px;
+            padding-right: 20px;
+            border-right: 1px solid #ccc;
+        }
+        .summary-box {
+            flex-grow: 1;
+        }
+        .record-box {
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .record-box h5 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="content-wrapper">
+        <!-- 달력 영역 -->
+        <div class="calendar-box">
+            <div id="miniCalendar"></div>
+        </div>
+
+        <!-- 요약 및 기록 영역 -->
+        <div class="summary-box">
+            <h3 id="selectedDateTitle">오늘의 경기 요약</h3>
+
+            <!-- 경기 기록 영역 -->
+            <div id="gameRecordArea" class="record-box">
+                <h5>📋 경기 주요 기록</h5>
+                <ul id="recordList"></ul>
+            </div>
+
+            <!-- 한줄평 영역 -->
+            <div id="gameSummaryArea" class="record-box">
+                <h5>📝 AI 한줄평</h5>
+                <p id="summaryText">데이터를 불러오는 중...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- script fragment -->
+<th:block layout:fragment="script">
+    <script src="/lib/fullcalendar/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const calendarEl = document.getElementById('miniCalendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                dateClick: function (info) {
+                    const date = info.dateStr;
+                    axios.get(`/api/review-exists?date=${date}`)
+                        .then(res => {
+                            if (res.data === true) {
+                                window.location.href = `/review_today?date=${date}`;
+                            } else {
+                                alert("아직 경기 요약이 없습니다.");
+                            }
+                        });
+                }
+            });
+            calendar.render();
+
+            const params = new URLSearchParams(window.location.search);
+            const selectedDate = params.get("date");
+            if (selectedDate) {
+                document.getElementById("selectedDateTitle").textContent = `${selectedDate} 경기 요약`;
+
+                fetch(`/api/review-summary?date=${selectedDate}`)
+                    .then(res => res.text())
+                    .then(text => {
+                        document.getElementById("summaryText").textContent = text;
+                    });
+
+                fetch(`/api/review-records?date=${selectedDate}`)
+                    .then(res => res.json())
+                    .then(list => {
+                        const ul = document.getElementById("recordList");
+                        ul.innerHTML = "";
+                        list.forEach(item => {
+                            const li = document.createElement("li");
+                            li.textContent = `[${item.how}] ${item.result}`;
+                            ul.appendChild(li);
+                        });
+                    });
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>
