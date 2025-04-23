@@ -1,4 +1,4 @@
-package com.ssgpack.ssgfc.player;
+/*package com.ssgpack.ssgfc.player;
 
 import java.util.List;
 
@@ -25,4 +25,4 @@ public class PlayerImageUrlInitializer {
             }
         }
     }
-}
+}*/
