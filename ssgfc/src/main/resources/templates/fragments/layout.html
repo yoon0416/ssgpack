@@ -11,13 +11,15 @@
 <!-- Latest compiled JavaScript -->
 <script
 	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" th:href="@{/css/header.css}" />
+<link rel="stylesheet" th:href="@{/css/player.css}" />
 </head>
 <body>
 	<!-- header.html -->
 	<th:block th:replace="fragments/header  ::  header" />
 
 	<!-- content.html -->
-	<th:block layout:fragment="content" />
+	<th:block layout:fragment="content"/>
 
 	<!-- footer.html -->
 	<th:block th:replace="fragments/footer  ::  footer" />

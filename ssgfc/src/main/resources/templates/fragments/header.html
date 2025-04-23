@@ -1,5 +1,9 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <th:block th:fragment="header">
-
+<!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
   <!-- 상단 네비게이션 -->
   <nav class="navbar navbar-expand-sm bg-white border-bottom shadow-sm py-2">
     <div class="container d-flex justify-content-between align-items-center">
@@ -61,61 +65,12 @@
       <a class="menu-tab" href="#">쓱일정</a>
       <a class="menu-tab" th:href="@{/board/list}"
          th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
-      <a class="menu-tab" th:href="@{/vote}">투표</a>
+      <a class="menu-tab" href="#">투표</a>
       <a class="menu-tab" href="#">오늘 경기요약</a>
       <a class="menu-tab" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">야구장 날씨</a>
     </div>
   </div>
 
-  <!-- 메뉴 스타일 -->
-  <style>
-    .banner-wrapper {
-      margin-bottom: 36px; /* ✅ 배너 아래 간격 */
-    }
 
-    .menu-bar-wrapper {
-      margin-top: 0px; /* ✅ 메뉴 위쪽 간격 제거 */
-    }
-
-    .menu-bar {
-      display: flex;
-      border: 1px solid #ddd;
-      background-color: #fff;
-      border-radius: 999px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-      font-family: 'Noto Sans KR', sans-serif;
-    }
-
-    .menu-tab {
-      flex: 1;
-      text-align: center;
-      padding: 14px 0;
-      font-weight: 500;
-      font-size: 15.5px;
-      letter-spacing: -0.3px;
-      color: #000;
-      background-color: #fff;
-      text-decoration: none;
-      border-right: 1px solid #eee;
-      transition: background-color 0.2s ease, color 0.2s ease;
-      display: block;
-    }
-
-    .menu-tab:last-child {
-      border-right: none;
-    }
-
-    .menu-tab:hover {
-      background-color: #f8f9fa;
-      color: #d50032;
-    }
-
-    .menu-tab.active {
-      background-color: #d50032;
-      color: #fff !important;
-      font-weight: 600;
-    }
-  </style>
 
 </th:block>
