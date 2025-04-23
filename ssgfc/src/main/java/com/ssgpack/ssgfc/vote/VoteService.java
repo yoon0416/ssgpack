@@ -27,14 +27,22 @@ public class VoteService {
         VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId).orElseThrow();
         return voteContentRepository.findByVoteTitle(voteTitle);
     }
-    
-    public Map<String, Long> getVoteResult(VoteTitle voteTitle) {
+
+    //  득표 수 + 퍼센트 표시
+    public Map<String, String> getVoteResult(VoteTitle voteTitle) {
         List<VoteContent> contents = voteContentRepository.findByVoteTitle(voteTitle);
-        Map<String, Long> result = new LinkedHashMap<>();
+        Map<String, String> result = new LinkedHashMap<>();
+
+        long totalVotes = contents.stream()
+                .mapToLong(userVoteRepository::countByVoteContent)
+                .sum();
 
         for (VoteContent content : contents) {
-            Long count = userVoteRepository.countByVoteContent(content);
-            result.put(content.getContent(), count);
+            long count = userVoteRepository.countByVoteContent(content);
+            String percentage = (totalVotes > 0)
+                    ? String.format("%.0f%%", (count * 100.0) / totalVotes)
+                    : "0%";
+            result.put(content.getContent(), count + "표 (" + percentage + ")");
         }
 
         return result;
@@ -64,4 +72,8 @@ public class VoteService {
 
         userVoteRepository.save(userVote);
     }
+    public long getVoteCount(VoteContent content) {
+        return userVoteRepository.countByVoteContent(content);
+    }
+
 }

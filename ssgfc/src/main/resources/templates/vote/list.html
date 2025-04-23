@@ -1,24 +1,32 @@
-<!-- templates/vote/list.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-<title>투표 목록</title>
+    <title>투표 목록</title>
 </head>
 
 <body>
-	<section layout:fragment="content">
-		<div class="container mt-4">
-			<h2>투표 목록</h2>
-			<div class="mb-3">
-				<a class="btn btn-success" href="/vote/create">+ 투표 생성</a>
-			</div>
-			<ul class="list-group">
-				<li class="list-group-item" th:each="vote : ${votes}"><a
-					th:href="@{|/vote/${vote.id}|}" th:text="${vote.title}">투표 제목</a></li>
-			</ul>
-		</div>
-	</section>
+<section layout:fragment="content">
+    <div class="container mt-4" style="max-width: 700px;">
+        <h2 class="fw-bold border-bottom pb-2 mb-4">🗳️ 투표 목록</h2>
+
+        <!-- 투표 생성 버튼 (오른쪽 정렬) -->
+        <div class="mb-3 text-end">
+            <a class="btn btn-outline-dark" href="/vote/create">+ 투표 생성</a>
+        </div>
+
+        <!-- 투표 리스트 -->
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                th:each="vote : ${votes}">
+                <a th:href="@{|/vote/${vote.id}|}" th:text="${vote.title}" class="text-decoration-none text-dark fw-bold">
+                    투표 제목
+                </a>
+                <span class="text-muted small" th:text="${#temporals.format(vote.createDate, 'yyyy.MM.dd')}">날짜</span>
+            </li>
+        </ul>
+    </div>
+</section>
 </body>
 </html>
