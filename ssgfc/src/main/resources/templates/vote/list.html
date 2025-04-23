@@ -1,32 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{fragments/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
 <head>
-    <title>투표 목록</title>
+<title>투표 목록</title>
 </head>
 
 <body>
-<section layout:fragment="content">
-    <div class="container mt-4" style="max-width: 700px;">
-        <h2 class="fw-bold border-bottom pb-2 mb-4">🗳️ 투표 목록</h2>
+	<section layout:fragment="content">
+		<div class="container mt-4" style="max-width: 700px;">
+			<h2 class="fw-bold border-bottom pb-2 mb-4">🗳️ 투표 목록</h2>
 
-        <!-- 투표 생성 버튼 (오른쪽 정렬) -->
-        <div class="mb-3 text-end">
-            <a class="btn btn-outline-dark" href="/vote/create">+ 투표 생성</a>
-        </div>
+			<!-- 투표 생성 버튼 -->
+			<div class="mb-3"
+				sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
+				<a class="btn btn-success" href="/vote/create">+ 투표 생성</a>
+			</div>
 
-        <!-- 투표 리스트 -->
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center"
-                th:each="vote : ${votes}">
-                <a th:href="@{|/vote/${vote.id}|}" th:text="${vote.title}" class="text-decoration-none text-dark fw-bold">
-                    투표 제목
-                </a>
-                <span class="text-muted small" th:text="${#temporals.format(vote.createDate, 'yyyy.MM.dd')}">날짜</span>
-            </li>
-        </ul>
-    </div>
-</section>
+			<!-- 투표 리스트 -->
+			<ul class="list-group">
+				<li class="list-group-item d-flex justify-content-between align-items-center"
+					th:each="vote : ${votes}">
+
+					<a th:href="@{|/vote/${vote.id}|}"
+					   th:text="${vote.title}"
+					   class="text-decoration-none text-dark fw-bold">투표 제목</a>
+
+					<div class="d-flex align-items-center">
+						<span class="text-muted small me-2"
+							  th:text="${#temporals.format(vote.createDate, 'yyyy.MM.dd')}">날짜</span>
+
+						<!-- 삭제 버튼: 관리자만 보이도록 -->
+						<form th:action="@{|/vote/delete/${vote.id}|}" method="post"
+							  sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
+							<button type="submit" class="btn btn-sm btn-danger"
+							        onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+						</form>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</section>
 </body>
 </html>
