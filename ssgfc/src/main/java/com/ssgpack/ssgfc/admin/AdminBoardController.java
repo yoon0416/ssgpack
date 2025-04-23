@@ -1,9 +1,17 @@
 package com.ssgpack.ssgfc.admin;
 
+import java.io.IOException;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssgpack.ssgfc.board.board.Board;
 import com.ssgpack.ssgfc.board.board.BoardService;
@@ -52,8 +60,10 @@ public class AdminBoardController {
 
     // 🔹 관리자용 게시글 수정 처리
     @PostMapping("/edit/{id}")
-    public String adminBoardEdit(@PathVariable Long id, @ModelAttribute Board board) {
-        boardService.update(id, board);
+    public String adminBoardEdit(@PathVariable Long id,
+                                 @ModelAttribute Board board,
+                                 @RequestParam("file") MultipartFile file) throws IOException {
+        boardService.update(id, board, file);
         return "redirect:/admin/board/view/" + id;
     }
 
@@ -80,11 +90,12 @@ public class AdminBoardController {
 
     // 🔹 관리자용 글쓰기 처리
     @PostMapping("/write")
-    public String adminBoardWrite(@ModelAttribute Board board, 
-                                  @AuthenticationPrincipal CustomUserDetails userDetails) {
-        board.setIp(); // IP 설정
-        board.setUser(userDetails.getUser()); // 🔥 작성자 설정
-        boardService.insert(board, userDetails.getUser().getId());
+    public String adminBoardWrite(@ModelAttribute Board board,
+                                  @RequestParam("file") MultipartFile file,
+                                  @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+        board.setIp();
+        board.setUser(userDetails.getUser());
+        boardService.insert(board, userDetails.getUser().getId(), file);
         return "redirect:/admin/board";
     }
 

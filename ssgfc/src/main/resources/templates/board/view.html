@@ -26,7 +26,7 @@
 
         <!-- 이미지 -->
         <div th:if="${board.img != null}">
-            <img th:src="@{'/uploads/' + ${board.img}}" alt="이미지" class="img-fluid mb-4">
+            <img  th:src="@{'/images/board/' + ${board.img}}" alt="이미지" class="img-fluid mb-4">
         </div>
 
         <!-- 좋아요 기능 -->

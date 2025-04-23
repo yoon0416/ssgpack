@@ -28,13 +28,17 @@
             <div class="text-danger" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
         </div>
 
+        <!-- 기존 이미지 미리보기 -->
+        <div class="mb-3" th:if="${board.img != null}">
+            <label class="form-label">현재 이미지</label><br>
+            <img th:src="@{'/images/board/' + ${board.img}}" alt="기존 이미지" class="img-thumbnail" width="200">
+        </div>
+
         <!-- 이미지 수정 -->
         <div class="mb-3">
             <label for="file" class="form-label">이미지 수정</label>
             <input type="file" id="file" name="file" class="form-control">
         </div>
-
-        <!-- 작성자 ID 입력 칸 제거됨 -->
 
         <div class="d-flex justify-content-between">
             <a th:href="@{/board/list}" class="btn btn-secondary">목록으로</a>
