@@ -65,8 +65,10 @@
       <a class="menu-tab" href="#">쓱일정</a>
       <a class="menu-tab" th:href="@{/board/list}"
          th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
+ 
       <a class="menu-tab" th:href="@{/vote}"
       	th:classappend="${#request.requestURI.startsWith('/vote')} ? 'active'">투표</a>
+
       <a class="menu-tab" href="#">오늘 경기요약</a>
       <a class="menu-tab" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">야구장 날씨</a>
     </div>
