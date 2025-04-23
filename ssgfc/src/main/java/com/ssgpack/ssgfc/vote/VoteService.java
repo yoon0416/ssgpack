@@ -75,5 +75,13 @@ public class VoteService {
     public long getVoteCount(VoteContent content) {
         return userVoteRepository.countByVoteContent(content);
     }
+    
+    public void deleteVote(Long voteTitleId) {
+        VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 투표가 존재하지 않습니다."));
+
+        voteTitleRepository.delete(voteTitle);
+    }
+
 
 }

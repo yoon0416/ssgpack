@@ -119,4 +119,16 @@ public class VoteController {
             throw new AccessDeniedException("투표 생성 권한이 없습니다.");
         }
     }
+    
+ // 투표 삭제 (관리자만 가능)
+    @PostMapping("/delete/{id}")
+    public String deleteVote(@AuthenticationPrincipal CustomUserDetails userDetails,
+                             @PathVariable Long id) {
+        checkVoteAuthority(userDetails.getUser());
+
+        voteService.deleteVote(id);
+
+        return "redirect:/vote";
+    }
+
 }
