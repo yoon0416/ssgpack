@@ -2,7 +2,11 @@ package com.ssgpack.ssgfc.user;
 
 import java.util.List;
 
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -99,7 +103,31 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public Page<User> getUserList(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
+        return userRepository.searchByKeyword(keyword, pageable);
+    }
 
+    /*@Bean
+    public CommandLineRunner initDummyUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            for (int i = 1; i <= 30; i++) {
+                String email = "dummy" + i + "@test.com";
+                if (userRepository.findByEmail(email).isPresent()) continue; // 중복 이메일 건너뛰기
+
+                User user = new User();
+                user.setEmail(email);
+                user.setNick_name("유저" + i);
+                user.setPwd(passwordEncoder.encode("1234"));
+                user.setIp("127.0.0.1");
+                user.setRole(5);
+                userRepository.save(user);
+            }
+        };
+    }
+*/
 
     
 }

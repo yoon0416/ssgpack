@@ -1,6 +1,7 @@
 package com.ssgpack.ssgfc.user;
 
 import java.security.Principal;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class UserController {
@@ -160,5 +163,34 @@ public class UserController {
         return "redirect:/user/login?updated=true";
     }
 
+ // 비밀번호 재발급 폼 출력
+    @GetMapping("/user/password-reset")
+    public String passwordResetForm() {
+        return "user/password-reset"; // templates/user/password-reset.html
+    }
+
+    // 비밀번호 재발급 처리
+    @PostMapping("/user/password-reset")
+    public String passwordResetSubmit(@RequestParam("email") String email, Model model) {
+        try {
+            // 이메일 존재 여부 확인
+            User user = service.findByEmail(email);
+
+            // 임시 비밀번호 생성 (예: 10자리 알파벳+숫자) 이메일은 tempPassword로 보내야함 안그러면 원본이 아닌 암호화 된 비번 유저가 받음
+            String tempPassword = UUID.randomUUID().toString().substring(0, 10);
+
+            // 임시 비밀번호 암호화 후 저장
+            user.setPwd(new BCryptPasswordEncoder().encode(tempPassword));
+            service.update(user.getId(), user); // update 메서드는 기존에 구현돼 있어야 함
+
+            // TODO: 추후 이메일로 tempPassword 전송
+            model.addAttribute("message", "임시 비밀번호가 발급되었습니다. (추후 이메일 발송 예정)");
+
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", "해당 이메일로 가입된 사용자가 없습니다.");
+        }
+
+        return "user/password-reset";
+    }
 
 }

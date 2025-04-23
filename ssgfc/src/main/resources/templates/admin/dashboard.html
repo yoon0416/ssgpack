@@ -43,10 +43,7 @@
         <div class="admin-box">
             <div class="admin-title">관리자 대시보드</div>
             <div class="admin-buttons">
-
-                <!-- 마스터 관리자 전용 -->
-                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'')')}" th:href="@{/admin/master}" >👑 마스터 관리자 페이지</a>
-
+                
                 <!-- 유저 관리자 -->
                 <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_USER_MANAGER'')')}" th:href="@{/admin/user/list}">👤 유저 관리</a>
 
