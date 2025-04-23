@@ -55,6 +55,12 @@ public class Player {
 
     private String teams;
     
+    private String position;
+    
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PlayerStat> stats = new ArrayList<>();

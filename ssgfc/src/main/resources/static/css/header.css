@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+    .banner-wrapper {
+      margin-bottom: 36px; /* ✅ 배너 아래 간격 */
+    }
+
+    .menu-bar-wrapper {
+      margin-top: 0px; /* ✅ 메뉴 위쪽 간격 제거 */
+    }
+
+    .menu-bar {
+      display: flex;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .menu-tab {
+      flex: 1;
+      text-align: center;
+      padding: 14px 0;
+      font-weight: 500;
+      font-size: 15.5px;
+      letter-spacing: -0.3px;
+      color: #000;
+      background-color: #fff;
+      text-decoration: none;
+      border-right: 1px solid #eee;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      display: block;
+    }
+
+    .menu-tab:last-child {
+      border-right: none;
+    }
+
+    .menu-tab:hover {
+      background-color: #f8f9fa;
+      color: #d50032;
+    }
+
+    .menu-tab.active {
+      background-color: #d50032;
+      color: #fff !important;
+      font-weight: 600;
+    }
