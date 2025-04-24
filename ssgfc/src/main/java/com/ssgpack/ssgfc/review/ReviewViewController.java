@@ -23,4 +23,8 @@ public class ReviewViewController {
 
         return "review_today"; // templates/review_today.html
     }
+    @GetMapping("/admin/review")
+    public String adminReviewPage() {
+        return "admin/review/review";  // 이게 맞아야 templates/admin/review/review.html 보여짐
+    }
 }

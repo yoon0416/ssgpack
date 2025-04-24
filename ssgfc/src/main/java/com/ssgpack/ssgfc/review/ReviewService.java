@@ -1,19 +1,20 @@
 package com.ssgpack.ssgfc.review;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Transactional
@@ -56,6 +57,7 @@ public class ReviewService {
 
                 System.out.println("✅ 크롤링 데이터 수: " + etcRecords.size());
 
+                Set<String> uniqueKeys = new HashSet<>();
                 List<Review> reviewList = new ArrayList<>();
 
                 String dateStr = game_url.substring(0, 8);
@@ -67,6 +69,10 @@ public class ReviewService {
                     String how = obj.has("how") ? obj.get("how").getAsString() : "";
                     String result = obj.has("result") ? obj.get("result").getAsString() : "";
 
+                    String key = how + "::" + result;
+                    if (uniqueKeys.contains(key)) continue; // ✅ 중복이면 무시
+                    uniqueKeys.add(key);
+
                     Review review = new Review();
                     review.setHow(how);
                     review.setResult(result);
@@ -76,13 +82,33 @@ public class ReviewService {
                     reviewList.add(review);
                 }
 
-                // GPT 요약용 프롬프트 생성
-                StringBuilder combined = new StringBuilder();
+                // ✅ 항목별로 3개씩 묶어서 줄바꿈 적용 (백엔드 포맷팅)
+                Map<String, List<String>> grouped = new LinkedHashMap<>();
                 for (Review r : reviewList) {
-                    combined.append("[").append(r.getHow()).append("] ").append(r.getResult()).append("\n");
+                    grouped.computeIfAbsent(r.getHow(), k -> new ArrayList<>()).add(r.getResult());
                 }
 
-                String prompt = "다음은 야구 경기 기록입니다. 이모지 쓰지않고 SSG팬 입장에서의 경기 요약 한줄평\n" + combined;
+                StringBuilder combined = new StringBuilder();
+                for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
+                    combined.append("[").append(entry.getKey()).append("] ");
+                    List<String> results = entry.getValue();
+                    for (int i = 0; i < results.size(); i++) {
+                        combined.append(results.get(i));
+                        if (i < results.size() - 1) {
+                            combined.append(" ");
+                        }
+                        if ((i + 1) % 3 == 0 && i != results.size() - 1) {
+                            combined.append("\n                    ");
+                        }
+                    }
+                    combined.append("\n");
+                }
+
+                String prompt = "다음은 SSG 랜더스 야구 경기 주요 기록입니다.\n" +
+                        "이모지 없이, SSG 팬의 시점에서 50자 이내로 간결한 한줄 요약을 작성하세요.\n" +
+                        "**주의: 'SSG 팬 입장에서' 같은 문장은 포함하지 마세요.**\n" +
+                        "직접적인 요약 문장만 결과로 반환하세요.\n\n" + combined;
+
                 System.out.println("📝 생성된 프롬프트 내용:\n" + prompt);
 
                 try {
@@ -93,7 +119,6 @@ public class ReviewService {
                         r.setSummary(summary);
                         System.out.println("✅ 실제 저장될 리뷰 확인: " + r.getGameUrl() + " / " + r.getSummary());
 
-                        // ✅ 중복 저장 방지 후 저장
                         if (!reviewRepository.existsByGameUrlAndHowAndResult(r.getGameUrl(), r.getHow(), r.getResult())) {
                             reviewRepository.save(r);
                         }
@@ -109,5 +134,9 @@ public class ReviewService {
         return reviewRepository.findFirstByGameDate(date)
                 .map(Review::getSummary)
                 .orElse("요약 정보가 없습니다.");
+    }
+
+    public List<Review> findByGameDate(LocalDate date) {
+        return reviewRepository.findAllByGameDate(date);
     }
 }
