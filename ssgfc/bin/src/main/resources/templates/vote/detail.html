@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>투표</title>
+</head>
+
+<body>
+<section layout:fragment="content">
+    <div class="container mt-4">
+        <h2>투표</h2>
+
+        <!-- ✅ 투표 이미지 출력 -->
+        <div th:if="${contents != null and !contents.isEmpty()}">
+            <img th:if="${contents[0].voteTitle.img != null}"
+                 th:src="@{'/images/vote/' + ${contents[0].voteTitle.img}}"
+                 class="img-fluid rounded mb-4"
+                 alt="투표 이미지"
+                 style="max-height: 300px; object-fit: cover;">
+        </div>
+
+        <h3 class="mt-4">실시간 투표 현황</h3>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>선택지</th>
+                <th>득표 수</th>
+                <th>비율 (%)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${contents}">
+                <td th:text="${entry.content}">선택지</td>
+                <td th:text="${#lists.size(entry.userVotes)} + '표'">0표</td>
+                <td th:text="${totalVotes == 0 ? '0%' : ((#lists.size(entry.userVotes) * 100) / totalVotes) + '%'}">0%</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <form method="post" th:action="@{/vote/submit}">
+            <input type="hidden" name="voteTitleId" th:value="${voteTitleId}" />
+
+            <div class="form-check" th:each="content : ${contents}">
+                <input class="form-check-input" type="radio" name="voteContentId"
+                       th:value="${content.id}" id="opt-[[${content.id}]]" />
+                <label class="form-check-label" th:for="'opt-' + ${content.id}"
+                       th:text="${content.content}">선택지</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">투표하기</button>
+        </form>
+
+        <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
+    </div>
+</section>
+</body>
+</html>

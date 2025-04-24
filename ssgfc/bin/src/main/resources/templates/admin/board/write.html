@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>공지사항 작성</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+<div class="container mt-5">
+    <h2 class="mb-4">📢 공지사항 작성</h2>
+
+    <form th:action="@{/admin/board/write}" method="post">
+        <div class="mb-3">
+            <label>제목</label>
+            <input type="text" name="title" class="form-control" th:value="${board.title}">
+        </div>
+        <div class="mb-3">
+            <label>내용</label>
+            <textarea name="content" class="form-control" rows="10" th:text="${board.content}"></textarea>
+        </div>
+        <button type="submit" class="btn btn-danger">작성 완료</button>
+        <a th:href="@{/admin/board}" class="btn btn-secondary">목록</a>
+    </form>
+</div>
+</th:block>
+</body>
+</html>
