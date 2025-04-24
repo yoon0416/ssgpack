@@ -25,84 +25,107 @@ public class UserService implements UserDetailsService {
     @Lazy
     private final PasswordEncoder passwordEncoder;
 
-    //  로그인 인증 처리 (Spring Security가 호출)
+    // 로그인 인증 처리
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() -> new UsernameNotFoundException("잘못된 로그인 정보입니다."));
-        return new CustomUserDetails(user); // ← 커스텀 UserDetails로 감싸서 리턴
+        return new CustomUserDetails(user);
     }
 
-    //  회원가입 (비밀번호 암호화 + IP + 기본 권한)
+    // 회원가입 처리 (비밀번호 암호화 + IP + 기본 권한 부여)
     public User insertMember(User user) {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
-        user.setIp();         // IP 자동 저장
-        user.setRole(5);      // 디폴트값 5 멤버
+        user.setIp();
+        user.setRole(5);
         return userRepository.save(user);
     }
 
-    //  전체 유저 조회
+    // 전체 유저 조회
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    //  ID 기준 유저 조회
+    // ID로 유저 조회
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + id));
     }
 
-    //  이메일 기준 유저 조회
+    // 이메일로 유저 조회
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
     }
 
-    //유저정보 업데이트
+    // 관리자 전용 유저 업데이트
     public User update(Long id, User updatedUser) {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
 
-        // 비밀번호가 비어있지 않으면만 변경
         if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
             user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
         }
 
-        user.setIp(updatedUser.getIp()); // 필요 시 유지 or 생략 가능
+        user.setIp(updatedUser.getIp());
         user.setRole(updatedUser.getRole());
 
         return user;
     }
 
-
-    //  유저 삭제
+    // 유저 삭제 (관리자용)
     public void delete(Long id) {
         userRepository.deleteById(id);
     }
-    
-    //  마이페이지 정보 수정 (닉네임 / 비번만)
+
+    // 유저 탈퇴 (자기 자신 삭제용)
+    public void deleteByUser(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    // 마이페이지 수정 (이메일 / 닉네임만 변경)
     public void updateUser(Long id, User updatedUser) {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
 
-        //  이메일이 바뀌었는지 확인
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
-            //  이미 존재하는 이메일인지 확인
             if (userRepository.findByEmail(newEmail).isPresent()) {
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
         }
 
-        //  비밀번호 입력된 경우에만 변경
-        if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
-            user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
+        // 비밀번호는 여기서 절대 수정하지 않음
+    }
+
+    // 마이페이지 수정 (현재 비밀번호 확인 포함 + 이메일/닉네임/비밀번호 모두 수정 가능)
+    public void updateUserWithPasswordCheck(Long id, String currentPassword, User updatedUser) {
+        User user = findById(id);
+
+        if (!passwordEncoder.matches(currentPassword, user.getPwd())) {
+            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        user.setNick_name(updatedUser.getNick_name());
+
+        String newEmail = updatedUser.getEmail().trim();
+        if (!newEmail.equals(user.getEmail())) {
+            if (userRepository.findByEmail(newEmail).isPresent()) {
+                throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+            }
+            user.setEmail(newEmail);
+        }
+
+        String newPwd = updatedUser.getPwd();
+        if (newPwd != null && !newPwd.trim().isEmpty()) {
+            user.setPwd(passwordEncoder.encode(newPwd));
         }
     }
 
+    // 키워드로 검색 및 페이징 처리
     public Page<User> getUserList(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return userRepository.findAll(pageable);
@@ -110,12 +133,19 @@ public class UserService implements UserDetailsService {
         return userRepository.searchByKeyword(keyword, pageable);
     }
 
-    /*@Bean
+    // 비밀번호 일치 여부 확인
+    public boolean checkPassword(User user, String rawPassword) {
+        return passwordEncoder.matches(rawPassword, user.getPwd());
+    }
+
+    /*
+    // 더미 유저 자동 생성 (초기 개발 시 테스트용)
+    @Bean
     public CommandLineRunner initDummyUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             for (int i = 1; i <= 30; i++) {
                 String email = "dummy" + i + "@test.com";
-                if (userRepository.findByEmail(email).isPresent()) continue; // 중복 이메일 건너뛰기
+                if (userRepository.findByEmail(email).isPresent()) continue;
 
                 User user = new User();
                 user.setEmail(email);
@@ -127,7 +157,5 @@ public class UserService implements UserDetailsService {
             }
         };
     }
-*/
-
-    
+    */
 }

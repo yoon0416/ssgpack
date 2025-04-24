@@ -67,7 +67,7 @@ public class KakaoLoginController {
         User user = new User();
         user.setEmail(email);
         user.setNick_name(nickname);
-        user.setPwd(passwordEncoder.encode("kakao_oauth"));
+        user.setPwd(passwordEncoder.encode("1234"));
         user.setKakaoId(kakaoId);
         user.setIp();
         user.setRole(5);
