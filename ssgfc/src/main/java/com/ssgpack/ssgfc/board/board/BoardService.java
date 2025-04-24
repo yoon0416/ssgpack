@@ -1,6 +1,7 @@
 package com.ssgpack.ssgfc.board.board;
 
 import com.ssgpack.ssgfc.util.UtilUpload;
+import com.ssgpack.ssgfc.board.like.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,7 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,6 +26,9 @@ public class BoardService {
 
     @Autowired
     private UtilUpload utilUpload;
+
+    @Autowired
+    private LikeService likeService;
 
     // ✅ 전체 게시글 최신순 정렬 조회 (비페이징)
     public List<Board> findAll() {
@@ -41,12 +49,17 @@ public class BoardService {
         return br.count();
     }
 
-    // ✅ 게시글 상세 조회 + 조회수 증가
+    // ✅ 게시글 상세 조회 (조회수 증가 로직은 Controller에서 분리함)
     public Board find(Long id) {
-        Board bd = br.findById(id).orElseThrow();
-        bd.setHit(bd.getHit() + 1);
-        br.save(bd);
-        return bd;
+        return br.findById(id).orElseThrow();
+    }
+
+    // ✅ 조회수 증가 메서드 (세션 기반 중복 방지용으로 Controller에서 호출)
+    public void increaseViewCount(Long id) {
+        Board board = br.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        board.setHit(board.getHit() + 1); // hit: 조회수 필드
+        br.save(board);
     }
 
     // ✅ 게시글 저장
@@ -86,5 +99,24 @@ public class BoardService {
         }
 
         br.save(board);
+    }
+
+    // ✅ 인기글 조회 (혼합 점수: 조회수 + 좋아요 + 시간 보정)
+    public List<Board> getPopularBoards(int limit) {
+        List<Board> boards = br.findAll();
+
+        return boards.stream()
+                .map(board -> {
+                    long likeCount = likeService.countByBoard(board);
+                    long hit = board.getHit();
+                    long hours = Duration.between(board.getCreateDate(), LocalDateTime.now()).toHours();
+                    double timeScore = Math.max(0, 48 - hours) * 0.5;
+                    double score = (hit / 10.0) + (likeCount * 3) + timeScore;
+                    board.setScore(score); // 필요 시 score 필드를 Board에 추가
+                    return board;
+                })
+                .sorted(Comparator.comparingDouble(Board::getScore).reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 }

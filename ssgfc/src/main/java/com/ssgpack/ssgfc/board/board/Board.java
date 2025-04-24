@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import com.ssgpack.ssgfc.board.comment.Comment;
@@ -27,7 +28,6 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(exclude = "user")
-
 public class Board {
 	//PK
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,6 +57,21 @@ public class Board {
 	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Comment> comments = new ArrayList<>();
 	
+	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+	private List<Like> likes;
+
+	// ✅ 인기글 점수 (DB에 저장되지 않음)
+	@Transient
+	private double score;
+
+	public double getScore() {
+		return score;
+	}
+
+	public void setScore(double score) {
+		this.score = score;
+	}
+
 	//ip생성하는 생성자
 	public void setIp() {
 		try {
@@ -66,7 +81,4 @@ public class Board {
 			this.ip = null;
 		}
 	}
-	
-	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
-	private List<Like> likes;
-}
+} 
