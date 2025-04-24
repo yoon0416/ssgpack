@@ -96,6 +96,12 @@
         <tbody></tbody>
       </table>
     </div>
+    
+    <!-- ✅ AI 선수 한줄평: 항상 맨 아래 고정 -->
+    <div id="aiSummarySection" style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+      <h4 style="margin-bottom: 10px;">🧠 AI 선수 한줄평</h4>
+      <p id="playerSummary" style="font-size: 15px; color: #333;">요약 정보를 불러오는 중입니다...</p>
+    </div>
   </div>
 
   <script>
@@ -186,6 +192,9 @@
           if (!hasHitter) document.getElementById('hitterSection').style.display = 'none';
           if (!hasCatcher) document.getElementById('catcherSection').style.display = 'none';
           if (!hasPitcher) document.getElementById('pitcherSection').style.display = 'none';
+          
+       // ✅ AI 한줄평 표시
+          document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
 
         })
         .catch(err => {
