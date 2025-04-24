@@ -20,35 +20,24 @@ public class CommentController {
     private final CommentService commentService;
     private final BoardService boardService;
 
-    // ✅ 댓글 저장
+    // ✅ 댓글 저장 (원댓글 & 대댓글 공통 처리)
     @PostMapping("/add")
     public String addComment(@PathVariable Long boardId,
                              @RequestParam String content,
+                             @RequestParam(required = false) Long parentId,
                              @AuthenticationPrincipal CustomUserDetails userDetails,
                              HttpServletRequest request) {
 
-        // 🔐 로그인 유저
         User user = userDetails.getUser();
-
-        // 🧩 게시글 찾기
         Board board = boardService.findById(boardId);
 
-        // 🌐 실제 IP 가져오기
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
         }
 
-        // 💬 댓글 생성
-        Comment comment = Comment.builder()
-                .content(content)
-                .user(user)
-                .board(board)
-                .ip(ip)
-                .build();
-
-        // 💾 저장
-        commentService.save(comment);
+        // ✅ 원댓글이든 대댓글이든 service에서 parentId 처리
+        commentService.saveComment(boardId, user, content, ip, parentId);
 
         return "redirect:/board/view/" + boardId;
     }
