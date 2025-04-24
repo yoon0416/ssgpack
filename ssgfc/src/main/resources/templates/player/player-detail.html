@@ -49,13 +49,18 @@
 <th:block layout:fragment="content">
 
   <div class="container my-5 p-4 bg-white shadow-sm rounded">
-
+	<p id="viewCount" style="font-size: 14px; color: gray;">조회수: 0</p>
     <div style="display: flex; align-items: center; gap: 25px;">
+     
       <img id="playerImage" src="" alt="선수 이미지"
            style="width: 160px; height: 210px; object-fit: contain; background-color: white; align-self: flex-end;" />
+      
+	       
       <div>
+      
         <h1 id="playerName" style="margin: 0 0 10px 0; font-size: 24px;">선수 이름</h1>
         <h3 id="playerPosition" style="margin: 0 0 10px 0; font-size: 16px; color:red">포지션</h3>
+        
         <p id="playerInfo" style="margin: 0; font-size: 16px; color: #555;">선수 기본 정보 표시 예정</p>
       </div>
     </div>
@@ -98,7 +103,8 @@
       const pathParts = window.location.pathname.split("/");
       const pNo = pathParts[pathParts.length - 1];
 
-      fetch(`/api/players/${pNo}`)
+      fetch(`/api/players/${pNo}?t=${Date.now()}`)
+
         .then(res => res.json())
         .then(player => {
           console.log("✅ 선수 데이터:", player);
@@ -116,6 +122,7 @@
               <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
             </table>
           `;
+		  document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
 
           const imgEl = document.getElementById('playerImage');
           if (imgEl && player.imageUrl) {

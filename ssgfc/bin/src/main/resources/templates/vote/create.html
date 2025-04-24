@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>투표 생성</title>
+    <script>
+        function addOption() {
+            const optionContainer = document.getElementById("options");
+            const index = optionContainer.children.length;
+
+            const div = document.createElement("div");
+            div.className = "mb-2";
+
+            const label = document.createElement("label");
+            label.innerText = "선택지 " + (index + 1);
+            label.setAttribute("for", "contents" + index);
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.name = "contents[" + index + "]";
+            input.className = "form-control";
+            input.id = "contents" + index;
+
+            div.appendChild(label);
+            div.appendChild(input);
+            optionContainer.appendChild(div);
+        }
+    </script>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="container mt-4" style="max-width: 600px;">
+        <h2 class="mb-4 fw-bold border-bottom pb-2">🗳️ 투표 생성</h2>
+
+        <!-- ✅ 이미지 업로드를 위해 enctype 속성 추가 -->
+        <form method="post"
+              th:action="@{/vote/create}"
+              th:object="${form}"
+              enctype="multipart/form-data">
+
+            <!-- ✅ 제목 입력 -->
+            <div class="mb-3">
+                <label for="title" class="form-label">투표 제목</label>
+                <input type="text" th:field="*{title}" class="form-control" id="title" placeholder="예) SSG 선수 중 최고의 수비수는?">
+            </div>
+
+            <!-- ✅ 이미지 업로드 필드 -->
+            <div class="mb-3">
+                <label for="img" class="form-label">이미지 업로드 (선택)</label>
+                <input type="file" class="form-control" id="img" name="img" accept="image/*">
+            </div>
+
+            <!-- ✅ 선택지 입력 -->
+            <div id="options">
+                <div class="mb-2" th:each="content, iterStat : *{contents}">
+                    <label th:for="'contents' + ${iterStat.index}" class="form-label">선택지 [[${iterStat.index + 1}]]</label>
+                    <input type="text"
+                           th:field="*{contents[__${iterStat.index}__]}"
+                           class="form-control"
+                           th:id="'contents' + ${iterStat.index}">
+                </div>
+            </div>
+
+            <!-- ✅ 버튼 -->
+            <div class="d-flex justify-content-between mt-3">
+                <button type="button" class="btn btn-outline-secondary" onclick="addOption()">+ 선택지 추가</button>
+                <button type="submit" class="btn btn-dark">투표 만들기</button>
+            </div>
+        </form>
+    </div>
+</section>
+</body>
+</html>

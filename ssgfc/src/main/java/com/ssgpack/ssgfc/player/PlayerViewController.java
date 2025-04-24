@@ -30,4 +30,5 @@ public class PlayerViewController {
         model.addAttribute("pNo", pNo);
         return "player/player-detail";
     }
+    
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>사용자 상세보기</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+<div class="container mt-5">
+    <h2 class="mb-4">👤 사용자 상세정보</h2>
+
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th scope="row">ID</th>
+                <td th:text="${user.id}">1</td>
+            </tr>
+            <tr>
+                <th scope="row">이메일</th>
+                <td th:text="${user.email}">email@example.com</td>
+            </tr>
+            <tr>
+                <th scope="row">닉네임</th>
+                <td th:text="${user.nick_name}">닉네임</td>
+            </tr>
+            <tr>
+                <th scope="row">가입일</th>
+                <td th:text="${#temporals.format(user.createDate, 'yyyy-MM-dd HH:mm')}">2025-04-22</td>
+            </tr>
+            <tr>
+                <th scope="row">권한</th>
+                <td th:text="${user.role}">5</td>
+            </tr>
+            <tr>
+                <th scope="row">IP</th>
+                <td th:text="${user.ip}">192.168.0.1</td>
+            </tr>
+            <tr>
+                <th scope="row">카카오 ID</th>
+                <td th:text="${user.kakaoId != null ? user.kakaoId : '일반 회원'}">null</td>
+            </tr>
+        </tbody>s
+    </table>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a th:href="@{/admin/user/list}" class="btn btn-secondary">목록</a>
+        <a th:href="@{'/admin/user/edit/' + ${user.id}}" class="btn btn-primary">수정</a>
+    </div>
+</div>
+</th:block>
+</body>
+</html>

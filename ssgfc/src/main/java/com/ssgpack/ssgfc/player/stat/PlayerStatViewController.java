@@ -1,13 +1,16 @@
 package com.ssgpack.ssgfc.player.stat;
 
-import com.ssgpack.ssgfc.player.Player;
-import com.ssgpack.ssgfc.player.PlayerRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.List;
+import com.ssgpack.ssgfc.player.Player;
+import com.ssgpack.ssgfc.player.PlayerRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,7 +26,9 @@ public class PlayerStatViewController {
 
         List<PlayerStat> stats = playerStatRepository.findAll();
         model.addAttribute("playerStats", stats);
-
+        
         return "player/player-stat"; // ⇒ templates/player/player-stat.html
     }
+    
+
 }
