@@ -11,5 +11,6 @@ public interface PlayerStatRepository extends JpaRepository<PlayerStat, Long> {
     // List<PlayerStat> findByPlayerId(Long playerId);
 	
 	Optional<PlayerStat> findByPlayerAndSeason(Player player, String season);
+	boolean existsByPlayerAndSeason(Player player, String season);
 
 }
