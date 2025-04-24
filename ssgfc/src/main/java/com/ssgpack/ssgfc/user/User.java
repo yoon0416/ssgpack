@@ -55,7 +55,7 @@ public class User {
  
     
     // 연관 게시글
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Board> board = new ArrayList<>();
 
     // 연관 댓글

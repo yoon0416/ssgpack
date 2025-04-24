@@ -8,24 +8,28 @@
 <body>
 <th:block layout:fragment="content">
     <div class="container mt-5" style="max-width: 600px;">
-        <h2 class="mb-4">✏️ 내 정보 수정</h2>
+        <h2 class="mb-4">내 정보 수정</h2>
 
         <form method="post" th:action="@{/user/mypage/edit}">
+            <!-- 이메일 -->
             <div class="mb-3">
                 <label for="email" class="form-label">이메일</label>
-                <input type="email" id="email" name="email" class="form-control" 
+                <input type="email" id="email" name="email" class="form-control"
                        th:value="${user.email}" required>
             </div>
 
+            <!-- 닉네임 -->
             <div class="mb-3">
                 <label for="nick_name" class="form-label">닉네임</label>
                 <input type="text" id="nick_name" name="nick_name" class="form-control"
                        th:value="${user.nick_name}" required>
             </div>
 
+            <!-- 현재 비밀번호 -->
             <div class="mb-3">
-                <label for="pwd" class="form-label">새 비밀번호</label>
-                <input type="password" id="pwd" name="pwd" class="form-control" placeholder="비밀번호 변경 시 입력">
+                <label for="currentPwd" class="form-label">현재 비밀번호</label>
+                <input type="password" id="currentPwd" name="currentPwd" class="form-control"
+                       required autocomplete="current-password">
             </div>
 
             <div class="text-end">
@@ -34,9 +38,19 @@
             </div>
         </form>
 
-        <!-- 페이지 내에서 에러 메시지 표시 -->
-        <div th:if="${errorMessage}" class="alert alert-danger mt-3" role="alert">
-            <p th:text="${errorMessage}">에러 메시지가 표시됩니다.</p>
+        <!-- 비밀번호 변경 버튼 -->
+        <div class="text-end mt-2">
+            <a th:href="@{/user/password/change}" class="btn btn-outline-warning">비밀번호 변경</a>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div th:if="${errorMessage}" class="alert alert-danger mt-3">
+            <p th:text="${errorMessage}">에러 메시지 표시</p>
+        </div>
+
+        <!-- 성공 메시지 (로그인 페이지에서 쓸 경우) -->
+        <div th:if="${param.updated}" class="alert alert-success mt-3">
+            <p>정보가 수정되었습니다. 다시 로그인해주세요.</p>
         </div>
     </div>
 </th:block>
