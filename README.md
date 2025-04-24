@@ -18,6 +18,7 @@
 - [데이터정규화유튜브](https://youtu.be/Y1FbowQRcmI?si=uGIWDYPTpNVdiFUn)
 - [NF 개념](https://github.com/yoon0416/java_2025/blob/main/NF%EA%B0%9C%EB%85%90.md)
 - [부트스트랩](https://www.w3schools.com/bootstrap/bootstrap_ver.asp)
+- [CoolSMS](https://console.coolsms.co.kr/)
 ---
 
 ## 🔥 주요 기능
