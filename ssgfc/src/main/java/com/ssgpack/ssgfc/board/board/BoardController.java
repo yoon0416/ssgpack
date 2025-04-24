@@ -12,7 +12,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,6 +40,14 @@ public class BoardController {
         model.addAttribute("keyword", keyword);
 
         return "board/list";
+    }
+
+    // ✅ 인기글 리스트 (메인 페이지에 일부만 보여주기)
+    @GetMapping("/popular")
+    public String popular(Model model) {
+        List<Board> popularBoards = boardService.getPopularBoards(3); // 상위 3개
+        model.addAttribute("popularBoards", popularBoards);
+        return "redirect:/"; // 또는 "main" 페이지에 포함될 경우 메인 템플릿으로
     }
 
     // ✅ 글쓰기 폼
@@ -62,12 +74,27 @@ public class BoardController {
         return "redirect:/board/list";
     }
 
-    // ✅ 게시글 상세 조회
+    // ✅ 게시글 상세 조회 + 조회수 제한 (세션 기반)
     @GetMapping("/view/{id}")
     public String view(@PathVariable Long id,
                        @AuthenticationPrincipal CustomUserDetails userDetails,
-                       Model model) {
+                       Model model,
+                       HttpSession session) {
 
+        // ✅ 조회수 중복 방지 로직 (세션 기반)
+        @SuppressWarnings("unchecked")
+        Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
+        if (viewedBoards == null) {
+            viewedBoards = new HashSet<>();
+        }
+
+        if (!viewedBoards.contains(id)) {
+            boardService.increaseViewCount(id);
+            viewedBoards.add(id);
+            session.setAttribute("viewedBoards", viewedBoards);
+        }
+
+        // 기존 로직
         Board board = boardService.find(id);
         model.addAttribute("board", board);
 

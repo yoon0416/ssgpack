@@ -4,17 +4,67 @@
 	layout:decorate="~{fragments/layout}">
 <head>
     <title>SSG 랜더스 커뮤니티</title>
-</head>
-<!-- Latest compiled and minified CSS -->
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<!-- Latest compiled JavaScript -->
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
-  
-<body>
 
+    <!-- ✅ Bootstrap 포함 (디자인용) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container mt-5">
+        <div class="main-grid">
+
+            <!-- 왼쪽 공간 -->
+            <div class="left-box">
+                <h3>📣 최신 소식 또는 공지사항</h3>
+                <p>이곳은 왼쪽 컨텐츠 공간입니다. 이후 다른 게시판이나 배너 등을 추가할 수 있습니다.</p>
+            </div>
+
+            <!-- 오른쪽 공간 -->
+            <div class="right-box">
+
+                <!-- ✅ 인기글 출력 영역 -->
+                <div class="popular-board">
+                    <div class="popular-board-title">🔥 인기글</div>
+                    <table class="table table-sm table-hover">
+                        <tbody>
+                        <tr th:each="board : ${popularBoards}">
+                            <td>
+                                <a th:href="@{'/board/view/' + ${board.id}}" th:text="${board.title}">게시글 제목</a>
+                                <div class="text-muted" style="font-size: 0.8rem;">
+                                    조회수 <span th:text="${board.hit}"></span> · 좋아요 <span th:text="${board.likes.size()}"/>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+				<!-- ✅ latestVote가 있을 경우에만 제목과 이미지 출력 -->
+				<div class="right-lower-box" th:if="${latestVote != null}">
+				    <h4 class="fw-bold" th:text="${latestVote.title}">최신 투표 제목</h4>
+				
+				    <!-- ✅ 이미지 출력 (있을 경우) -->
+				    <img th:if="${latestVote.img != null}"
+				         th:src="@{'/images/vote/' + ${latestVote.img}}"
+				         class="img-fluid rounded mb-2"
+				         alt="투표 이미지"
+				         style="max-height: 150px; object-fit: cover;">
+				
+				    <!-- ✅ 선택지 리스트 -->
+				    <ul class="list-group list-group-flush" th:if="${latestVoteOptions != null}">
+				        <li class="list-group-item"
+				            th:each="opt : ${latestVoteOptions}"
+				            th:text="${opt.content}"
+				            th:onclick="'location.href=\'/vote/' + ${latestVote.id} + '\';'"
+				            style="cursor: pointer;"></li>
+				    </ul>
+				</div>
+
+            </div>
+        </div>
+    </div>
+</th:block>
 </body>
 </html>
