@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>오늘의 경기 요약</title>
+    <link rel="stylesheet" href="/lib/fullcalendar/main.min.css">
+    <link rel="stylesheet" href="/css/review-calendar.css">
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="review-wrapper">
+        <!-- 달력 영역 -->
+        <div class="calendar-box-review">
+            <div id="miniCalendar" class="review-calendar"></div>
+        </div>
+
+        <!-- 수동 입력 영역 -->
+        <div class="summary-box">
+            <h3>크롤링할 날짜 선택</h3>
+            
+            <!-- ✅ gameUrl 수동 입력 -->
+            <div class="record-box">
+                <label for="gameUrlInput">📌 해당 날짜의 gameUrl 입력</label>
+                <input type="text" id="gameUrlInput" placeholder="예: 20250420LGSK02025" class="form-control">
+                <button id="crawlButton" class="btn btn-danger mt-2">수동 크롤링 실행</button>
+                <div id="crawlResult" class="mt-2 text-success"></div>
+            </div>
+            <!-- ✅ AI 한줄평 미리보기 -->
+            <div class="record-box mt-4">
+                <h5>🧠 AI 한줄평 미리보기</h5>
+                <p id="previewText">날짜를 선택하면 미리보기가 여기에 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script src="/lib/fullcalendar/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const calendarEl = document.getElementById('miniCalendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                fixedWeekCount: false,
+                height: 'auto',
+                dayMaxEventRows: true,
+                firstDay: 1,
+                dayCellContent: function (arg) {
+                    const numberOnly = arg.dayNumberText.replace('일', '');
+                    return { html: numberOnly };
+                },
+             // ✅ 날짜 클릭 시 미리보기 요청	
+                dateClick: function (info) {
+                    const date = info.dateStr;
+                    
+                    axios.get(`/api/review-preview?date=${date}`)
+                    .then(res => {
+                        document.getElementById("previewText").textContent = res.data;
+                    })
+                    .catch(() => {
+                        document.getElementById("previewText").textContent = "❌ 요약 미리보기 실패";
+            		});
+                }
+            });
+        
+            calendar.render();
+
+            setTimeout(() => {
+                const dayCells = document.querySelectorAll('#miniCalendar .fc-daygrid-day');
+                dayCells.forEach(cell => {
+                    const dateStr = cell.getAttribute('data-date');
+                    if (dateStr) {
+                        const date = new Date(dateStr);
+                        const day = date.getDay();
+                        if (day === 0) {
+                            cell.classList.add('fc-day-sun');
+                        } else if (day === 6) {
+                            cell.classList.add('fc-day-sat');
+                        }
+                    }
+                });
+            }, 10);
+
+            // ✅ 수동 크롤링 버튼 클릭 이벤트
+            document.getElementById("crawlButton").addEventListener("click", function () {
+                const gameUrl = document.getElementById("gameUrlInput").value;
+                if (!gameUrl) {
+                    alert("gameUrl을 입력하세요.");
+                    return;
+                }
+
+                axios.get(`/api/review-crawl?gameUrl=${gameUrl}`)
+                    .then(res => {
+                        document.getElementById("crawlResult").textContent = res.data;
+                    })
+                    .catch(err => {
+                        document.getElementById("crawlResult").textContent = "❌ 크롤링 실패";
+                    });
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

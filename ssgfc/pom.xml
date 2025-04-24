@@ -122,13 +122,26 @@
     <version>1.15.3</version> <!-- 최신 버전으로 변경 가능 -->
 </dependency> 
 
+<!-- JSON 라이브러리 (org.json) -->
+<dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20230227</version>
+</dependency>
+
       <!-- gson -->
       <dependency>
     <groupId>com.google.code.gson</groupId>
     <artifactId>gson</artifactId>
     <version>2.10.1</version> <!-- 최신 버전 가능 -->
 </dependency>
-      
+
+<!-- okhttp -->
+      <dependency>
+    <groupId>com.squareup.okhttp3</groupId>
+    <artifactId>okhttp</artifactId>
+    <version>4.12.0</version> <!-- 최신 버전 기준 -->
+</dependency>
       
    </dependencies>
 
