@@ -1,7 +1,7 @@
 package com.ssgpack.ssgfc.user;
 
-import java.util.List;
-
+import com.ssgpack.ssgfc.util.UtilUpload;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
@@ -13,8 +13,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final UtilUpload utilUpload;
+
     @Lazy
     private final PasswordEncoder passwordEncoder;
 
-    // 로그인 인증 처리
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email.trim())
@@ -33,7 +36,6 @@ public class UserService implements UserDetailsService {
         return new CustomUserDetails(user);
     }
 
-    // 회원가입 처리 (비밀번호 암호화 + IP + 기본 권한 부여)
     public User insertMember(User user) {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
         user.setIp();
@@ -41,27 +43,22 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    // 전체 유저 조회
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
-    // ID로 유저 조회
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. ID: " + id));
     }
 
-    // 이메일로 유저 조회
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
     }
 
-    // 관리자 전용 유저 업데이트
     public User update(Long id, User updatedUser) {
         User user = findById(id);
-
         user.setNick_name(updatedUser.getNick_name());
 
         if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
@@ -70,21 +67,31 @@ public class UserService implements UserDetailsService {
 
         user.setIp(updatedUser.getIp());
         user.setRole(updatedUser.getRole());
-
         return user;
     }
 
-    // 유저 삭제 (관리자용)
-    public void delete(Long id) {
-        userRepository.deleteById(id);
+    // ✅ 마이페이지 수정 - 소개글, 프사 포함
+    public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
+        User user = findById(id);
+
+        user.setNick_name(updatedUser.getNick_name());
+        user.setIntroduce(updatedUser.getIntroduce());
+
+        String newEmail = updatedUser.getEmail().trim();
+        if (!newEmail.equals(user.getEmail())) {
+            if (userRepository.findByEmail(newEmail).isPresent()) {
+                throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+            }
+            user.setEmail(newEmail);
+        }
+
+        // ✅ 유저 전용 프로필 업로드 메서드로 변경
+        if (file != null && !file.isEmpty()) {
+            String savedName = utilUpload.uploadUserProfile(file); // 폴더경로 자동 내장
+            user.setProfile_img(savedName); // DB에는 파일명만 저장
+        }
     }
 
-    // 유저 탈퇴 (자기 자신 삭제용)
-    public void deleteByUser(Long id) {
-        userRepository.deleteById(id);
-    }
-
-    // 마이페이지 수정 (이메일 / 닉네임만 변경)
     public void updateUser(Long id, User updatedUser) {
         User user = findById(id);
 
@@ -97,11 +104,8 @@ public class UserService implements UserDetailsService {
             }
             user.setEmail(newEmail);
         }
-
-        // 비밀번호는 여기서 절대 수정하지 않음
     }
 
-    // 마이페이지 수정 (현재 비밀번호 확인 포함 + 이메일/닉네임/비밀번호 모두 수정 가능)
     public void updateUserWithPasswordCheck(Long id, String currentPassword, User updatedUser) {
         User user = findById(id);
 
@@ -125,7 +129,14 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    // 키워드로 검색 및 페이징 처리
+    public void delete(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    public void deleteByUser(Long id) {
+        userRepository.deleteById(id);
+    }
+
     public Page<User> getUserList(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return userRepository.findAll(pageable);
@@ -133,29 +144,7 @@ public class UserService implements UserDetailsService {
         return userRepository.searchByKeyword(keyword, pageable);
     }
 
-    // 비밀번호 일치 여부 확인
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPwd());
     }
-
-    /*
-    // 더미 유저 자동 생성 (초기 개발 시 테스트용)
-    @Bean
-    public CommandLineRunner initDummyUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        return args -> {
-            for (int i = 1; i <= 30; i++) {
-                String email = "dummy" + i + "@test.com";
-                if (userRepository.findByEmail(email).isPresent()) continue;
-
-                User user = new User();
-                user.setEmail(email);
-                user.setNick_name("유저" + i);
-                user.setPwd(passwordEncoder.encode("1234"));
-                user.setIp("127.0.0.1");
-                user.setRole(5);
-                userRepository.save(user);
-            }
-        };
-    }
-    */
 }
