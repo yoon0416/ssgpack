@@ -31,47 +31,45 @@ public class BoardService {
     @Autowired
     private LikeService likeService;
 
-    // ✅ 전체 게시글 최신순 정렬 조회 (비페이직)
-    public List<Board> findAll() {
-        return br.findAllByOrderByCreateDateDesc();
+    // ✅ 공지글 전용 조회
+    public List<Board> findNoticeBoards() {
+        return br.findByTitleStartingWithOrderByCreateDateDesc("[공지]");
     }
 
-    // ✅ 공지 제외 페이직 처리 (최신순 정렬 + Page 반환)
+    // ✅ 일반 게시글 최신순 + 페이징 + 검색 처리
     public Page<Board> getPaging(int page, String keyword) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createDate"));
         if (keyword != null && !keyword.trim().isEmpty()) {
             return br.findExcludeNoticeByKeyword(keyword, pageable);
         }
         return br.findExcludeNotice(pageable);
     }
 
-    // ✅ 전체 게시글 수 조회 (페이직 계산용)
+    // ✅ 전체 게시글 수 조회 (페이징 계산용)
     public long getTotalCount() {
         return br.count();
     }
 
-    // ✅ 게시글 상세 조회 (조회수 증가 로직은 Controller에서 분리함)
+    // ✅ 게시글 단건 조회 (조회수 방지용)
     public Board find(Long id) {
         return br.findById(id).orElseThrow();
     }
 
-    // ✅ 조회수 증가 메서드 (세션 기반 중복 방지용으로 Controller에서 호출)
+    // ✅ 조회수 증가 (중복 방지용)
     public void increaseViewCount(Long id) {
         Board board = br.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-        board.setHit(board.getHit() + 1); // hit: 조회수 필드
+        board.setHit(board.getHit() + 1);
         br.save(board);
     }
 
     // ✅ 게시글 저장
     public void insert(Board bd, Long member_id, MultipartFile file) throws IOException {
         bd.setIp();
-
         if (!file.isEmpty()) {
             String savedName = utilUpload.fileUpload(file, "board/");
             bd.setImg(savedName);
         }
-
         br.save(bd);
     }
 
@@ -80,7 +78,7 @@ public class BoardService {
         br.deleteById(id);
     }
 
-    // ✅ 게시글 단순 조회
+    // ✅ 단순 조회 (게시글 수정 시 활용)
     public Board findById(Long id) {
         return br.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 없음"));
@@ -102,7 +100,7 @@ public class BoardService {
         br.save(board);
     }
 
-    // ✅ 인기글 조회 (호환 점수: 조회수 + 좋아요 + 시간 복정)
+    // ✅ 인기글 조회 (조회수/좋아요/시간 기반 점수 계산)
     public List<Board> getPopularBoards(int limit) {
         List<Board> boards = br.findAll();
 
@@ -113,22 +111,11 @@ public class BoardService {
                     long hours = Duration.between(board.getCreateDate(), LocalDateTime.now()).toHours();
                     double timeScore = Math.max(0, 48 - hours) * 0.5;
                     double score = (hit / 10.0) + (likeCount * 3) + timeScore;
-                    board.setScore(score); // 필요 시 score 필드를 Board에 추가
+                    board.setScore(score);
                     return board;
                 })
                 .sorted(Comparator.comparingDouble(Board::getScore).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
     }
-    //공지
-    public Page<Board> getPagingExcludeNotice(int page, String keyword) {
-        Pageable pageable = PageRequest.of(page, 10);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            return br.findExcludeNoticeByKeyword(keyword, pageable);
-        } else {
-            return br.findExcludeNotice(pageable);
-        }
-    }
-
 }
