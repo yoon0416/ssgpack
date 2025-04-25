@@ -21,13 +21,13 @@
             <span class="ms-3">조회수: <span th:text="${board.hit}">0</span></span>
         </div>
 
-        <!-- 본문 내용 -->
-        <div class="mb-4 border p-3" style="min-height: 150px;" th:text="${board.content}">내용</div>
-
         <!-- 이미지 -->
         <div th:if="${board.img != null}">
             <img  th:src="@{'/images/board/' + ${board.img}}" alt="이미지" class="img-fluid mb-4">
         </div>
+        
+        <!-- 본문 내용 -->
+        <div class="mb-4 border p-3" style="min-height: 150px;" th:text="${board.content}">내용</div>
 
         <!-- 좋아요 기능 -->
         <div class="mb-3">
@@ -40,37 +40,66 @@
             </form>
         </div>
 
-        <!-- 댓글 목록 -->
-        <div class="comment-list mt-4">
-            <h5>댓글</h5>
-            <ul class="list-group">
-                <li class="list-group-item" th:each="comment : ${board.comments}">
-                    <div>
-                        <strong th:text="${comment.user != null ? comment.user.nick_name : '탈퇴한 사용자'}">닉네임</strong>
-                        <small class="text-muted ms-2"
-                               th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}">시간</small>
-                    </div>
-                    <p class="mb-1" th:text="${comment.content}">내용</p>
+		<!-- ✅ 댓글 작성 폼 (원댓글용) -->
+		<div class="comment-form mt-4" sec:authorize="isAuthenticated()">
+		    <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
+		        <input type="hidden" name="parentId" value="" />
+		        <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
+		        <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
+		    </form>
+		</div>
 
-                    <!-- 댓글 삭제 버튼 (본인만 보임) -->
-                    <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
-                          th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
-                          method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-
-        <!-- 댓글 작성 폼 -->
-        <div class="comment-form mt-4" sec:authorize="isAuthenticated()">
-            <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
-                <div class="form-group">
-                    <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
-            </form>
-        </div>
+        <!-- ✅ 댓글 목록 -->
+		<div class="comment-list mt-4">
+		    <h5>댓글</h5>
+		    <ul class="list-group">
+		        <li th:each="comment : ${board.comments}" th:if="${comment.parent == null}" class="list-group-item">
+		            <!-- ✅ 원댓글 -->
+		            <div>
+		                <strong th:text="${comment.user != null ? comment.user.nick_name : '탈퇴한 사용자'}"></strong>
+		                <small class="text-muted ms-2"
+		                       th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></small>
+		            </div>
+		            <p class="mb-1" th:text="${comment.content}"></p>
+		
+		            <!-- ✅ 삭제 버튼 -->
+		            <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
+		                  th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
+		                  method="post" style="display: inline;">
+		                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+		            </form>
+		
+		            <!-- ✅ 대댓글 작성 폼 -->
+		            <div class="mt-2" sec:authorize="isAuthenticated()">
+		                <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post" class="ms-4">
+		                    <input type="hidden" name="parentId" th:value="${comment.id}"/>
+		                    <textarea name="content" class="form-control" rows="2" placeholder="대댓글을 입력하세요"></textarea>
+		                    <button type="submit" class="btn btn-sm btn-outline-primary mt-1">답글 작성</button>
+		                </form>
+		            </div>
+		
+		            <!-- ✅ 대댓글 출력 -->
+		            <ul class="list-group list-group-flush ms-4 mt-2">
+		                <li th:each="reply : ${board.comments}"
+		                    th:if="${reply.parent != null and reply.parent.id == comment.id}"
+		                    class="list-group-item">
+		                    <div>
+		                        <strong th:text="${reply.user != null ? reply.user.nick_name : '탈퇴한 사용자'}"></strong>
+		                        <small class="text-muted ms-2"
+		                               th:text="${#temporals.format(reply.createDate, 'yyyy-MM-dd HH:mm')}"></small>
+		                    </div>
+		                    <p class="mb-1" th:text="${reply.content}"></p>
+		
+		                    <form th:if="${#authorization.expression('isAuthenticated()') and reply.user != null and #authentication.principal.user.id == reply.user.id}"
+		                          th:action="@{'/board/' + ${board.id} + '/comment/' + ${reply.id} + '/delete'}"
+		                          method="post" style="display: inline;">
+		                        <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+		                    </form>
+		                </li>
+		            </ul>
+		        </li>
+		    </ul>
+		</div>
 
         <!-- 목록 / 수정 / 삭제 버튼 -->
         <div class="d-flex justify-content-between mt-4">
