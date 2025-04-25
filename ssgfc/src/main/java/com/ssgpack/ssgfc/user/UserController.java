@@ -26,6 +26,9 @@ public class UserController {
     @Autowired
     private UserService service;
 
+    @Autowired
+    private EmailService emailService;
+
     @RequestMapping("/")
     public String main() {
         return "user/login";
@@ -79,11 +82,9 @@ public class UserController {
             user.setIp();
             service.insertMember(user);
         } catch (DataIntegrityViolationException e) {
-            e.printStackTrace();
             bindingResult.reject("failed", "이미 등록된 유저입니다.");
             return "user/join";
         } catch (Exception e) {
-            e.printStackTrace();
             bindingResult.reject("failed", e.getMessage());
             return "user/join";
         }
@@ -117,7 +118,11 @@ public class UserController {
                              @RequestParam String nick_name,
                              @RequestParam String currentPwd,
                              @RequestParam(required = false) String introduce,
+                             @RequestParam(required = false) String zipcode,
+                             @RequestParam(required = false) String address,
+                             @RequestParam(required = false) String addressDetail,
                              @RequestParam(required = false) MultipartFile file,
+                             @RequestParam(required = false) String phone,
                              HttpServletRequest request,
                              Model model) throws IOException {
 
@@ -132,6 +137,10 @@ public class UserController {
         user.setNick_name(nick_name);
         user.setEmail(email);
         user.setIntroduce(introduce);
+        user.setZipcode(zipcode);
+        user.setAddress(address);
+        user.setAddressDetail(addressDetail);
+        user.setPhone(phone); 
 
         service.updateUserWithFile(user.getId(), user, file);
 
@@ -190,7 +199,8 @@ public class UserController {
             String tempPassword = UUID.randomUUID().toString().substring(0, 10);
             user.setPwd(tempPassword);
             service.update(user.getId(), user);
-            model.addAttribute("message", "임시 비밀번호가 발급되었습니다. (추후 이메일 발송 예정)");
+            emailService.sendTempPassword(email, tempPassword);
+            model.addAttribute("message", "임시 비밀번호가 이메일로 발송되었습니다.");
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", "해당 이메일로 가입된 사용자가 없습니다.");
         }
@@ -206,4 +216,47 @@ public class UserController {
         SecurityContextHolder.clearContext();
         return "redirect:/user/login?withdrawn=true";
     }
+
+    // 🔽 추가된 이메일 인증 관련 컨트롤러
+
+    @GetMapping("/user/email/verify")
+    public String emailVerifyPopup(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("email", userDetails.getUser().getEmail());
+        return "user/email_verify";
+    }
+
+    @PostMapping("/user/email/send-code")
+    public String sendEmailCode(@RequestParam String email, HttpSession session, Model model) {
+        String code = UUID.randomUUID().toString().substring(0, 6);
+        session.setAttribute("emailCode", code);
+        session.setAttribute("targetEmail", email);
+        emailService.sendVerificationCode(email, code);
+        model.addAttribute("email", email);
+        model.addAttribute("success", "인증 코드가 전송되었습니다.");
+        return "user/email_verify";
+    }
+
+    @PostMapping("/user/email/confirm")
+    @ResponseBody
+    public String confirmEmailCode(@RequestParam String code,
+                                   @RequestParam String email,
+                                   HttpSession session,
+                                   @AuthenticationPrincipal CustomUserDetails userDetails,
+                                   Model model) {
+        String sessionCode = (String) session.getAttribute("emailCode");
+        String targetEmail = (String) session.getAttribute("targetEmail");
+
+        if (sessionCode != null && sessionCode.equals(code) && targetEmail.equals(email)) {
+            User user = userDetails.getUser();
+            service.updateEmailChk(user.getId()); 
+            session.removeAttribute("emailCode");
+            session.removeAttribute("targetEmail");
+            return "<script>window.opener.location.reload(); window.close();</script>";
+        } else {
+            model.addAttribute("email", email);
+            model.addAttribute("error", "인증 코드가 일치하지 않습니다.");
+            return "<script>alert('인증 실패'); history.back();</script>";  // 혹은 인증 실패 HTML로 리턴
+        }
+    }
+
 }
