@@ -50,6 +50,9 @@ public class SecurityConfig {
                     .hasAnyAuthority(
                         UserRole.MASTER.getRoleName(),
                         UserRole.BOARD_MANAGER.getRoleName())
+                //경기요약관리자
+                .antMatchers("/admin/review/**")
+                .hasAnyAuthority(UserRole.MASTER.getRoleName(), UserRole.GAME_MANAGER.getRoleName())
 
                 // 경기 일정 관리자
                 .antMatchers("/admin/game/**")

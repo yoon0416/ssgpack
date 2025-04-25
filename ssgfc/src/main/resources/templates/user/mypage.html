@@ -7,14 +7,14 @@
     <style>
         .mypage-container {
             padding: 40px;
-            border-radius: 12px;
+            border-radius: 16px;
             background-color: #fff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
         }
 
         .profile-img {
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #dee2e6;
@@ -22,7 +22,7 @@
         }
 
         .mypage-container h2 {
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 30px;
         }
 
@@ -33,18 +33,49 @@
 
         .mypage-container p strong {
             display: inline-block;
-            width: 80px;
-            color: #555;
+            width: 100px;
+            color: #444;
         }
 
-        .mypage-container .btn {
-            margin: 4px 4px;
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+            vertical-align: middle;
         }
 
-        .btn-outline-primary:hover,
-        .btn-outline-secondary:hover,
-        .btn-outline-danger:hover {
-            opacity: 0.9;
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .button-group .btn {
+            min-width: 130px;
+            padding: 10px 16px;
+            font-size: 15px;
+            border-radius: 8px;
+        }
+
+        .slide-box {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .slide-box.active {
+            max-height: 100px;
+        }
+
+        .withdraw-box {
+            margin-top: 32px;
+        }
+
+        .btn-outline-success {
+            padding: 2px 10px;
+            font-size: 13px;
+            margin-left: 8px;
         }
 
         .btn-danger {
@@ -55,6 +86,20 @@
         .btn-danger:hover {
             background-color: #bb2d3b;
         }
+
+        .animate-pop {
+            transition: transform 0.2s ease;
+        }
+
+        .animate-pop:hover {
+            transform: scale(1.08);
+        }
+
+        @media (max-width: 576px) {
+            .button-group .btn {
+                min-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -62,25 +107,42 @@
     <div class="container mt-5" style="max-width: 720px;">
         <div class="mypage-container text-center">
 
-            <!-- ✅ 프로필 사진 -->
+            <!--  프로필 사진 -->
             <img th:src="${user.profile_img != null} ? '/images/userimage/' + ${user.profile_img} : '/default-profile.png'"
                  class="profile-img" alt="프사">
 
             <h2>마이페이지</h2>
 
             <div class="text-start px-3">
-                <p><strong>이메일:</strong> <span th:text="${user.email}"></span></p>
+                <!--  이메일 + 인증 상태 -->
+                <p>
+                    <strong>이메일:</strong>
+                    <span th:text="${user.email}"></span>
+                    <span th:if="${user.email_chk}" class="badge bg-success">인증 완료</span>
+                    <button type="button" class="btn btn-outline-success" onclick="openEmailPopup()">이메일 인증</button>
+                </p>
+
                 <p><strong>닉네임:</strong> <span th:text="${user.nick_name}"></span></p>
                 <p><strong>권한:</strong> <span th:text="${roleName}"></span></p>
+
                 <p th:if="${user.introduce != null and !user.introduce.isEmpty()}">
-                    <strong>소개:</strong><br>
+                    <strong>소개:</strong>
                     <span th:text="${user.introduce}"></span>
                 </p>
-            </div>
 
-            <div class="mt-4">
-                <a th:href="@{/user/mypage/edit}" class="btn btn-primary">정보 수정</a>
-                <a th:href="@{/user/password/change}" class="btn btn-warning">비밀번호 변경</a>
+                <!--  주소 관련 필드 출력 -->
+                <p th:if="${user.zipcode != null}"><strong>우편번호:</strong> <span th:text="${user.zipcode}"></span></p>
+                <p th:if="${user.address != null}"><strong>기본 주소:</strong> <span th:text="${user.address}"></span></p>
+                <p th:if="${user.addressDetail != null}"><strong>상세 주소:</strong> <span th:text="${user.addressDetail}"></span></p>
+                <!-- 전화번호 출력 -->
+				<p th:if="${user.phone != null}"><strong>전화번호:</strong> <span th:text="${user.phone}"></span></p>
+
+				</div>
+
+            <!--  버튼 영역 -->
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="toggleBox('editBox')">정보 수정</button>
+                <button class="btn btn-warning" onclick="toggleBox('pwBox')">비밀번호 변경</button>
                 <a th:href="@{/user/logout}" class="btn btn-outline-danger">로그아웃</a>
                 <a th:href="@{/main}" class="btn btn-outline-secondary">메인으로</a>
                 <a th:href="@{/admin/dashboard}"
@@ -89,11 +151,22 @@
                     관리자 페이지
                 </a>
             </div>
+            
+            <!--  슬라이드로 나타나는 버튼들 -->
+            <div id="editBox" class="slide-box">
+                <a th:href="@{/user/mypage/edit}" class="btn btn-outline-primary w-100 mt-2">➡️ 프로필 정보 수정</a>
+            </div>
 
-            <!-- 탈퇴 -->
-            <form id="withdrawForm" th:action="@{/user/withdraw}" method="post" class="mt-4">
-                <button type="button" class="btn btn-danger" onclick="confirmAndSubmit()">회원 탈퇴</button>
-            </form>
+            <div id="pwBox" class="slide-box">
+                <a th:href="@{/user/password/change}" class="btn btn-outline-warning w-100 mt-2">➡️ 비밀번호 변경</a>
+            </div>
+
+            <!--  탈퇴 -->
+            <div class="withdraw-box text-center">
+                <form id="withdrawForm" th:action="@{/user/withdraw}" method="post">
+                    <button type="button" class="btn btn-danger px-4 animate-pop" onclick="confirmAndSubmit()">회원 탈퇴</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -102,6 +175,23 @@
             if (confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
                 document.getElementById("withdrawForm").submit();
             }
+        }
+
+        function openEmailPopup() {
+            const width = 500;
+            const height = 400;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+            window.open('/user/email/verify', 'emailPopup', `width=${width},height=${height},top=${top},left=${left}`);
+        }
+
+        function toggleBox(id) {
+            const box = document.getElementById(id);
+            const allBoxes = document.querySelectorAll(".slide-box");
+            allBoxes.forEach(b => {
+                if (b !== box) b.classList.remove("active");
+            });
+            box.classList.toggle("active");
         }
     </script>
 </th:block>

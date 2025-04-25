@@ -70,13 +70,15 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    // ✅ 마이페이지 수정 - 소개글, 프사 포함
+    // ✅ 마이페이지 수정 - 소개글, 프사, 주소 포함
     public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
         user.setIntroduce(updatedUser.getIntroduce());
+        user.setPhone(updatedUser.getPhone());
 
+        // 이메일 변경
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
             if (userRepository.findByEmail(newEmail).isPresent()) {
@@ -85,10 +87,15 @@ public class UserService implements UserDetailsService {
             user.setEmail(newEmail);
         }
 
-        // ✅ 유저 전용 프로필 업로드 메서드로 변경
+        // ✅ 주소 정보 저장
+        user.setZipcode(updatedUser.getZipcode());
+        user.setAddress(updatedUser.getAddress());
+        user.setAddressDetail(updatedUser.getAddressDetail());
+
+        // 프로필 이미지 처리
         if (file != null && !file.isEmpty()) {
-            String savedName = utilUpload.uploadUserProfile(file); // 폴더경로 자동 내장
-            user.setProfile_img(savedName); // DB에는 파일명만 저장
+            String savedName = utilUpload.uploadUserProfile(file);
+            user.setProfile_img(savedName);
         }
     }
 
@@ -147,4 +154,10 @@ public class UserService implements UserDetailsService {
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPwd());
     }
+    public void updateEmailChk(Long id) {
+        User user = findById(id);
+        user.setEmail_chk(true);
+        userRepository.save(user); // 꼭 save 해야 DB에 반영됨
+    }
+
 }

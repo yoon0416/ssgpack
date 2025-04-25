@@ -40,7 +40,21 @@
                 <th scope="row">카카오 ID</th>
                 <td th:text="${user.kakaoId != null ? user.kakaoId : '일반 회원'}">null</td>
             </tr>
-        </tbody>s
+
+            <!-- ✅ 추가된 주소 정보 -->
+            <tr>
+                <th scope="row">우편번호</th>
+                <td th:text="${user.zipcode}">12345</td>
+            </tr>
+            <tr>
+                <th scope="row">주소</th>
+                <td th:text="${user.address}">서울특별시 강남구</td>
+            </tr>
+            <tr>
+                <th scope="row">상세주소</th>
+                <td th:text="${user.addressDetail}">101동 101호</td>
+            </tr>
+        </tbody>
     </table>
 
     <div class="mt-4 d-flex justify-content-between">

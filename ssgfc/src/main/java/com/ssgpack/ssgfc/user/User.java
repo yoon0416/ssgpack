@@ -49,7 +49,7 @@ public class User {
     // 권한 (admin=0~4, member=5)
     private int role;
 
-    //카카오 id
+    // 카카오 로그인 시 부여된 ID
     @Column(name = "kakao_id", unique = true, nullable = true)
     private Long kakaoId;
 
@@ -61,7 +61,28 @@ public class User {
     @Column(name = "profile_img")
     private String profile_img;
 
-    
+    // 주소
+    @Column(name = "zipcode")
+    private String zipcode; // 우편번호
+
+    @Column(name = "address")
+    private String address; // 기본 주소
+
+    @Column(name = "address_detail")
+    private String addressDetail; // 상세 주소
+
+    // 이메일 인증 여부
+    @Column(name = "email_chk", nullable = false)
+    private boolean email_chk = false;
+
+    // 이메일 인증용 토큰 (임시 랜덤값 저장용)
+    @Column(name = "email_token")
+    private String email_token;
+
+    //전화번호
+    @Column(name = "phone", length = 20)
+    private String phone;
+
     // 연관 게시글
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<Board> board = new ArrayList<>();
@@ -83,23 +104,4 @@ public class User {
             this.ip = null;
         }
     }
-
-    /*
-    @Column(nullable = false)
-    private String phone_num; // 전번
-
-    @Column(columnDefinition = "TEXT")
-    private String introduce; // 소개글
-
-    @Column(nullable = false)
-    private int sex; // 성별 남자0 여자1
-
-    private String profile_img; // 프사 이미지링크
-
-    private int post_num; // 우편번호
-
-    private String adr; // 주소
-
-    private String adr_detail; // 상세주소
-    */
 }
