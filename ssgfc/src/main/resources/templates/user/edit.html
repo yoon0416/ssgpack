@@ -4,13 +4,23 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>내 정보 수정</title>
+    <style>
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
 <th:block layout:fragment="content">
     <div class="container mt-5" style="max-width: 600px;">
         <h2 class="mb-4">내 정보 수정</h2>
 
-        <form method="post" th:action="@{/user/mypage/edit}">
+        <form method="post" th:action="@{/user/mypage/edit}" enctype="multipart/form-data">
             <!-- 이메일 -->
             <div class="mb-3">
                 <label for="email" class="form-label">이메일</label>
@@ -25,6 +35,32 @@
                        th:value="${user.nick_name}" required>
             </div>
 
+            <!-- 소개글 -->
+            <div class="mb-3">
+                <label for="introduce" class="form-label">소개글</label>
+                <textarea id="introduce" name="introduce" class="form-control" rows="4"
+                          th:text="${user.introduce}">자기소개 입력</textarea>
+            </div>
+
+<!-- 프로필 이미지 -->
+<div class="mb-3">
+    <label class="form-label">프로필 이미지</label><br>
+
+    <!-- 조건 분리: 프사 존재 여부 -->
+    <img th:if="${user.profile_img != null}"
+         th:src="@{'/images/userimage/' + ${user.profile_img}}"
+         alt="프사 미리보기" class="profile-preview" id="profilePreview">
+
+    <img th:if="${user.profile_img == null}"
+         src="/default-profile.png"
+         alt="기본 프사" class="profile-preview" id="profilePreview">
+
+    <input type="file" name="file" class="form-control mt-2"
+           accept="image/*" onchange="previewProfile(event)">
+</div>
+
+
+
             <!-- 현재 비밀번호 -->
             <div class="mb-3">
                 <label for="currentPwd" class="form-label">현재 비밀번호</label>
@@ -32,6 +68,7 @@
                        required autocomplete="current-password">
             </div>
 
+            <!-- 버튼 -->
             <div class="text-end">
                 <a th:href="@{/user/mypage}" class="btn btn-secondary">취소</a>
                 <button type="submit" class="btn btn-primary">저장</button>
@@ -48,11 +85,24 @@
             <p th:text="${errorMessage}">에러 메시지 표시</p>
         </div>
 
-        <!-- 성공 메시지 (로그인 페이지에서 쓸 경우) -->
+        <!-- 성공 메시지 -->
         <div th:if="${param.updated}" class="alert alert-success mt-3">
             <p>정보가 수정되었습니다. 다시 로그인해주세요.</p>
         </div>
     </div>
+
+    <!-- 프사 미리보기 스크립트 -->
+    <script>
+        function previewProfile(event) {
+            const preview = document.getElementById("profilePreview");
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => preview.src = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </th:block>
 </body>
 </html>

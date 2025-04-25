@@ -1,0 +1,17 @@
+package com.ssgpack.ssgfc.review;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+
+    // ✅ 특정 날짜에 리뷰가 존재하는지 확인하는 메서드
+    boolean existsByGameDate(LocalDate gameDate);
+    Optional<Review> findFirstByGameDate(LocalDate gameDate);
+    boolean existsByGameUrlAndHowAndResult(String gameUrl, String how, String result);
+    List<Review> findAllByGameDate(LocalDate date);
+    
+}

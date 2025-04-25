@@ -26,6 +26,11 @@
         .comment-count {
             color: #888;
             font-size: 0.9em;
+
+        .notice-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+
         }
     </style>
 </head>
@@ -33,6 +38,7 @@
 <th:block layout:fragment="content">
     <div class="container mt-5">
         <h2 class="mb-4">📋 게시판 목록</h2>
+
 
         <!-- 글쓰기 버튼 (로그인 사용자만) -->
         <div class="text-end mb-3" sec:authorize="isAuthenticated()">
@@ -52,6 +58,21 @@
 					</tr>
 				</thead>
 				<tbody>
+            <!-- 공지사항 글 출력 -->
+            <tr th:each="board : ${noticeBoards}" class="notice-row">
+                <td th:text="${board.id}">공지</td>
+                <td class="text-start">
+                    <a th:href="@{'/board/view/' + ${board.id}}">
+                        <b th:text="${board.title}">공지 제목</b>
+                    </a>
+                </td>
+                <td th:text="${board.user != null ? board.user.nick_name : '알 수 없음'}">작성자</td>
+                <td th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd')}">작성일</td>
+                <td th:text="${board.hit}">0</td>
+                <td th:text="${#lists.size(board.likes)}">0</td>
+            </tr>
+
+            <!-- 일반 게시글 출력 -->
 					<tr th:each="board, iterStat : ${boardList}">
 						<td
 							th:text="${paging.totalItems - (paging.currentPage * paging.pageSize + iterStat.index)}">1</td>
@@ -96,6 +117,7 @@
             <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
             <button type="submit" class="btn btn-outline-primary">검색</button>
         </form>
+
     </div>
 </th:block>
 </body>

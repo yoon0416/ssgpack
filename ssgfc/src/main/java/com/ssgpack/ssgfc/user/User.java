@@ -52,7 +52,15 @@ public class User {
     //카카오 id
     @Column(name = "kakao_id", unique = true, nullable = true)
     private Long kakaoId;
- 
+
+    // 소개글
+    @Column(columnDefinition = "TEXT")
+    private String introduce;
+
+    // 프로필 이미지 파일명
+    @Column(name = "profile_img")
+    private String profile_img;
+
     
     // 연관 게시글
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)

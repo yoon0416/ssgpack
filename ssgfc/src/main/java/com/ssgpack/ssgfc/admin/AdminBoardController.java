@@ -5,13 +5,10 @@ import java.io.IOException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import com.ssgpack.ssgfc.board.board.PagingDto;
 
 import com.ssgpack.ssgfc.board.board.Board;
 import com.ssgpack.ssgfc.board.board.BoardService;
@@ -21,82 +18,92 @@ import com.ssgpack.ssgfc.user.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequestMapping("/admin/board")
 @RequiredArgsConstructor
+@RequestMapping("/admin/board")
 public class AdminBoardController {
 
     private final BoardService boardService;
     private final CommentService commentService;
 
-    // 🔹 관리자용 게시판 목록 (기본 접근)
-    @GetMapping
-    public String adminBoardList(Model model) {
-        model.addAttribute("boardList", boardService.findAll());
-        return "admin/board/list"; // templates/admin/board/list.html
-    }
+    // 게시글 목록 (공지 + 일반)
+    @GetMapping({"/", "/list"})
+    public String list(@RequestParam(value = "page", defaultValue = "0") int page,
+                       @RequestParam(value = "keyword", required = false) String keyword,
+                       Model model) {
 
-    // 🔹 /admin/board/list 요청도 처리
-    @GetMapping("/list")
-    public String adminBoardListAlias(Model model) {
-        model.addAttribute("boardList", boardService.findAll());
+        Page<Board> pagingList = boardService.getPaging(page, keyword);
+        PagingDto paging = new PagingDto((int) pagingList.getTotalElements(), page);
+
+        model.addAttribute("boardList", pagingList.getContent());
+        model.addAttribute("paging", paging);
+        model.addAttribute("keyword", keyword);
+
         return "admin/board/list";
     }
 
-    // 🔹 관리자용 게시글 상세 보기
+
+    // 게시글 상세 보기
     @GetMapping("/view/{id}")
-    public String adminBoardView(@PathVariable Long id, Model model) {
+    public String view(@PathVariable Long id, Model model) {
         Board board = boardService.findById(id);
         model.addAttribute("board", board);
-        return "admin/board/view"; // templates/admin/board/view.html
+        return "admin/board/view";
     }
 
-    // 🔹 관리자용 게시글 수정 폼
+    // 글쓰기 폼 (공지사항 전용)
+    @GetMapping("/write")
+    public String writeForm(Model model) {
+        model.addAttribute("board", new Board());
+        return "admin/board/write";
+    }
+
+    // 글쓰기 처리
+    @PostMapping("/write")
+    public String write(@ModelAttribute Board board,
+                        @RequestParam("file") MultipartFile file,
+                        @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+        board.setIp();
+        board.setUser(userDetails.getUser());
+
+        if (!board.getTitle().startsWith("[공지]")) {
+            board.setTitle("[공지] " + board.getTitle());
+        }
+
+        boardService.insert(board, userDetails.getUser().getId(), file);
+        return "redirect:/admin/board/list";
+    }
+
+
+    // 수정 폼
     @GetMapping("/edit/{id}")
-    public String adminBoardEditForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable Long id, Model model) {
         Board board = boardService.findById(id);
         model.addAttribute("board", board);
-        return "admin/board/edit"; // templates/admin/board/edit.html
+        return "admin/board/edit";
     }
 
-    // 🔹 관리자용 게시글 수정 처리
+    // 수정 처리
     @PostMapping("/edit/{id}")
-    public String adminBoardEdit(@PathVariable Long id,
-                                 @ModelAttribute Board board,
-                                 @RequestParam("file") MultipartFile file) throws IOException {
+    public String edit(@PathVariable Long id,
+                       @ModelAttribute Board board,
+                       @RequestParam("file") MultipartFile file) throws IOException {
+        board.setIp();
         boardService.update(id, board, file);
         return "redirect:/admin/board/view/" + id;
     }
 
-    // 🔹 관리자용 게시글 삭제
+    // 강제 삭제
     @PostMapping("/delete/{id}")
-    public String adminBoardDelete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id) {
         boardService.delete(id);
-        return "redirect:/admin/board";
+        return "redirect:/admin/board/list";
     }
 
-    // 🔹 관리자용 댓글 삭제
+    // 댓글 삭제
     @PostMapping("/comment/delete/{commentId}")
-    public String adminCommentDelete(@PathVariable Long commentId, @RequestParam Long boardId) {
+    public String deleteComment(@PathVariable Long commentId,
+                                @RequestParam("boardId") Long boardId) {
         commentService.delete(commentId);
         return "redirect:/admin/board/view/" + boardId;
     }
-
-    // 🔹 관리자용 글쓰기 폼 (공지사항 등록 포함)
-    @GetMapping("/write")
-    public String adminBoardWriteForm(Model model) {
-        model.addAttribute("board", new Board());
-        return "admin/board/write"; // templates/admin/board/write.html
-    }
-
-    // 🔹 관리자용 글쓰기 처리
-    @PostMapping("/write")
-    public String adminBoardWrite(@ModelAttribute Board board,
-                                  @RequestParam("file") MultipartFile file,
-                                  @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
-        board.setIp();
-        board.setUser(userDetails.getUser());
-        boardService.insert(board, userDetails.getUser().getId(), file);
-        return "redirect:/admin/board";
-    }
-
 }

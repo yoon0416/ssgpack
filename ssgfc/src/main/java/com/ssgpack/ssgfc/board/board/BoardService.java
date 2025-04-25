@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,21 +31,21 @@ public class BoardService {
     @Autowired
     private LikeService likeService;
 
-    // ✅ 전체 게시글 최신순 정렬 조회 (비페이징)
+    // ✅ 전체 게시글 최신순 정렬 조회 (비페이직)
     public List<Board> findAll() {
         return br.findAllByOrderByCreateDateDesc();
     }
 
-    // ✅ 페이징된 게시글 조회 (최신순 정렬 + Page 반환)
+    // ✅ 공지 제외 페이직 처리 (최신순 정렬 + Page 반환)
     public Page<Board> getPaging(int page, String keyword) {
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "id"));
         if (keyword != null && !keyword.trim().isEmpty()) {
-            return br.findByTitleContainingOrContentContainingOrderByCreateDateDesc(keyword, keyword, pageable);
+            return br.findExcludeNoticeByKeyword(keyword, pageable);
         }
-        return br.findAllByOrderByCreateDateDesc(pageable);
+        return br.findExcludeNotice(pageable);
     }
 
-    // ✅ 전체 게시글 수 조회 (페이징 계산용)
+    // ✅ 전체 게시글 수 조회 (페이직 계산용)
     public long getTotalCount() {
         return br.count();
     }
@@ -101,7 +102,7 @@ public class BoardService {
         br.save(board);
     }
 
-    // ✅ 인기글 조회 (혼합 점수: 조회수 + 좋아요 + 시간 보정)
+    // ✅ 인기글 조회 (호환 점수: 조회수 + 좋아요 + 시간 복정)
     public List<Board> getPopularBoards(int limit) {
         List<Board> boards = br.findAll();
 
@@ -119,4 +120,15 @@ public class BoardService {
                 .limit(limit)
                 .collect(Collectors.toList());
     }
+    //공지
+    public Page<Board> getPagingExcludeNotice(int page, String keyword) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return br.findExcludeNoticeByKeyword(keyword, pageable);
+        } else {
+            return br.findExcludeNotice(pageable);
+        }
+    }
+
 }

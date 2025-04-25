@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ssgpack.ssgfc.player.stat.PlayerStat;
@@ -64,4 +65,7 @@ public class Player {
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<PlayerStat> stats = new ArrayList<>();
+    
+    @Transient
+    private int viewCount;
 }

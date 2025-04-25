@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>글 상세보기</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container mt-5">
+        <h2 class="mb-4" th:text="${board.title}">제목</h2>
+
+        <!-- 작성자 및 기타 정보 -->
+        <div class="mb-3 text-muted">
+            <span>작성자:
+                <b th:text="${board.user != null ? board.user.nick_name : '익명'}">닉네임</b>
+            </span>
+            <span class="ms-3">
+                작성일: <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}">날짜</span>
+            </span>
+            <span class="ms-3">조회수: <span th:text="${board.hit}">0</span></span>
+        </div>
+
+        <!-- 본문 내용 -->
+        <div class="mb-4 border p-3" style="min-height: 150px;" th:text="${board.content}">내용</div>
+
+        <!-- 이미지 -->
+        <div th:if="${board.img != null}">
+            <img  th:src="@{'/images/board/' + ${board.img}}" alt="이미지" class="img-fluid mb-4">
+        </div>
+
+        <!-- 좋아요 기능 -->
+        <div class="mb-3">
+            <form th:action="@{'/board/' + ${board.id} + '/like'}" method="post">
+                <button type="submit"
+                        th:classappend="${liked} ? 'btn btn-danger' : 'btn btn-outline-danger'">
+                    <span th:text="${liked} ? '♥ 좋아요 취소' : '♡ 좋아요'">♥ 좋아요</span>
+                </button>
+                <span class="ms-2 text-muted">총 <span th:text="${likeCount}">0</span>명</span>
+            </form>
+        </div>
+
+        <!-- 댓글 목록 -->
+        <div class="comment-list mt-4">
+            <h5>댓글</h5>
+            <ul class="list-group">
+                <li class="list-group-item" th:each="comment : ${board.comments}">
+                    <div>
+                        <strong th:text="${comment.user != null ? comment.user.nick_name : '탈퇴한 사용자'}">닉네임</strong>
+                        <small class="text-muted ms-2"
+                               th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}">시간</small>
+                    </div>
+                    <p class="mb-1" th:text="${comment.content}">내용</p>
+
+                    <!-- 댓글 삭제 버튼 (본인만 보임) -->
+                    <form th:if="${#authorization.expression('isAuthenticated()') and comment.user != null and #authentication.principal.user.id == comment.user.id}"
+                          th:action="@{'/board/' + ${board.id} + '/comment/' + ${comment.id} + '/delete'}"
+                          method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 댓글 작성 폼 -->
+        <div class="comment-form mt-4" sec:authorize="isAuthenticated()">
+            <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
+                <div class="form-group">
+                    <textarea name="content" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">댓글 작성</button>
+            </form>
+        </div>
+
+        <!-- 목록 / 수정 / 삭제 버튼 -->
+        <div class="d-flex justify-content-between mt-4">
+            <a th:href="@{/board/list}" class="btn btn-secondary">목록</a>
+            <div th:if="${currentUserId != null and currentUserId == board.user.id}">
+                <a th:href="@{'/board/edit/' + ${board.id}}" class="btn btn-outline-primary">수정</a>
+                <a th:href="@{'/board/delete/' + ${board.id}}"
+                   class="btn btn-outline-danger"
+                   onclick="return confirm('삭제하시겠습니까?')">삭제</a>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

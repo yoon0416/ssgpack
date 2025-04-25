@@ -1,94 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <th:block th:fragment="header">
+<!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+  <!-- 상단 네비게이션 -->
+  <nav class="navbar navbar-expand-sm bg-white border-bottom shadow-sm py-2">
+    <div class="container d-flex justify-content-between align-items-center">
+      <!-- 로고 -->
+      <a class="navbar-brand" href="/">
+        <img src="https://www.ssglanders.com/img/wyverns/emblem/new/emblem_01.png"
+             alt="SSG 로고" style="width: 48px;">
+      </a>
 
-	<!-- 헤더 부분 -->
-	<nav class="navbar navbar-expand-sm navbar-dark"
-		style="background-color: white;">
-		<div class="container"
-			style="background-color: #d50032; border-radius: 10px;">
-
-			<!-- 위쪽: 로고 + 로그인/회원가입/마이페이지 -->
-			<a class="navbar-brand" href="#"> <img
-				src="https://www.ssglanders.com/img/wyverns/emblem/new/emblem_01.png"
-				alt="SSG로고이미지" style="width: 70px;" class="rounded-pill">
-			</a>
-			<ul class="navbar-nav ms-auto">
-				<li class="nav-item"><a class="nav-link text-white" href="#">로그인</a></li>
-				<li class="nav-item"><a class="nav-link text-white" href="#">회원가입</a></li>
-				<li class="nav-item"><a class="nav-link text-white" href="#">로그아웃</a></li>
-				<li class="nav-item"><a class="nav-link text-white" href="#">마이페이지</a></li>
-			</ul>
-
-		</div>
-	</nav>
-
-	
-    <!-- 슬라이드 -->
-<div class="container mt-3">
-  <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
-
-    <!-- 점(dot) 버튼 영역 -->
-    <div class="carousel-indicators">
-      <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-      <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-      <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+      <!-- 로그인/회원 관련 -->
+      <ul class="navbar-nav d-flex flex-row gap-3">
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/login}" sec:authorize="isAnonymous()">로그인</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/join}" sec:authorize="isAnonymous()">회원가입</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/logout}" sec:authorize="isAuthenticated()">로그아웃</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-semibold" th:href="@{/user/mypage}" sec:authorize="isAuthenticated()">마이페이지</a>
+        </li>
+      </ul>
     </div>
+  </nav>
 
-    <!-- 실제 슬라이드 이미지들 -->
-    <div class="carousel-inner">
-
-      <div class="carousel-item active">
-        <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg" class="d-block w-100" alt="배너1" style="height: 250px; object-fit: cover;">
+  <!-- 슬라이드 배너 -->
+  <div class="container mt-4">
+    <div id="mainCarousel" class="carousel slide rounded-4 shadow overflow-hidden banner-wrapper" data-bs-ride="carousel" style="height: 220px;">
+      <div class="carousel-inner h-100">
+        <div class="carousel-item active h-100">
+          <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
+        </div>
+        <div class="carousel-item h-100">
+          <img src="https://cdn.incheontoday.com/news/photo/202501/261780_257882_1951.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
+        </div>
+        <div class="carousel-item h-100">
+          <img src="https://i.ytimg.com/vi/ztBkXy1OS7o/hq720.jpg"
+               class="d-block w-100 h-100" style="object-fit: cover;">
+        </div>
       </div>
-
-      <div class="carousel-item">
-        <img src="https://file2.nocutnews.co.kr/newsroom/image/2022/11/08/202211080329380992_0.jpg" class="d-block w-100" alt="배너2" style="height: 250px; object-fit: cover;">
-      </div>
-
-      <div class="carousel-item">
-        <img src="https://tong.visitkorea.or.kr/cms/resource/21/3052221_image2_1.JPG" class="d-block w-100" alt="배너3" style="height: 250px; object-fit: cover;">
-      </div>
-
+      <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
     </div>
-
-    <!-- 왼쪽(이전) 버튼 -->
-    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
-      <span class="carousel-control-prev-icon"></span>
-    </button>
-
-    <!-- 오른쪽(다음) 버튼 -->
-    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
-      <span class="carousel-control-next-icon"></span>
-    </button>
-
   </div>
-</div>
 
-    <!-- 슬라이드 -->
+  <!-- 메뉴 바 -->
+  <div class="container">
+    <div class="menu-bar d-flex rounded-4 shadow-sm overflow-hidden menu-bar-wrapper">
+      <a class="menu-tab" th:href="@{/players}"
+         th:classappend="${#request.requestURI == '/players'} ? 'active'">선수목록</a>
+      <a class="menu-tab" href="#">쓱일정</a>
+      <a class="menu-tab" th:href="@{/board/list}"
+         th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
+ 
+      <a class="menu-tab" th:href="@{/vote}"
+      	th:classappend="${#request.requestURI.startsWith('/vote')} ? 'active'">투표</a>
 
-	<!-- 메뉴 부분 (아래) -->
-	<nav class="navbar navbar-expand-sm navbar-dark"
-		style="background-color: white;">
-		<div class="container"
-			style="background-color: #d50032; border-radius: 10px;">
-
-			<!-- 기능 메뉴 -->
-			<ul class="navbar-nav mx-auto">
-				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">선수목록</a></li>
-				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">쓱일정</a></li>
-				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">응원게시판</a></li>
-				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">투표</a></li>
-				<li class="nav-item px-3"><a class="nav-link text-white"
-					href="#">오늘경기요약</a></li>
-					<li class="nav-item px-3"><a class="nav-link text-white"
-					href="https://www.koreabaseball.com/Schedule/Weather.aspx#none">야구장날씨</a></li>
-			</ul>
+      <a class="menu-tab" href="#">오늘 경기요약</a>
+      <a class="menu-tab" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">야구장 날씨</a>
+    </div>
+  </div>
 
 
-		</div>
-	</nav>
 
 </th:block>

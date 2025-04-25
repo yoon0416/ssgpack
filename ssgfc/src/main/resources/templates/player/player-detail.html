@@ -10,7 +10,7 @@
   <style>
     body {
       font-family: sans-serif;
-      background-color: #f9f9f9;
+      background-color: #ffffff;
       padding: 20px;
     }
     .record-table {
@@ -26,57 +26,76 @@
       background-color: #eee;
     }
     .info-table {
-	  width: 100%;
-	  border-collapse: collapse;
-	  font-size: 17px;             /* 주요기록보다 글씨 약간 큼 */
-	  margin-top: 10px;
-	  table-layout: fixed;
-	}
-	
-	.info-table th, .info-table td {
-	  border: 1px solid #ccc;
-	  padding: 16px 20px;       /* ✅ 넉넉한 여백! */
-	  text-align: center;         /* ✅ 글자는 왼쪽 정렬 */
-	  word-break: keep-all;
-	}
-	
-	.info-table th {
-	  background-color: #f7f7f7;
-	  font-weight: bold;
-	  width: 18%;
-	}
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 17px;
+      margin-top: 10px;
+      table-layout: fixed;
+    }
+    .info-table th, .info-table td {
+      border: 1px solid #ccc;
+      padding: 16px 20px;
+      text-align: center;
+      word-break: keep-all;
+    }
+    .info-table th {
+      background-color: #f7f7f7;
+      font-weight: bold;
+      width: 18%;
+    }
   </style>
 </head>
 <body>
 <th:block layout:fragment="content">
 
   <div class="container my-5 p-4 bg-white shadow-sm rounded">
-
-    <!-- ✅ 이미지 + 텍스트 나란히 -->
+	<p id="viewCount" style="font-size: 14px; color: gray;">조회수: 0</p>
     <div style="display: flex; align-items: center; gap: 25px;">
+     
       <img id="playerImage" src="" alt="선수 이미지"
-           style="width: 160px; height: 210px; object-fit: contain; 
-           background-color: white; align-self: flex-end;" />
+           style="width: 160px; height: 210px; object-fit: contain; background-color: white; align-self: flex-end;" />
+      
+	       
       <div>
+      
         <h1 id="playerName" style="margin: 0 0 10px 0; font-size: 24px;">선수 이름</h1>
         <h3 id="playerPosition" style="margin: 0 0 10px 0; font-size: 16px; color:red">포지션</h3>
+        
         <p id="playerInfo" style="margin: 0; font-size: 16px; color: #555;">선수 기본 정보 표시 예정</p>
       </div>
     </div>
 
-    <h2 class="mt-4">🧾주요 기록🧾</h2>
-    <table class="record-table table table-bordered mt-4" id="recordTable">
-      <thead class="table-light">
-        <tr>
-          <th>연도</th>
-          <th>WAR</th>
-          <th>타율</th>
-          <th>홈런</th>
-          <th>타점</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <h2 class="mt-4">🗳️주요 기록🗳️</h2>
+
+    <div id="hitterSection">
+      <h3>타자 기록</h3>
+      <table class="record-table" id="hitterTable">
+        <thead>
+          <tr><th>연도</th><th>WAR</th><th>타율</th><th>홈런</th><th>타점</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="catcherSection">
+      <h3 style="margin-top: 40px;">포수 기록</h3>
+      <table class="record-table" id="catcherTable">
+        <thead>
+          <tr><th>연도</th><th>WAR</th><th>타율</th><th>출루율</th><th>장타율</th><th>OPS</th><th>삼진</th><th>도루저지</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="pitcherSection">
+      <h3 style="margin-top: 40px;">투수 기록</h3>
+      <table class="record-table" id="pitcherTable">
+        <thead>
+          <tr><th>연도</th><th>WAR</th><th>ERA</th><th>삼진</th><th>WHIP</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
@@ -84,24 +103,26 @@
       const pathParts = window.location.pathname.split("/");
       const pNo = pathParts[pathParts.length - 1];
 
-      fetch(`/api/players/${pNo}`)
+      fetch(`/api/players/${pNo}?t=${Date.now()}`)
+
         .then(res => res.json())
         .then(player => {
-          console.log("✅ 응답 데이터:", player);
-          console.log("✅ 이미지 경로:", player.imageUrl);
+          console.log("✅ 선수 데이터:", player);
 
           document.getElementById('playerName').textContent = player.name;
           document.getElementById('playerPosition').textContent = player.position;
+
           document.getElementById('playerInfo').innerHTML = `
-        	  <table class="info-table" style="margin-top: 10px;">
-        	    <tr><th>등번호</th><td>${player.backNumber ?? '정보 없음'}</td>
-        	    <th>생년월일</th><td>${player.birthDate ?? '정보 없음'}</td></tr>
-        	    <tr><th>신인지명</th><td>${player.draftInfo ?? '정보 없음'}</td>
-        	    <th>활약연도</th><td>${player.activeYears ?? '정보 없음'}</td></tr>
-        	    <tr><th>활약팀</th><td>${player.teams ?? '정보 없음'}</td>
-        	    <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
-        	  </table>
-        	`;
+            <table class="info-table">
+              <tr><th>등번호</th><td>${player.backNumber ?? '정보 없음'}</td>
+              <th>생년월일</th><td>${player.birthDate ?? '정보 없음'}</td></tr>
+              <tr><th>신인지명</th><td>${player.draftInfo ?? '정보 없음'}</td>
+              <th>활약연도</th><td>${player.activeYears ?? '정보 없음'}</td></tr>
+              <tr><th>활약팀</th><td>${player.teams ?? '정보 없음'}</td>
+              <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
+            </table>
+          `;
+		  document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
 
           const imgEl = document.getElementById('playerImage');
           if (imgEl && player.imageUrl) {
@@ -109,18 +130,63 @@
             imgEl.onerror = () => { imgEl.src = '/images/players/default.png'; };
           }
 
-          const tbody = document.querySelector('#recordTable tbody');
+          const hitterTbody = document.querySelector('#hitterTable tbody');
+          const catcherTbody = document.querySelector('#catcherTable tbody');
+          const pitcherTbody = document.querySelector('#pitcherTable tbody');
+
+          let hasHitter = false, hasCatcher = false, hasPitcher = false;
+
+          const playerMainPos = (player.position ?? '').trim().toUpperCase();
+
           (player.stats ?? []).forEach(stat => {
+            const map = stat.statMap || {};
+            const season = stat.season ?? map.Year ?? '-';
+            const statPos = (map["Pos."] ?? '').trim().toUpperCase();
+            const pos = statPos || playerMainPos;
+            console.log("📌 기록 분류중:", pos, map);
+
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${stat.season}</td>
-              <td>${stat.war}</td>
-              <td>${stat.avg ?? '-'}</td>
-              <td>${stat.obp ?? '-'}</td>
-              <td>${stat.slg ?? '-'}</td>
-            `;
-            tbody.appendChild(tr);
+
+            if (pos === 'P') {
+              tr.innerHTML = `
+                <td>${season}</td>
+                <td>${map.WAR ?? '-'}</td>
+                <td>${map.ERA ?? '-'}</td>
+                <td>${map.SO ?? '-'}</td>
+                <td>${map.WHIP ?? '-'}</td>
+              `;
+              pitcherTbody.appendChild(tr);
+              hasPitcher = true;
+            } else if (pos === 'C') {
+              tr.innerHTML = `
+                <td>${season}</td>
+                <td>${map.WAR ?? '-'}</td>
+                <td>${map.AVG ?? '-'}</td>
+                <td>${map.OBP ?? '-'}</td>
+                <td>${map.SLG ?? '-'}</td>
+                <td>${map.OPS ?? '-'}</td>
+                <td>${map.SO ?? '-'}</td>
+                <td>${map.CS ?? '-'}</td>
+              `;
+              catcherTbody.appendChild(tr);
+              hasCatcher = true;
+            } else {
+              tr.innerHTML = `
+                <td>${season}</td>
+                <td>${map.WAR ?? '-'}</td>
+                <td>${map.AVG ?? '-'}</td>
+                <td>${map.HR ?? '-'}</td>
+                <td>${map.RBI ?? '-'}</td>
+              `;
+              hitterTbody.appendChild(tr);
+              hasHitter = true;
+            }
           });
+
+          if (!hasHitter) document.getElementById('hitterSection').style.display = 'none';
+          if (!hasCatcher) document.getElementById('catcherSection').style.display = 'none';
+          if (!hasPitcher) document.getElementById('pitcherSection').style.display = 'none';
+
         })
         .catch(err => {
           console.error('❌ 선수 정보 로딩 실패:', err);

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>유저 정보 수정</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container mt-5">
+        <h2 class="mb-4">👤 유저 정보 수정</h2>
+
+        <form th:action="@{'/admin/user/edit/' + ${user.id}}" method="post">
+            <div class="mb-3">
+                <label class="form-label">이메일 (변경 불가)</label>
+                <input type="email" class="form-control" th:value="${user.email}" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">닉네임</label>
+                <input type="text" class="form-control" name="nick_name" th:value="${user.nick_name}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">권한</label>
+                <select class="form-select" name="role">
+                    <option th:value="0" th:selected="${user.role == 0}">👑 마스터 관리자</option>
+                    <option th:value="1" th:selected="${user.role == 1}">유저 관리자</option>
+                    <option th:value="2" th:selected="${user.role == 2}">선수 관리자</option>
+                    <option th:value="3" th:selected="${user.role == 3}">게시판 관리자</option>
+                    <option th:value="4" th:selected="${user.role == 4}">일정 관리자</option>
+                    <option th:value="5" th:selected="${user.role == 5}">일반 회원</option>
+                </select>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a th:href="@{'/admin/user/view/' + ${user.id}}" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn btn-primary">수정 완료</button>
+            </div>
+        </form>
+    </div>
+</th:block>
+</body>
+</html>

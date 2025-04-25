@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>오늘의 경기 요약</title>
+    <link rel="stylesheet" href="/lib/fullcalendar/main.min.css">
+    <link rel="stylesheet" href="/css/review-calendar.css">
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="review-wrapper">
+        <!-- 달력 영역 -->
+        <div class="calendar-box-review">
+            <div id="miniCalendar" class="review-calendar"></div>
+        </div>
+
+        <!-- 요약 및 기록 영역 -->
+        <div class="summary-box">
+            <h3 id="selectedDateTitle">오늘의 경기 요약</h3>
+
+            <!-- 경기 기록 영역 -->
+            <div id="gameRecordArea" class="record-box">
+                <h5>📋 경기 주요 기록</h5>
+                <div id="recordList"></div>
+            </div>
+
+            <!-- 한줄평 영역 -->
+            <div id="gameSummaryArea" class="record-box">
+                <h5>📝 AI 한줄평</h5>
+                <p id="summaryText">데이터를 불러오는 중...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script src="/lib/fullcalendar/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const calendarEl = document.getElementById('miniCalendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                fixedWeekCount: false,
+                height: 'auto',
+                dayMaxEventRows: true,
+                firstDay: 1, // 월요일부터 시작
+                dayCellContent: function (arg) {
+                    const numberOnly = arg.dayNumberText.replace('일', '');
+                    return { html: numberOnly };
+                },
+                dateClick: function (info) {
+                    const date = info.dateStr;
+                    axios.get(`/api/review-exists?date=${date}`)
+                        .then(res => {
+                            if (res.data === true) {
+                                window.location.href = `/review_today?date=${date}`;
+                            } else {
+                                alert("아직 경기 요약이 없습니다.");
+                            }
+                        });
+                }
+            });
+
+            calendar.render();
+
+            // 날짜 셀에 요일별 클래스 추가 (일/토요일 스타일링)
+            setTimeout(() => {
+                const dayCells = document.querySelectorAll('#miniCalendar .fc-daygrid-day');
+                dayCells.forEach(cell => {
+                    const dateStr = cell.getAttribute('data-date');
+                    if (dateStr) {
+                        const date = new Date(dateStr);
+                        const day = date.getDay(); // 0: Sunday, 6: Saturday
+                        if (day === 0) {
+                            cell.classList.add('fc-day-sun');
+                        } else if (day === 6) {
+                            cell.classList.add('fc-day-sat');
+                        }
+                    }
+                });
+            }, 10);
+
+            const params = new URLSearchParams(window.location.search);
+            const selectedDate = params.get("date");
+            if (selectedDate) {
+                document.getElementById("selectedDateTitle").textContent = `${selectedDate} 경기 요약`;
+
+                fetch(`/api/review-summary?date=${selectedDate}`)
+                    .then(res => res.text())
+                    .then(text => {
+                        document.getElementById("summaryText").textContent = text;
+                    });
+
+                fetch(`/api/review-records?date=${selectedDate}`)
+                .then(res => res.json())
+                .then(list => {
+                    const container = document.getElementById("recordList");
+                    container.innerHTML = "";
+
+                    const grouped = {};
+                    list.forEach(item => {
+                        if (!grouped[item.how]) grouped[item.how] = [];
+                        grouped[item.how].push(item.result);
+                    });
+
+                    for (const how in grouped) {
+                        const results = grouped[how];
+                        const div = document.createElement("div");
+                        div.innerHTML = `<strong>[${how}]</strong> `;
+
+                        results.forEach((result, i) => {
+                            div.innerHTML += result;
+
+                            const isLast = (i === results.length - 1);
+                            const isWrap = ((i + 1) % 3 === 0);
+
+                            if (!isLast) {
+                                if (isWrap) {
+                                    div.innerHTML += "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                                } else {
+                                    div.innerHTML += " ";
+                                }
+                            }
+                        });
+
+                        container.appendChild(div);
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>
