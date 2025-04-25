@@ -127,28 +127,45 @@ public class UserController {
                              Model model) throws IOException {
 
         User user = userDetails.getUser();
+        HttpSession session = request.getSession();
+        String verifiedPhone = (String) session.getAttribute("verifiedPhone");
 
+        //  비밀번호 검증
         if (!service.checkPassword(user, currentPwd)) {
             model.addAttribute("errorMessage", "현재 비밀번호가 올바르지 않습니다.");
             model.addAttribute("user", user);
             return "user/edit";
         }
 
+        //  일반 정보 수정 (전화번호 제외)
         user.setNick_name(nick_name);
         user.setEmail(email);
         user.setIntroduce(introduce);
         user.setZipcode(zipcode);
         user.setAddress(address);
         user.setAddressDetail(addressDetail);
-        user.setPhone(phone); 
+
+        //  전화번호 인증 여부 확인 후 변경
+        if (phone != null && !phone.isBlank()) {
+            if (phone.equals(user.getPhone())) {
+                // 같은 번호로 유지하는 경우 그대로 둠
+            } else if (phone.equals(verifiedPhone)) {
+                user.setPhone(phone); // 인증된 번호만 저장
+                session.removeAttribute("verifiedPhone"); // 저장 후 제거
+            } else {
+                model.addAttribute("warningMessage", "전화번호는 인증된 번호만 변경할 수 있습니다.");
+            }
+        }
 
         service.updateUserWithFile(user.getId(), user, file);
 
-        request.getSession().invalidate();
+        // 로그인 세션 갱신
+        session.invalidate();
         SecurityContextHolder.clearContext();
 
         return "redirect:/user/login?updated=true";
     }
+
 
     @GetMapping("/user/password/change")
     public String showChangePasswordForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {

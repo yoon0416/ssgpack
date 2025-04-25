@@ -1,185 +1,195 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-<title>내 정보 수정</title>
-<style>
-.profile-preview {
-	width: 100px;
-	height: 100px;
-	border-radius: 50%;
-	object-fit: cover;
-	border: 1px solid #ccc;
-	margin-bottom: 10px;
-}
-</style>
+    <title>내 정보 수정</title>
+    <style>
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+    </style>
+    <!-- ✅ jQuery 추가 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
-<!-- ✅ jQuery 추가 -->
-
 
 <th:block layout:fragment="content">
-	<div class="container mt-5" style="max-width: 600px;">
-		<h2 class="mb-4">내 정보 수정</h2>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<div class="container mt-5" style="max-width: 600px;">
+    <h2 class="mb-4">내 정보 수정</h2>
 
-		<form method="post" th:action="@{/user/mypage/edit}" enctype="multipart/form-data">
-			<!-- 이메일 -->
-			<div class="mb-3">
-				<label for="email" class="form-label">이메일</label>
-				<input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required>
-			</div>
+    <form method="post" th:action="@{/user/mypage/edit}" enctype="multipart/form-data">
+        <!-- 이메일 -->
+        <div class="mb-3">
+            <label for="email" class="form-label">이메일</label>
+            <input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required>
+        </div>
 
-			<!-- 닉네임 -->
-			<div class="mb-3">
-				<label for="nick_name" class="form-label">닉네임</label>
-				<input type="text" id="nick_name" name="nick_name" class="form-control" th:value="${user.nick_name}" required>
-			</div>
+        <!-- 닉네임 -->
+        <div class="mb-3">
+            <label for="nick_name" class="form-label">닉네임</label>
+            <input type="text" id="nick_name" name="nick_name" class="form-control" th:value="${user.nick_name}" required>
+        </div>
 
-			<!-- 소개글 -->
-			<div class="mb-3">
-				<label for="introduce" class="form-label">소개글</label>
-				<textarea id="introduce" name="introduce" class="form-control" rows="4" th:text="${user.introduce}">자기소개 입력</textarea>
-			</div>
+        <!-- 소개글 -->
+        <div class="mb-3">
+            <label for="introduce" class="form-label">소개글</label>
+            <textarea id="introduce" name="introduce" class="form-control" rows="4" th:text="${user.introduce}">자기소개 입력</textarea>
+        </div>
 
-			<!-- 우편번호 -->
-			<div class="mb-3">
-				<label for="zipcode" class="form-label">우편번호</label>
-				<input type="text" id="zipcode" name="zipcode" class="form-control" th:value="${user.zipcode}" readonly onclick="execDaumPostcode()">
-			</div>
+        <!-- 우편번호 -->
+        <div class="mb-3">
+            <label for="zipcode" class="form-label">우편번호</label>
+            <input type="text" id="zipcode" name="zipcode" class="form-control" th:value="${user.zipcode}" readonly onclick="execDaumPostcode()">
+        </div>
 
-			<!-- 기본 주소 -->
-			<div class="mb-3">
-				<label for="address" class="form-label">주소</label>
-				<input type="text" id="address" name="address" class="form-control" th:value="${user.address}" readonly onclick="execDaumPostcode()">
-			</div>
+        <!-- 기본 주소 -->
+        <div class="mb-3">
+            <label for="address" class="form-label">주소</label>
+            <input type="text" id="address" name="address" class="form-control" th:value="${user.address}" readonly onclick="execDaumPostcode()">
+        </div>
 
-			<!-- 상세 주소 -->
-			<div class="mb-3">
-				<label for="addressDetail" class="form-label">상세주소</label>
-				<input type="text" id="addressDetail" name="addressDetail" class="form-control" th:value="${user.addressDetail}">
-			</div>
+        <!-- 상세 주소 -->
+        <div class="mb-3">
+            <label for="addressDetail" class="form-label">상세주소</label>
+            <input type="text" id="addressDetail" name="addressDetail" class="form-control" th:value="${user.addressDetail}">
+        </div>
 
-			<!-- 프로필 이미지 -->
-			<div class="mb-3">
-				<label class="form-label">프로필 이미지</label><br>
-				<img th:if="${user.profile_img != null}" th:src="@{'/images/userimage/' + ${user.profile_img}}" alt="프사 미리보기" class="profile-preview" id="profilePreview">
-				<img th:if="${user.profile_img == null}" src="/default-profile.png" alt="기본 프사" class="profile-preview" id="profilePreview">
-				<input type="file" name="file" class="form-control mt-2" accept="image/*" onchange="previewProfile(event)">
-			</div>
+        <!-- 프로필 이미지 -->
+        <div class="mb-3">
+            <label class="form-label">프로필 이미지</label><br>
+            <img th:if="${user.profile_img != null}" th:src="@{'/images/userimage/' + ${user.profile_img}}" alt="프사 미리보기" class="profile-preview" id="profilePreview">
+            <img th:if="${user.profile_img == null}" src="/default-profile.png" alt="기본 프사" class="profile-preview" id="profilePreview">
+            <input type="file" name="file" class="form-control mt-2" accept="image/*" onchange="previewProfile(event)">
+        </div>
 
-			<!-- 📱 전화번호 + 인증요청 -->
-			<div class="mb-3">
-				<label for="phone" class="form-label">전화번호</label>
-				<div class="input-group">
-					<input type="text" id="phone" name="phone" class="form-control" placeholder="'-' 없이 입력">
-					<button type="button" class="btn btn-outline-primary" onclick="sendCode()">인증요청</button>
-				</div>
-			</div>
+        <!-- 전화번호 + 인증요청 -->
+        <div class="mb-3">
+            <label for="phone" class="form-label">전화번호</label>
+            <div class="input-group">
+                <input type="text" id="phone" name="phone" class="form-control" placeholder="'-' 없이 입력" th:value="${user.phone}">
+                <button type="button" class="btn btn-outline-primary" onclick="sendCode()">인증요청</button>
+            </div>
+        </div>
 
-			<!-- 인증번호 입력 -->
-			<div class="mb-3" id="authCodeBox" style="display: none;">
-				<label for="authCode" class="form-label">인증번호</label>
-				<div class="input-group">
-					<input type="text" id="authCode" class="form-control" placeholder="인증번호 입력">
-					<button type="button" class="btn btn-outline-success" onclick="verifyCode()">확인</button>
-				</div>
-				<div id="authResult" class="form-text text-danger mt-1"></div>
-			</div>
+        <!-- 인증번호 입력 -->
+        <div class="mb-3" id="authCodeBox" style="display: none;">
+            <label for="authCode" class="form-label">인증번호</label>
+            <div class="input-group">
+                <input type="text" id="authCode" class="form-control" placeholder="인증번호 입력">
+                <button type="button" class="btn btn-outline-success" onclick="verifyCode()">확인</button>
+            </div>
+            <div id="authResult" class="form-text text-danger mt-1"></div>
+        </div>
 
-			<!-- 현재 비밀번호 -->
-			<div class="mb-3">
-				<label for="currentPwd" class="form-label">현재 비밀번호</label>
-				<input type="password" id="currentPwd" name="currentPwd" class="form-control" required autocomplete="current-password">
-			</div>
+        <!-- 현재 비밀번호 -->
+        <div class="mb-3">
+            <label for="currentPwd" class="form-label">현재 비밀번호</label>
+            <input type="password" id="currentPwd" name="currentPwd" class="form-control" required autocomplete="current-password">
+        </div>
 
-			<!-- 버튼 -->
-			<div class="text-end">
-				<a th:href="@{/user/mypage}" class="btn btn-secondary">취소</a>
-				<button type="submit" class="btn btn-primary" id="saveBtn" disabled>저장</button>
-			</div>
-		</form>
+        <!-- 버튼 -->
+        <div class="text-end">
+            <a th:href="@{/user/mypage}" class="btn btn-secondary">취소</a>
+            <button type="submit" class="btn btn-primary" id="saveBtn">저장</button>
+        </div>
+    </form>
 
-		<!-- 비밀번호 변경 버튼 -->
-		<div class="text-end mt-2">
-			<a th:href="@{/user/password/change}" class="btn btn-outline-warning">비밀번호 변경</a>
-		</div>
+    <!-- 비밀번호 변경 버튼 -->
+    <div class="text-end mt-2">
+        <a th:href="@{/user/password/change}" class="btn btn-outline-warning">비밀번호 변경</a>
+    </div>
 
-		<!-- 에러 메시지 -->
-		<div th:if="${errorMessage}" class="alert alert-danger mt-3">
-			<p th:text="${errorMessage}">에러 메시지 표시</p>
-		</div>
+    <!-- 에러 메시지 -->
+    <div th:if="${errorMessage}" class="alert alert-danger mt-3">
+        <p th:text="${errorMessage}">에러 메시지 표시</p>
+    </div>
 
-		<!-- 성공 메시지 -->
-		<div th:if="${param.updated}" class="alert alert-success mt-3">
-			<p>정보가 수정되었습니다. 다시 로그인해주세요.</p>
-		</div>
-	</div>
+    <!-- 성공 메시지 -->
+    <div th:if="${param.updated}" class="alert alert-success mt-3">
+        <p>정보가 수정되었습니다. 다시 로그인해주세요.</p>
+    </div>
+</div>
 
-	<!-- 주소 검색 API -->
-	<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-	<script>
-	function execDaumPostcode() {
-		new daum.Postcode({
-			oncomplete: function(data) {
-				document.getElementById("zipcode").value = data.zonecode;
-				document.getElementById("address").value = data.roadAddress || data.jibunAddress;
-				document.getElementById("addressDetail").focus();
-			}
-		}).open();
-	}
-	</script>
+<!-- 주소 검색 API -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+function execDaumPostcode() {
+    new daum.Postcode({
+        oncomplete: function(data) {
+            document.getElementById("zipcode").value = data.zonecode;
+            document.getElementById("address").value = data.roadAddress || data.jibunAddress;
+            document.getElementById("addressDetail").focus();
+        }
+    }).open();
+}
+</script>
 
-	<!-- 프사 미리보기 -->
-	<script>
-	function previewProfile(event) {
-		const preview = document.getElementById("profilePreview");
-		const file = event.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = e => preview.src = e.target.result;
-			reader.readAsDataURL(file);
-		}
-	}
-	</script>
+<!-- 프사 미리보기 -->
+<script>
+function previewProfile(event) {
+    const preview = document.getElementById("profilePreview");
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => preview.src = e.target.result;
+        reader.readAsDataURL(file);
+    }
+}
+</script>
 
-	<!-- 전화번호 인증 로직 -->
-	<script>
-	let serverCode = "";
+<!-- 전화번호 인증 로직 -->
+<script>
+let serverCode = "";
 
-	function sendCode() {
-		const phone = document.getElementById("phone").value;
-		if (!phone || phone.length < 10) {
-			alert("올바른 전화번호를 입력해주세요.");
-			return;
-		}
-		$.ajax({
-			url: "/phone/send",
-			type: "get",
-			data: { to: phone },
-			success: function(code) {
-				serverCode = code;
-				$("#authCodeBox").show();
-				$("#authResult").text("인증번호가 발송되었습니다.").removeClass("text-danger").addClass("text-success");
-			},
-			error: function() {
-				alert("인증번호 전송에 실패했습니다.");
-			}
-		});
-	}
+function sendCode() {
+    const phone = document.getElementById("phone").value;
+    if (!phone || phone.length < 10) {
+        alert("올바른 전화번호를 입력해주세요.");
+        return;
+    }
+    $.ajax({
+        url: "/phone/send",
+        type: "get",
+        data: { to: phone },
+        success: function(code) {
+            serverCode = code;
+            $("#authCodeBox").show();
+            $("#authResult").text("인증번호가 발송되었습니다.").removeClass("text-danger").addClass("text-success");
+        },
+        error: function() {
+            alert("인증번호 전송에 실패했습니다.");
+        }
+    });
+}
 
-	function verifyCode() {
-		const input = document.getElementById("authCode").value;
-		if (input === serverCode) {
-			$("#authResult").text("인증 성공 ✅").removeClass("text-danger").addClass("text-success");
-			document.getElementById("saveBtn").disabled = false;
-		} else {
-			$("#authResult").text("인증번호가 일치하지 않습니다.").removeClass("text-success").addClass("text-danger");
-			document.getElementById("saveBtn").disabled = true;
-		}
-	}
-	</script>
+function verifyCode() {
+    const input = document.getElementById("authCode").value;
+    const phone = document.getElementById("phone").value;
+
+    if (input === serverCode) {
+        $("#authResult").text("인증 성공 ✅").removeClass("text-danger").addClass("text-success");
+
+        // 인증된 번호를 서버에 전달하여 세션에 저장
+        $.ajax({
+            url: "/phone/verify/success",
+            type: "post",
+            data: { phone: phone },
+            success: function() {
+                console.log("서버에 인증된 전화번호 저장 완료");
+            }
+        });
+    } else {
+        $("#authResult").text("인증번호가 일치하지 않습니다.").removeClass("text-success").addClass("text-danger");
+    }
+}
+</script>
 </th:block>
+
 </body>
 </html>
