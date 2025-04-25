@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>야구장 날씨 지도</title>
+    <link rel="stylesheet" th:href="@{/css/weather.css}" />
+    <style>
+        #kbo-map-container {
+            position: relative;
+            width: 700px;
+            height: auto;
+        }
+
+        #korea-map {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .circle-marker {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 28px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        #stadium-info-panel {
+            flex: 0.6;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 300px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container d-flex gap-4 py-4">
+        <!-- 지도 영역 -->
+        <div id="kbo-map-container">
+            <img src="/images/map/map.png" alt="KBO 지도" id="korea-map"/>
+        </div>
+
+        <!-- 오른쪽 정보 패널 -->
+        <div id="stadium-info-panel">
+            <h3>경기장을 클릭!</h3>
+        </div>
+    </div>
+</div>
+
+<!-- 스크립트 -->
+<div layout:fragment="script">
+    <script>
+        const teamColors = {
+            SK: '#D50032', DOOSAN: '#0F2540', KIWOOM: '#7F1734', SAMSUNG: '#0033A0',
+            LOTTE: '#C8102E', NC: '#0C2340', KT: '#1C1C1C', HANWHA: '#FF7A00', KIA: '#C20F2F', LG: '#A50034'
+        };
+
+        const teamPositions = {
+            SK:       { top: "28%", left: "38%", label: "SK", stadium: "인천SSG랜더스필드" },
+            DOOSAN:   { top: "30%", left: "37%", label: "DS", stadium: "잠실야구장" },
+            KIWOOM:   { top: "33%", left: "47%", label: "KM", stadium: "고척돔" },
+            SAMSUNG:  { top: "65%", left: "62%", label: "SS", stadium: "대구라이온즈파크" },
+            LOTTE:    { top: "75%", left: "70%", label: "LT", stadium: "사직야구장" },
+            NC:       { top: "72%", left: "65%", label: "NC", stadium: "창원NC파크" },
+            KT:       { top: "40%", left: "50%", label: "KT", stadium: "수원KT위즈파크" },
+            HANWHA:   { top: "53%", left: "52%", label: "HH", stadium: "대전한화생명이글스파크" },
+            KIA:      { top: "72%", left: "48%", label: "KIA", stadium: "광주챔피언스필드" },
+            LG:       { top: "30%", left: "37%", label: "LG", stadium: "잠실야구장" },
+        };
+
+        const container = document.getElementById("kbo-map-container");
+
+        fetch("/api/today-games")
+        .then(res => res.json())
+        .then(games => {
+            const ssgTodayStadiums = games
+                .filter(game => game.team.toLowerCase() === "sk")
+                .map(game => game.stadium);
+
+            Object.entries(teamPositions).forEach(([team, pos]) => {
+                const isSSGToday = ssgTodayStadiums.includes(pos.stadium);
+                
+                const marker = document.createElement("div");
+                marker.className = "circle-marker";
+                marker.textContent = pos.label;
+                marker.style.left = pos.left;
+                marker.style.top = pos.top;
+                marker.style.backgroundColor = isSSGToday ? teamColors[team] : 'black';
+
+                marker.addEventListener("click", () => {
+                    if (isSSGToday) {
+                        fetch(`/api/weather/${team.toLowerCase()}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                const infoBox = document.getElementById("stadium-info-panel");
+                                infoBox.innerHTML = `
+                                    <h3>${pos.stadium}</h3>
+                                    <p><strong>날씨:</strong> ${data.weather || "정보 없음"}</p>
+                                    <p><strong>기온:</strong> ${data.temp || "정보 없음"}</p>
+                                    <p><strong>습도:</strong> ${data.humidity || "정보 없음"}</p>
+                                    <p><strong>풍속:</strong> ${data.wind || "정보 없음"}</p>
+                                `;
+                            });
+                    } else {
+                        const infoBox = document.getElementById("stadium-info-panel");
+                        infoBox.innerHTML = `
+                            <h3>${pos.stadium}</h3>
+                            <p>해당경기장의 SSG 차후 일정은 ~~~입니다.</p>
+                        `;
+                    }
+                });
+
+                container.appendChild(marker);
+            });
+        });
+    </script>
+</div>
+</body>
+</html>
