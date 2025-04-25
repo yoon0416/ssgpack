@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-<title>게시판 목록</title>
-<style>
-.pagination {
-	margin-top: 20px;
-}
+    <title>게시판 목록</title>
+    <style>
+        .pagination {
+            margin-top: 20px;
+        }
 
-.pagination a {
-	margin: 0 5px;
-	padding: 5px 10px;
-	text-decoration: none;
-	border: 1px solid #ccc;
-}
+        .pagination a {
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            border: 1px solid #ccc;
+        }
 
-.pagination a.active {
-	font-weight: bold;
-	color: white;
-	background-color: #007bff;
-	border: 1px solid #007bff;
-}
-</style>
+        .pagination a.active {
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .comment-count {
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-	<th:block layout:fragment="content">
-		<div class="container mt-5">
-			<h2 class="mb-4">📋 게시판 목록</h2>
+<th:block layout:fragment="content">
+    <div class="container mt-5">
+        <h2 class="mb-4">📋 게시판 목록</h2>
 
-			<!-- 로그인한 사용자만 글쓰기 버튼 보이게 -->
-			<div class="text-end mb-3" sec:authorize="isAuthenticated()">
-				<a th:href="@{/board/write}" class="btn btn-primary">글쓰기</a>
-			</div>
+        <!-- 글쓰기 버튼 (로그인 사용자만) -->
+        <div class="text-end mb-3" sec:authorize="isAuthenticated()">
+            <a th:href="@{/board/write}" class="btn btn-primary">글쓰기</a>
+        </div>
 
-			<table
-				class="table table-bordered table-hover align-middle text-center">
+        <!-- 게시판 테이블 -->
+        <table class="table table-bordered table-hover align-middle text-center">
 				<thead class="table-light">
 					<tr>
-						<th>ID</th>
+						<th>번호</th>
 						<th>제목</th>
 						<th>작성자</th>
 						<th>작성일</th>
@@ -47,11 +52,16 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="board : ${boardList}">
-						<td th:text="${board.id}">1</td>
+					<tr th:each="board, iterStat : ${boardList}">
+						<td
+							th:text="${paging.totalItems - (paging.currentPage * paging.pageSize + iterStat.index)}">1</td>
+
 						<td class="text-start"><a
 							th:href="@{'/board/view/' + ${board.id}}"
-							th:text="${board.title}">제목</a></td>
+							th:text="${board.title}">제목</a> <span class="comment-count"
+							th:if="${#lists.size(board.comments) > 0}"
+							th:text="| [${board.comments.size()}]|">[0]</span></td>
+
 						<td
 							th:text="${board.user != null ? board.user.nick_name : '알 수 없음'}">작성자</td>
 						<td th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd')}">작성일</td>
@@ -61,34 +71,32 @@
 				</tbody>
 			</table>
 
-			<div class="pagination">
+        <!-- 페이징 -->
+        <div class="pagination">
+            <!-- 이전 버튼 -->
+            <span th:if="${paging.hasPrev}">
+                <a th:href="@{/board/list(page=${paging.startPage - 2})}">이전</a>
+            </span>
 
-				<!-- 이전 버튼 -->
-				<span th:if="${paging.hasPrev}"> <a
-					th:href="@{/board/list(page=${paging.startPage - 2})}">이전</a>
-				</span>
+            <!-- 페이지 번호 -->
+            <span th:each="i : ${#numbers.sequence(paging.startPage, paging.endPage)}">
+                <a th:href="@{/board/list(page=${i - 1})}"
+                   th:text="${i}"
+                   th:classappend="${paging.currentPage + 1 == i} ? 'active'">1</a>
+            </span>
 
-				<!-- 페이지 번호 버튼 -->
-				<span
-					th:each="i : ${#numbers.sequence(paging.startPage, paging.endPage)}">
-					<a th:href="@{/board/list(page=${i - 1})}" th:text="${i}"
-					th:classappend="${paging.currentPage + 1 == i} ? 'active'"></a>
-				</span>
+            <!-- 다음 버튼 -->
+            <span th:if="${paging.hasNext}">
+                <a th:href="@{/board/list(page=${paging.endPage})}">다음</a>
+            </span>
+        </div>
 
-				<!-- 다음 버튼 -->
-				<span th:if="${paging.hasNext}"> <a
-					th:href="@{/board/list(page=${paging.endPage})}">다음</a>
-				</span>
-
-			</div>
-			
-			<form th:action="@{/board/list}" method="get">
-				<input type="text" name="keyword" th:value="${keyword}"
-					placeholder="검색어를 입력하세요">
-				<button type="submit">검색</button>
-			</form>
-
-		</div>
-	</th:block>
+        <!-- 검색 폼 -->
+        <form th:action="@{/board/list}" method="get" class="mt-4">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요">
+            <button type="submit" class="btn btn-outline-primary">검색</button>
+        </form>
+    </div>
+</th:block>
 </body>
 </html>
