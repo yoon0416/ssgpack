@@ -4,6 +4,11 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>게시글 상세보기</title>
+    <style>
+        .reply {
+            margin-left: 30px;
+        }
+    </style>
 </head>
 <body>
 <th:block layout:fragment="content">
@@ -38,10 +43,13 @@
             <a th:href="@{/admin/board/list}" class="btn btn-secondary">목록</a>
         </div>
 
+        <!-- ✅ 댓글 목록 출력 (대댓글 포함) -->
         <div class="mt-5">
             <h5>댓글</h5>
             <ul class="list-group">
-                <li class="list-group-item" th:each="comment : ${board.comments}">
+                <li class="list-group-item"
+                    th:each="comment : ${board.comments}"
+                    th:if="${comment.parent == null}">
                     <div class="d-flex justify-content-between">
                         <span><b th:text="${comment.user.nick_name}"></b>: <span th:text="${comment.content}"></span></span>
                         <form th:action="@{/admin/board/comment/delete/{id}(id=${comment.id})}" method="post">
@@ -49,6 +57,21 @@
                             <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
                         </form>
                     </div>
+
+                    <!-- ✅ 대댓글 출력 -->
+                    <ul class="list-group mt-2 ms-4">
+                        <li class="list-group-item reply"
+                            th:each="reply : ${board.comments}"
+                            th:if="${reply.parent?.id == comment.id}">
+                            <div class="d-flex justify-content-between">
+                                <span><b th:text="${reply.user.nick_name}"></b>: <span th:text="${reply.content}"></span></span>
+                                <form th:action="@{/admin/board/comment/delete/{id}(id=${reply.id})}" method="post">
+                                    <input type="hidden" name="boardId" th:value="${board.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+                                </form>
+                            </div>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>

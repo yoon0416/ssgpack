@@ -4,16 +4,31 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>관리자 게시판 목록</title>
+    <style>
+        .comment-count {
+            color: #888;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        
+        .notice-row {
+        background-color: #f8f9fa;  /* 연한 회색 */
+        font-weight: bold;
+    }
+        
+    </style>
 </head>
 <body>
 <th:block layout:fragment="content">
     <div class="container mt-5">
         <h2 class="mb-4">📢 관리자 게시판 목록</h2>
 
+        <!-- ✅ 공지사항 작성 버튼 -->
         <div class="text-end mb-3">
             <a th:href="@{/admin/board/write}" class="btn btn-success">공지사항 작성</a>
         </div>
 
+        <!-- ✅ 게시글 목록 테이블 -->
         <table class="table table-bordered table-hover text-center align-middle">
             <thead class="table-light">
             <tr>
@@ -27,17 +42,25 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="board : ${boardList}">
+            <!-- ✅ 전체 게시글 반복 출력 -->
+            <tr th:each="board : ${boardList}" th:classappend="${board.title != null and board.title.startsWith('[공지]')} ? 'notice-row'">
                 <td th:text="${board.id}">1</td>
                 <td class="text-start">
                     <a th:href="@{'/admin/board/view/' + ${board.id}}" th:text="${board.title}">제목</a>
+                    <!-- ✅ 댓글 수 출력 -->
+                    <span class="comment-count"
+                          th:if="${#lists.size(board.comments) > 0}"
+                          th:text="|[${board.comments.size()}]|">[0]</span>
                 </td>
                 <td th:text="${board.user != null ? board.user.nick_name : '알 수 없음'}">작성자</td>
                 <td th:text="${board.ip}">0.0.0.0</td>
                 <td th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd')}">작성일</td>
                 <td th:text="${board.hit}">0</td>
                 <td>
-                    <form th:action="@{'/admin/board/delete/' + ${board.id}}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <!-- ✅ 강제 삭제 버튼 -->
+                    <form th:action="@{'/admin/board/delete/' + ${board.id}}"
+                          method="post"
+                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
                         <button type="submit" class="btn btn-sm btn-danger">강제 삭제</button>
                     </form>
                 </td>
@@ -45,10 +68,9 @@
             </tbody>
         </table>
 
-        <!-- 페이징 영역 -->
+        <!-- ✅ 페이징 -->
         <nav class="d-flex justify-content-center mt-4">
             <ul class="pagination">
-
                 <li class="page-item" th:classappend="${!paging.hasPrev} ? 'disabled'">
                     <a class="page-link"
                        th:href="@{/admin/board/list(page=${paging.startPage - 2}, keyword=${keyword})}"
@@ -72,11 +94,10 @@
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
-
             </ul>
         </nav>
 
-        <!-- 검색 폼 -->
+        <!-- ✅ 검색 폼 -->
         <form th:action="@{/admin/board/list}" method="get" class="mt-3 d-flex justify-content-center gap-2">
             <input type="text" name="keyword" th:value="${keyword}" class="form-control w-25" placeholder="검색어 입력">
             <button type="submit" class="btn btn-sm btn-primary">검색</button>
