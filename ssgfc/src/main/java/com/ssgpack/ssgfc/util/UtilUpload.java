@@ -15,7 +15,7 @@ public class UtilUpload {
     @Value("${resource.path}")
     private String basePath;
 
-    // 파일 저장 및 UUID로 파일명 생성
+    // 일반 업로드
     public String fileUpload(MultipartFile file, String subDir) throws IOException {
         if (file.isEmpty()) return null;
 
@@ -26,5 +26,10 @@ public class UtilUpload {
         File target = new File(dir, saveName);
         FileCopyUtils.copy(file.getBytes(), target);
         return saveName;
+    }
+
+    //  유저 프로필 전용 업로드
+    public String uploadUserProfile(MultipartFile file) throws IOException {
+    	return fileUpload(file, "userimage/");
     }
 }

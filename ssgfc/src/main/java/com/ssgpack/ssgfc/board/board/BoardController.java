@@ -14,9 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -26,38 +25,42 @@ public class BoardController {
     private final BoardService boardService;
     private final LikeService likeService;
 
-    // ✅ 게시글 목록 (검색 + 페이징 포함)
     @GetMapping("/list")
     public String list(Model model,
                        @RequestParam(value = "page", defaultValue = "0") int page,
                        @RequestParam(value = "keyword", required = false) String keyword) {
 
-        Page<Board> pagingList = boardService.getPaging(page, keyword);
+        // 공지글: 모든 게시글 중에서 title이 [공지]로 시작하는 것만 필터링
+        List<Board> allBoards = boardService.findAll();
+        List<Board> noticeBoards = allBoards.stream()
+            .filter(b -> b.getTitle() != null && b.getTitle().startsWith("[공지]"))
+            .collect(Collectors.toList());
+
+        // 일반 게시글: 공지를 제외한 나머지 + 검색 키워드 대응
+        Page<Board> pagingList = boardService.getPagingExcludeNotice(page, keyword);
         PagingDto paging = new PagingDto((int) pagingList.getTotalElements(), page);
 
-        model.addAttribute("boardList", pagingList.getContent());
+        model.addAttribute("noticeBoards", noticeBoards);
+        model.addAttribute("normalBoards", pagingList.getContent());
         model.addAttribute("paging", paging);
         model.addAttribute("keyword", keyword);
 
         return "board/list";
     }
 
-    // ✅ 인기글 리스트 (메인 페이지에 일부만 보여주기)
     @GetMapping("/popular")
     public String popular(Model model) {
-        List<Board> popularBoards = boardService.getPopularBoards(3); // 상위 3개
+        List<Board> popularBoards = boardService.getPopularBoards(3);
         model.addAttribute("popularBoards", popularBoards);
-        return "redirect:/"; // 또는 "main" 페이지에 포함될 경우 메인 템플릿으로
+        return "redirect:/";
     }
 
-    // ✅ 글쓰기 폼
     @GetMapping("/write")
     public String writeForm(Model model) {
         model.addAttribute("board", new Board());
         return "board/write";
     }
 
-    // ✅ 글쓰기 처리
     @PostMapping("/write")
     public String writeSubmit(@Valid @ModelAttribute("board") Board board,
                               BindingResult result,
@@ -74,15 +77,12 @@ public class BoardController {
         return "redirect:/board/list";
     }
 
-    // ✅ 게시글 상세 조회 + 조회수 제한 (세션 기반)
     @GetMapping("/view/{id}")
     public String view(@PathVariable Long id,
                        @AuthenticationPrincipal CustomUserDetails userDetails,
                        Model model,
                        HttpSession session) {
 
-        // ✅ 조회수 중복 방지 로직 (세션 기반)
-        @SuppressWarnings("unchecked")
         Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
         if (viewedBoards == null) {
             viewedBoards = new HashSet<>();
@@ -94,7 +94,6 @@ public class BoardController {
             session.setAttribute("viewedBoards", viewedBoards);
         }
 
-        // 기존 로직
         Board board = boardService.find(id);
         model.addAttribute("board", board);
 
@@ -109,7 +108,6 @@ public class BoardController {
         return "board/view";
     }
 
-    // ✅ 수정 폼
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id,
                            Model model,
@@ -124,7 +122,6 @@ public class BoardController {
         return "board/edit";
     }
 
-    // ✅ 수정 처리
     @PostMapping("/edit")
     public String editSubmit(@Valid @ModelAttribute("board") Board board,
                              BindingResult result,
@@ -141,13 +138,12 @@ public class BoardController {
         }
 
         board.setUser(userDetails.getUser());
-        board.setIp(); // 수정 시에도 IP 갱신
+        board.setIp();
         boardService.update(board.getId(), board, file);
 
         return "redirect:/board/view/" + board.getId();
     }
 
-    // ✅ 삭제
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id,
                          @AuthenticationPrincipal CustomUserDetails userDetails) {

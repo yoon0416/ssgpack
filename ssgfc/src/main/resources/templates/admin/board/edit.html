@@ -7,32 +7,34 @@
 </head>
 <body>
 <th:block layout:fragment="content">
-<div class="container mt-5">
-    <h2 class="mb-4">✏️ 게시글 수정</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4">✏️ 게시글 수정</h2>
 
-    <form th:action="@{'/admin/board/edit/' + ${board.id}}" method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="title" class="form-label">제목</label>
-            <input type="text" class="form-control" id="title" name="title" th:value="${board.title}" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="content" class="form-label">내용</label>
-            <textarea class="form-control" id="content" name="content" rows="6" required
-                      th:text="${board.content}"></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label for="img" class="form-label">이미지</label>
-            <input type="text" class="form-control" id="img" name="img" th:value="${board.img}">
-        </div>
-
-        <div class="d-flex justify-content-between">
-            <a th:href="@{/admin/board/view/{id}(id=${board.id})}" class="btn btn-secondary">취소</a>
-            <button type="submit" class="btn btn-primary">수정 완료</button>
-        </div>
-    </form>
-</div>
+        <form th:action="@{/admin/board/edit/{id}(id=${board.id})}" method="post" enctype="multipart/form-data" th:object="${board}">
+            <div class="mb-3">
+                <label>제목</label>
+                <input type="text" th:field="*{title}" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label>내용</label>
+                <textarea th:field="*{content}" class="form-control" rows="10"></textarea>
+            </div>
+            <div class="mb-3">
+                <label>기존 이미지</label>
+                <div th:if="${board.img != null}">
+                    <img th:src="@{'/uploads/' + ${board.img}}" style="max-width: 300px;">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label>새 이미지 첨부</label>
+                <input type="file" name="file" class="form-control">
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">수정</button>
+                <a th:href="@{/admin/board/view/{id}(id=${board.id})}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </div>
 </th:block>
 </body>
 </html>

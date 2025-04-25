@@ -7,22 +7,28 @@
 </head>
 <body>
 <th:block layout:fragment="content">
-<div class="container mt-5">
-    <h2 class="mb-4">📢 공지사항 작성</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4">📝 공지사항 작성</h2>
 
-    <form th:action="@{/admin/board/write}" method="post">
-        <div class="mb-3">
-            <label>제목</label>
-            <input type="text" name="title" class="form-control" th:value="${board.title}">
-        </div>
-        <div class="mb-3">
-            <label>내용</label>
-            <textarea name="content" class="form-control" rows="10" th:text="${board.content}"></textarea>
-        </div>
-        <button type="submit" class="btn btn-danger">작성 완료</button>
-        <a th:href="@{/admin/board}" class="btn btn-secondary">목록</a>
-    </form>
-</div>
+        <form th:action="@{/admin/board/write}" method="post" enctype="multipart/form-data" th:object="${board}">
+            <div class="mb-3">
+                <label>제목</label>
+                <input type="text" th:field="*{title}" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label>내용</label>
+                <textarea th:field="*{content}" class="form-control" rows="10"></textarea>
+            </div>
+            <div class="mb-3">
+                <label>이미지 첨부</label>
+                <input type="file" name="file" class="form-control">
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">작성</button>
+                <a th:href="@{/admin/board/list}" class="btn btn-secondary">취소</a>
+            </div>
+        </form>
+    </div>
 </th:block>
 </body>
 </html>
