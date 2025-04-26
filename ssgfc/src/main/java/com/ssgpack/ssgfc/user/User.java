@@ -75,10 +75,6 @@ public class User {
     @Column(name = "email_chk", nullable = false)
     private boolean email_chk = false;
 
-    // 이메일 인증용 토큰 (임시 랜덤값 저장용)
-    @Column(name = "email_token")
-    private String email_token;
-
     //전화번호
     @Column(name = "phone", length = 20)
     private String phone;
