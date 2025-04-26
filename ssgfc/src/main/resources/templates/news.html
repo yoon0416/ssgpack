@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+  <meta charset="UTF-8">
+  <title>📰 야구 뉴스</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+
+</head>
+
+<body>
+  <section layout:fragment="content">
+    <div class="container mt-5">
+      <h2 class="mb-4">📰 최신 KBO 뉴스</h2>
+      <div id="news-container"></div>
+      <button id="load-more" class="btn btn-outline-primary">더보기</button>
+    </div>
+  </section>
+
+<!-- 📄 src/main/resources/templates/news.html -->
+
+<div th:fragment="news-fragment">
+  <div class="container mt-4">
+   
+    <div id="news-container"></div>
+    <button id="load-more" class="btn btn-outline-primary mt-2">더보기</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let allItems = [];
+      let currentIndex = 0;
+      const pageSize = 3;
+      const container = document.getElementById("news-container");
+      const loadMoreBtn = document.getElementById("load-more");
+
+      axios.get("/api/news/baseball")
+        .then(response => {
+          allItems = response.data.items;
+
+          if (!allItems || allItems.length === 0) {
+            container.innerHTML = "<p>뉴스가 없습니다.</p>";
+            loadMoreBtn.style.display = "none";
+            return;
+          }
+
+          renderItems();
+        })
+        .catch(error => {
+          container.innerHTML = "<p>뉴스를 불러오지 못했습니다.</p>";
+          loadMoreBtn.style.display = "none";
+        });
+
+      function renderItems() {
+        const nextItems = allItems.slice(currentIndex, currentIndex + pageSize);
+        nextItems.forEach(news => {
+          const card = document.createElement("div");
+          card.className = "news-card";
+          card.style.border = "1px solid #ddd";
+          card.style.borderRadius = "10px";
+          card.style.padding = "15px";
+          card.style.marginBottom = "10px";
+          card.style.boxShadow = "2px 2px 6px rgba(0,0,0,0.05)";
+
+          card.innerHTML = `
+            <div class="news-title" style="font-size:16px; font-weight:bold;">
+              <a href="${news.link}" target="_blank">${news.title.replace(/<[^>]*>?/g, '')}</a>
+            </div>
+            <div class="news-description" style="font-size:14px; color:#555;">
+              ${news.description.replace(/<[^>]*>?/g, '')}
+            </div>
+            <div class="news-date mt-2" style="font-size:12px; color:gray;">
+              🕒 ${news.pubDate}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        currentIndex += pageSize;
+
+        if (currentIndex >= allItems.length) {
+          loadMoreBtn.style.display = "none";
+        }
+      }
+
+      loadMoreBtn.addEventListener("click", renderItems);
+    });
+  </script>
+</div>
+
+</body>
+</html>

@@ -6,7 +6,6 @@
   <meta charset="UTF-8">
   <title>선수 상세정보</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body {
       font-family: sans-serif;
@@ -16,14 +15,17 @@
     .record-table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
     }
     .record-table th, .record-table td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
+      vertical-align: middle;
     }
     .record-table th {
-      background-color: #eee;
+      background-color: #f2f2f2;
     }
     .info-table {
       width: 100%;
@@ -49,53 +51,19 @@
 <th:block layout:fragment="content">
 
   <div class="container my-5 p-4 bg-white shadow-sm rounded">
-	<p id="viewCount" style="font-size: 14px; color: gray;">조회수: 0</p>
+    <p id="viewCount" style="font-size: 14px; color: gray;">조회수: 0</p>
     <div style="display: flex; align-items: center; gap: 25px;">
-     
       <img id="playerImage" src="" alt="선수 이미지"
            style="width: 160px; height: 210px; object-fit: contain; background-color: white; align-self: flex-end;" />
-      
-	       
       <div>
-      
         <h1 id="playerName" style="margin: 0 0 10px 0; font-size: 24px;">선수 이름</h1>
         <h3 id="playerPosition" style="margin: 0 0 10px 0; font-size: 16px; color:red">포지션</h3>
-        
         <p id="playerInfo" style="margin: 0; font-size: 16px; color: #555;">선수 기본 정보 표시 예정</p>
       </div>
     </div>
 
-    <h2 class="mt-4">🗳️주요 기록🗳️</h2>
-
-    <div id="hitterSection">
-      <h3>타자 기록</h3>
-      <table class="record-table" id="hitterTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>타율</th><th>홈런</th><th>타점</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="catcherSection">
-      <h3 style="margin-top: 40px;">포수 기록</h3>
-      <table class="record-table" id="catcherTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>타율</th><th>출루율</th><th>장타율</th><th>OPS</th><th>삼진</th><th>도루저지</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="pitcherSection">
-      <h3 style="margin-top: 40px;">투수 기록</h3>
-      <table class="record-table" id="pitcherTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>ERA</th><th>삼진</th><th>WHIP</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <h2 class="mt-4">🗳️ 주요 기록 🗳️</h2>
+    <div id="statSection"></div>
   </div>
 
   <script>
@@ -104,13 +72,17 @@
       const pNo = pathParts[pathParts.length - 1];
 
       fetch(`/api/players/${pNo}?t=${Date.now()}`)
-
         .then(res => res.json())
         .then(player => {
-          console.log("✅ 선수 데이터:", player);
-
           document.getElementById('playerName').textContent = player.name;
           document.getElementById('playerPosition').textContent = player.position;
+          document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
+
+          const imgEl = document.getElementById('playerImage');
+          if (imgEl && player.imageUrl) {
+            imgEl.src = player.imageUrl;
+            imgEl.onerror = () => { imgEl.src = '/images/players/default.png'; };
+          }
 
           document.getElementById('playerInfo').innerHTML = `
             <table class="info-table">
@@ -122,70 +94,86 @@
               <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
             </table>
           `;
-		  document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
 
-          const imgEl = document.getElementById('playerImage');
-          if (imgEl && player.imageUrl) {
-            imgEl.src = player.imageUrl;
-            imgEl.onerror = () => { imgEl.src = '/images/players/default.png'; };
+          const statSection = document.getElementById('statSection');
+          const stats = player.stats ?? [];
+          if (stats.length === 0) {
+            statSection.innerHTML = '<p>기록이 없습니다.</p>';
+            return;
           }
 
-          const hitterTbody = document.querySelector('#hitterTable tbody');
-          const catcherTbody = document.querySelector('#catcherTable tbody');
-          const pitcherTbody = document.querySelector('#pitcherTable tbody');
+          const hitterHeaders = ["Div.", "G", "PA", "AB", "H", "HR", "RBI", "AVG", "OBP", "SLG", "OPS", "WAR", "R/ePA"];
+          const pitcherHeaders = ["Div.", "G", "IP", "W", "L", "ERA", "WHIP", "FIP", "SO", "WAR"];
 
-          let hasHitter = false, hasCatcher = false, hasPitcher = false;
+          const statNameMapping = {
+            "Div.": "구분", "G": "경기수", "PA": "타석", "AB": "타수", "H": "안타", "HR": "홈런", "RBI": "타점",
+            "AVG": "타율", "OBP": "출루율", "SLG": "장타율", "OPS": "OPS", "WAR": "WAR", "R/ePA": "득점 기대치",
+            "IP": "이닝", "W": "승", "L": "패", "ERA": "평균자책", "WHIP": "WHIP", "FIP": "FIP", "SO": "삼진"
+          };
 
-          const playerMainPos = (player.position ?? '').trim().toUpperCase();
+          let hitterTableCreated = false;
+          let pitcherTableCreated = false;
+          let hitterTable, hitterThead, hitterTbody;
+          let pitcherTable, pitcherThead, pitcherTbody;
 
-          (player.stats ?? []).forEach(stat => {
+          stats.forEach(stat => {
             const map = stat.statMap || {};
-            const season = stat.season ?? map.Year ?? '-';
-            const statPos = (map["Pos."] ?? '').trim().toUpperCase();
-            const pos = statPos || playerMainPos;
-            console.log("📌 기록 분류중:", pos, map);
+            const pos = (map["Pos."] ?? '').toUpperCase();
+            const isPitcher = pos === 'P';
 
-            const tr = document.createElement('tr');
-
-            if (pos === 'P') {
-              tr.innerHTML = `
-                <td>${season}</td>
-                <td>${map.WAR ?? '-'}</td>
-                <td>${map.ERA ?? '-'}</td>
-                <td>${map.SO ?? '-'}</td>
-                <td>${map.WHIP ?? '-'}</td>
-              `;
+            if (isPitcher) {
+              if (!pitcherTableCreated) {
+                pitcherTable = document.createElement('table');
+                pitcherTable.className = 'record-table';
+                pitcherThead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                pitcherHeaders.forEach(key => {
+                  const th = document.createElement('th');
+                  th.textContent = statNameMapping[key] ?? key;
+                  headerRow.appendChild(th);
+                });
+                pitcherThead.appendChild(headerRow);
+                pitcherTbody = document.createElement('tbody');
+                pitcherTable.appendChild(pitcherThead);
+                pitcherTable.appendChild(pitcherTbody);
+                pitcherTableCreated = true;
+              }
+              const tr = document.createElement('tr');
+              pitcherHeaders.forEach(key => {
+                const td = document.createElement('td');
+                td.textContent = map[key] ?? '-';
+                tr.appendChild(td);
+              });
               pitcherTbody.appendChild(tr);
-              hasPitcher = true;
-            } else if (pos === 'C') {
-              tr.innerHTML = `
-                <td>${season}</td>
-                <td>${map.WAR ?? '-'}</td>
-                <td>${map.AVG ?? '-'}</td>
-                <td>${map.OBP ?? '-'}</td>
-                <td>${map.SLG ?? '-'}</td>
-                <td>${map.OPS ?? '-'}</td>
-                <td>${map.SO ?? '-'}</td>
-                <td>${map.CS ?? '-'}</td>
-              `;
-              catcherTbody.appendChild(tr);
-              hasCatcher = true;
             } else {
-              tr.innerHTML = `
-                <td>${season}</td>
-                <td>${map.WAR ?? '-'}</td>
-                <td>${map.AVG ?? '-'}</td>
-                <td>${map.HR ?? '-'}</td>
-                <td>${map.RBI ?? '-'}</td>
-              `;
+              if (!hitterTableCreated) {
+                hitterTable = document.createElement('table');
+                hitterTable.className = 'record-table';
+                hitterThead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                hitterHeaders.forEach(key => {
+                  const th = document.createElement('th');
+                  th.textContent = statNameMapping[key] ?? key;
+                  headerRow.appendChild(th);
+                });
+                hitterThead.appendChild(headerRow);
+                hitterTbody = document.createElement('tbody');
+                hitterTable.appendChild(hitterThead);
+                hitterTable.appendChild(hitterTbody);
+                hitterTableCreated = true;
+              }
+              const tr = document.createElement('tr');
+              hitterHeaders.forEach(key => {
+                const td = document.createElement('td');
+                td.textContent = map[key] ?? '-';
+                tr.appendChild(td);
+              });
               hitterTbody.appendChild(tr);
-              hasHitter = true;
             }
           });
 
-          if (!hasHitter) document.getElementById('hitterSection').style.display = 'none';
-          if (!hasCatcher) document.getElementById('catcherSection').style.display = 'none';
-          if (!hasPitcher) document.getElementById('pitcherSection').style.display = 'none';
+          if (hitterTableCreated) statSection.appendChild(hitterTable);
+          if (pitcherTableCreated) statSection.appendChild(pitcherTable);
 
         })
         .catch(err => {
