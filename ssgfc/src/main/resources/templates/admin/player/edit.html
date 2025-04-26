@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>선수 수정하기</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+
+<div class="container" style="max-width:600px; margin-top:30px;">
+  <h1 style="text-align:center;">✏️ 선수 수정하기</h1>
+
+  <form th:action="@{'/admin/player/edit/' + ${player.id}}" method="post" enctype="multipart/form-data">
+    <table class="table">
+      <tr><th>이름</th><td><input type="text" name="name" th:value="${player.name}" required></td></tr>
+      <tr><th>포지션</th><td><input type="text" name="position" th:value="${player.position}"></td></tr>
+      <tr><th>등번호</th><td><input type="text" name="backNumber" th:value="${player.backNumber}"></td></tr>
+      <tr><th>생년월일</th><td><input type="date" name="birthDate" th:value="${player.birthDate}"></td></tr>
+      <tr><th>학교</th><td><input type="text" name="school" th:value="${player.school}"></td></tr>
+      <tr><th>신인지명</th><td><input type="text" name="draftInfo" th:value="${player.draftInfo}"></td></tr>
+      <tr><th>활약연도</th><td><input type="text" name="activeYears" th:value="${player.activeYears}"></td></tr>
+      <tr><th>활약팀</th><td><input type="text" name="teams" th:value="${player.teams}"></td></tr>
+      <tr>
+        <th>현재 이미지</th>
+        <td>
+          <img th:src="${player.imageUrl}" style="width: 120px; height: auto;" onerror="this.src='/images/players/default.png'"><br>
+          <small th:text="${player.imageUrl}"></small>
+        </td>
+      </tr>
+      <tr>
+        <th>새 이미지 업로드</th>
+        <td><input type="file" name="playerImage"></td>
+      </tr>
+    </table>
+
+    <div style="text-align:center; margin-top:20px;">
+      <button type="submit" style="background-color:#C8102E; color:white; padding:10px 20px; border:none; border-radius:8px;">저장하기</button>
+      <a th:href="@{/admin/player/view/{id}(id=${player.id})}" style="margin-left:10px; color:#C8102E;">취소</a>
+    </div>
+  </form>
+</div>
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>선수 상세 보기</title>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+<div class="container my-5 p-4 bg-white shadow rounded">
+
+  <div class="d-flex align-items-center mb-4" style="gap: 30px;">
+    <img th:src="${player.imageUrl}" alt="선수 이미지"
+         style="width:160px; height:210px; object-fit:contain; border-radius:8px; background-color:#f9f9f9;"
+         onerror="this.src='/images/players/default.png'">
+
+    <div>
+      <h1 class="mb-2" th:text="${player.name}">선수 이름</h1>
+      <h4 class="text-danger" th:text="${player.position}">포지션</h4>
+    </div>
+  </div>
+
+  <table class="table table-bordered text-center">
+    <tbody>
+      <tr>
+        <th class="table-light">등번호</th><td th:text="${player.backNumber}"></td>
+        <th class="table-light">생년월일</th><td th:text="${player.birthDate}"></td>
+      </tr>
+      <tr>
+        <th class="table-light">신인지명</th><td th:text="${player.draftInfo}"></td>
+        <th class="table-light">활약연도</th><td th:text="${player.activeYears}"></td>
+      </tr>
+      <tr>
+        <th class="table-light">활약팀</th><td th:text="${player.teams}"></td>
+        <th class="table-light">학교</th><td th:text="${player.school}"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="text-center mt-4">
+    <a th:href="@{'/admin/player/edit/' + ${player.id}}" class="btn btn-danger mx-1">✏️ 수정하기</a>
+
+    <form th:action="@{'/admin/player/delete/' + ${player.id}}" method="post" style="display:inline;"
+          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+      <button type="submit" class="btn btn-outline-danger mx-1">🗑️ 삭제하기</button>
+    </form>
+
+    <a th:href="@{/admin/player/list}" class="btn btn-secondary mx-1">📋 목록으로</a>
+  </div>
+
+</div>
+
+</th:block>
+</body>
+</html>
