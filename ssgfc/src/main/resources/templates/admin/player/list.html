@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 선수 목록 관리</title>
+    <style>
+        .search-bar {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .search-bar input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .search-bar button, .add-button {
+            padding: 8px 14px;
+            border: none;
+            background-color: #C8102E;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .search-bar button:hover, .add-button:hover {
+            background-color: #900020;
+        }
+        .accordion { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+        .accordion-header { background: #f1f1f1; padding: 15px; font-weight: bold; cursor: pointer; position: relative; }
+        .accordion-header .sub-label { position: absolute; right: 20px; color: #999; }
+        .accordion-content { display: none; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; text-align: center; background-color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; background-color: #f9f9f9; margin-bottom: 10px; }
+        .card h2 { font-size: 20px; margin: 10px 0 5px; color: #333; }
+        .card p { margin: 4px 0; font-size: 14px; color: #666; }
+        .action-buttons a, .action-buttons form button {
+            display: inline-block;
+            margin: 4px 2px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: white;
+            background-color: #C8102E;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .action-buttons a:hover, .action-buttons form button:hover { background-color: #900020; }
+    </style>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+<div class="container">
+
+    <h1 style="text-align:center; margin-top:20px;">⚾ 관리자 선수 목록 관리</h1>
+
+    <!-- 검색창 + 추가 버튼 -->
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 선수 이름을 입력하세요">
+        <button id="searchButton">검색</button>
+        <a th:href="@{/admin/player/add}" class="add-button">➕ 선수 추가</a>
+    </div>
+
+    <!-- 포지션별 아코디언 -->
+    <div id="accordionContainer">
+        <div class="accordion" th:each="entry : ${positionMap}">
+            <div class="accordion-header" th:text="${entry.key}">
+                포지션명 <span class="sub-label">[click]</span>
+            </div>
+            <div class="accordion-content">
+                <div class="grid">
+                    <div class="card" th:each="player : ${entry.value}">
+                        <img th:src="${player.imageUrl}" alt="선수 이미지" onerror="this.src='/images/players/default.png'">
+                        <h2 th:text="${player.name}">선수 이름</h2>
+                        <p><strong>NO.</strong> <span th:text="${player.backNumber}"></span></p>
+                        <p><strong>포지션:</strong> <span th:text="${player.position}"></span></p>
+                        <p><strong>생년월일:</strong> <span th:text="${player.birthDate}"></span></p>
+                        <p><strong>학교:</strong> <span th:text="${player.school}"></span></p>
+                        <p><strong>활약연도:</strong> <span th:text="${player.activeYears}"></span></p>
+                        <div class="action-buttons">
+                            <a th:href="@{'/admin/player/view/' + ${player.id}}">보기</a>
+                            <a th:href="@{'/admin/player/edit/' + ${player.id}}">수정</a>
+                            <form th:action="@{'/admin/player/delete/' + ${player.id}}" method="post" style="display:inline"
+                                  onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                <button type="submit">삭제</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const headers = document.querySelectorAll('.accordion-header');
+        headers.forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+            });
+        });
+
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        searchButton.addEventListener('click', function() {
+            const keyword = searchInput.value.trim().toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const name = card.querySelector('h2').textContent.toLowerCase();
+                if (name.includes(keyword)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+</th:block>
+</body>
+</html>

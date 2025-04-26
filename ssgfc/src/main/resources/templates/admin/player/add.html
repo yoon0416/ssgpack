@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>선수 추가하기</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+
+<div class="container" style="max-width:600px; margin-top:30px;">
+    <h1 style="text-align:center;">➕ 선수 추가하기</h1>
+
+    <!-- 파일 업로드를 위해 enctype 추가 -->
+    <form th:action="@{/admin/player/add}" method="post" enctype="multipart/form-data">
+        <table class="table">
+            <tr><th>이름</th><td><input type="text" name="name" required></td></tr>
+            <tr><th>포지션</th><td><input type="text" name="position"></td></tr>
+            <tr><th>등번호</th><td><input type="text" name="backNumber"></td></tr>
+            <tr><th>생년월일</th><td><input type="date" name="birthDate"></td></tr>
+            <tr><th>학교</th><td><input type="text" name="school"></td></tr>
+            <tr><th>신인지명</th><td><input type="text" name="draftInfo"></td></tr>
+            <tr><th>활약연도</th><td><input type="text" name="activeYears"></td></tr>
+            <tr><th>활약팀</th><td><input type="text" name="teams"></td></tr>
+            <tr>
+                <th>선수 이미지 업로드</th>
+                <td><input type="file" name="playerImage"></td>
+            </tr>
+        </table>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" style="background-color:#C8102E; color:white; padding:10px 20px; border:none; border-radius:8px;">등록하기</button>
+            <a th:href="@{/admin/player/list}" style="margin-left:10px; color:#C8102E;">취소</a>
+        </div>
+    </form>
+
+</div>
+
+</th:block>
+</body>
+</html>
