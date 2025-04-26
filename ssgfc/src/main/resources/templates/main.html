@@ -12,14 +12,24 @@
 </head>
 <body>
 <th:block layout:fragment="content">
+    <!-- ✅ 조회수 높은 선수 섹션 -->
+    <div class="top-player-section container">
+      <div class="top-player-title">🔥 인기 선수</div>
+      <div class="top-player-grid" id="top-player-grid"></div>
+    </div>
+    
     <div class="container mt-5">
         <div class="main-grid">
 
-            <!-- 왼쪽 공간 -->
-            <div class="left-box">
-                <h3>📣 최신 소식 또는 공지사항</h3>
-                <p>이곳은 왼쪽 컨텐츠 공간입니다. 이후 다른 게시판이나 배너 등을 추가할 수 있습니다.</p>
-            </div>
+
+			
+			<div class="left-box">
+			  <h3>📰 최신 KBO 뉴스</h3>
+			
+			  <!-- news.html 파일의 fragment 삽입 -->
+			  <div th:replace="news :: news-fragment"></div>
+			</div>
+
 
             <!-- 오른쪽 공간 -->
             <div class="right-box">
@@ -66,5 +76,42 @@
         </div>
     </div>
 </th:block>
+
+
+
+<th:block layout:fragment="script">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/api/players/top-hit?limit=5')
+    .then(response => response.json())
+    .then(players => {
+      const topPlayersList = document.getElementById('top-player-grid');
+      topPlayersList.innerHTML = '';
+
+      players.forEach(player => {
+        const photoUrl = `/images/players/${player.backNumber}.png`;
+        const card = document.createElement('div');
+        card.className = 'player-card';
+        card.innerHTML = `
+          <a href="/players/${player.pno}">
+            <img src="${photoUrl}" alt="${player.name}" class="player-image">
+            <div class="player-info">
+              <h3>${player.name}</h3>
+              <p>조회수: ${player.viewCount}</p>
+            </div>
+          </a>
+        `;
+        topPlayersList.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error("🔥 인기 선수 로딩 실패:", err);
+    });
+});
+</script>
+</th:block>
+
+
+
 </body>
 </html>
