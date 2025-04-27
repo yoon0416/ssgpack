@@ -1,0 +1,58 @@
+<!-- ✅ 댓글 재귀 템플릿 (board/comment.html) -->
+<div th:fragment="commentFragment(comment, level)">
+    <div class="comment" th:style="|margin-left: ${level * 30}px;|"> <!-- ✅ 전체 comment에 margin 적용 -->
+
+        <!-- ✅ 프로필 이미지 -->
+        <div class="profile-wrapper">
+            <img class="comment-profile"
+                 th:src="${comment.user != null and comment.user.profile_img != null} ? 
+                         @{/images/userimage/{img}(img=${comment.user.profile_img})} : 
+                         @{/images/userimage/default-profile.png}"
+                 alt="프로필"
+                 th:onclick="|openUserPopup(${comment.user.id})|">
+        </div>
+
+        <!-- ✅ 텍스트 묶음 -->
+        <div class="comment-text-wrapper">
+
+            <!-- ✅ 작성자+작성일 -->
+            <div class="comment-header">
+                <div>
+                    <span class="comment-author"
+                          th:if="${comment.user != null}"
+                          th:text="${comment.user.nick_name}"
+                          th:onclick="|openUserPopup(${comment.user.id})|"></span>
+                    <span class="comment-author" th:if="${comment.user == null}">탈퇴한 사용자</span>
+
+                    <span class="comment-date"
+                          th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+            </div>
+
+            <!-- ✅ 댓글 본문 (여기에 꺾인 화살표) -->
+            <div class="comment-body"
+                 th:onclick="|toggleReplyForm(${comment.id})|"
+                 style="cursor:pointer;">
+                 
+                <span th:if="${level > 0}" style="color: #aaa; margin-right:5px;">➥</span> 
+                <span th:text="${comment.content}"></span>
+
+            </div>
+
+            <!-- ✅ 답글 입력폼 -->
+            <div th:id="|replyForm-${comment.id}|" class="reply-form" style="display:none;">
+                <form th:action="@{'/board/' + ${comment.board.id} + '/comment/add'}" method="post" style="display:flex; align-items: center;">
+                    <input type="hidden" name="parentId" th:value="${comment.id}" />
+                    <textarea name="content" placeholder="답글을 입력하세요" rows="2"></textarea>
+                    <button type="submit" class="reply-submit-btn">등록</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ✅ 대댓글 재귀 호출 -->
+    <div th:each="child : ${comment.children}">
+        <div th:replace="~{board/comment :: commentFragment(${child}, ${level + 1})}"></div>
+    </div>
+</div>
