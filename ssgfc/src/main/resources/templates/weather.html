@@ -115,15 +115,26 @@
                                 `;
                             });
                     } else {
-                        const infoBox = document.getElementById("stadium-info-panel");
-                        infoBox.innerHTML = `
-                            <h3>${pos.stadium}</h3>
-                            <p>해당경기장의 SSG 차후 일정은 ~~~입니다.</p>
-                        `;
-                    }
-                });
+                    	fetch(`/api/next-game?team=${team}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                const infoBox = document.getElementById("stadium-info-panel");
+                                if (data.date) {
+                                    infoBox.innerHTML = `
+                                        <h3>${pos.stadium}</h3>
+                                        <p>차후 일정: ${data.date} vs ${data.opponent}</p>
+                                    `;
+                                } else {
+                                    infoBox.innerHTML = `
+                                        <h3>${pos.stadium}</h3>
+                                        <p>향후 일정이 없습니다.</p>
+                                        `;
+                                        }
+                                    });
+                            } // ✅ 이게 꼭 있어야 함 (if-else 닫는 중괄호)
+                        });
 
-                container.appendChild(marker);
+                        container.appendChild(marker);
             });
         });
     </script>

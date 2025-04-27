@@ -4,12 +4,18 @@ import com.google.gson.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
 public class ReviewCrawler {
-    public static void main(String[] args) {
-        String url = "https://api-gw.sports.naver.com/schedule/games/20250420LGSK02025/record";
 
-        OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient();
+
+    public List<String> fetchRecords(String gameUrl) throws Exception {
+        String url = "https://api-gw.sports.naver.com/schedule/games/" + gameUrl + "/record";
 
         Request request = new Request.Builder()
                 .url(url)
@@ -21,24 +27,28 @@ public class ReviewCrawler {
             if (response.isSuccessful() && response.body() != null) {
                 String json = response.body().string();
 
-                // JSON 파싱
                 JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-                JsonObject result = root.getAsJsonObject("result");
-                JsonObject recordData = result.getAsJsonObject("recordData");
-                JsonArray etcRecords = recordData.getAsJsonArray("etcRecords");
+                JsonArray etcRecords = root
+                        .getAsJsonObject("result")
+                        .getAsJsonObject("recordData")
+                        .getAsJsonArray("etcRecords");
 
-                System.out.println("=== ⚾ 경기 기록 (ReviewRecords) ===");
-                for (JsonElement recordElem : etcRecords) {
-                    JsonObject record = recordElem.getAsJsonObject();
-                    String resultText = record.get("result").getAsString();
-                    String how = record.get("how").getAsString();
-                    System.out.println("- [" + how + "] " + resultText);
+                List<String> records = new ArrayList<>();
+
+                for (JsonElement elem : etcRecords) {
+                    JsonObject obj = elem.getAsJsonObject();
+                    String how = obj.has("how") ? obj.get("how").getAsString() : "";
+                    String result = obj.has("result") ? obj.get("result").getAsString() : "";
+
+                    if (!how.isEmpty() && !result.isEmpty()) {
+                        records.add("[" + how + "] " + result);
+                    }
                 }
+
+                return records;
             } else {
-                System.out.println("❌ API 응답 실패: " + response.code());
+                throw new Exception("❌ 네이버 API 요청 실패: " + response.code());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

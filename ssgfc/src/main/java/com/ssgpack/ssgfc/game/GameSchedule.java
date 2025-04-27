@@ -25,7 +25,7 @@ public class GameSchedule {
 
     private String location;
 
-    private String result;
+    private String result;	
 
     @Column(columnDefinition = "TEXT")
     private String report;
@@ -37,6 +37,25 @@ public class GameSchedule {
     private Integer score1;
 
     private Integer score2;
+    
+    private String startTime;
+    
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public void setScore1(Integer score1) {
+        this.score1 = score1;
+    }
+
+    public void setScore2(Integer score2) {
+        this.score2 = score2;
+    }
+    
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
 
     public GameSchedule(LocalDate gameDate, String location, String result, String report,
                         String team1, String team2, Integer score1, Integer score2) {

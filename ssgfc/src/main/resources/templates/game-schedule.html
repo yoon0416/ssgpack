@@ -55,15 +55,16 @@
 
     <script>
         const teamLogos = {
-            "DOOSAN": "/images/logo/DOOSAN.png",
+            "두산": "/images/logo/DOOSAN.png",
             "삼성": "/images/logo/SAMSUNG.png",
             "KIA": "/images/logo/KIA.png",
             "LG": "/images/logo/LG.png",
             "한화": "/images/logo/HANWHA.png",
             "NC": "/images/logo/NC.png",
             "키움": "/images/logo/KIWOOM.png",
-            "LOTTE": "/images/logo/LOTTE.png",
+            "롯데": "/images/logo/LOTTE.png",
             "KT": "/images/logo/KT.png"
+            
         };
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -118,9 +119,18 @@
                 events: function (fetchInfo, successCallback, failureCallback) {
                     axios.get('/games')
                         .then(response => {
+                            const now = new Date();
                             const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            
                             const events = response.data.map(game => {
                                 const gameDate = new Date(game.gameDate);
+                                const startTime = game.startTime || '18:30';
+                                const [startHour, startMinute] = startTime.split(':').map(Number);
+                                
+                                const gameStart = new Date(gameDate);
+                                gameStart.setHours(startHour, startMinute, 0, 0)
+                                
                                 const hasScore = game.score1 !== null && game.score2 !== null;
 
                                 let rawTitle = '';
@@ -142,12 +152,20 @@
                                     } else {
                                         status = '(무)';
                                     }
-                                } else if (gameDate < today) {
+                                } else if (now.getTime() > gameStart.getTime() && today.getTime() > gameDate.getTime()) {
+                                    // 경기가 끝날 시간이 지났고 오늘보다 과거 날짜인데 점수 없으면 취소
                                     rawTitle = `${game.team1} vs ${game.team2}`;
                                     status = '(취소)';
-                                } else {
+                                    textColor = 'gray';
+                                } else if (now < gameStart) {
+                                    // 경기 시작 전
                                     rawTitle = `${game.team1} vs ${game.team2}`;
                                     status = '(예정)';
+                                    textColor = 'black';
+                                } else {
+                                    // 경기 시작했지만 점수 없으면
+                                    rawTitle = `${game.team1} vs ${game.team2}`;
+                                    status = '(경기중)';
                                     textColor = 'black';
                                 }
 
