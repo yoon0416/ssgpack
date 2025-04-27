@@ -1,9 +1,11 @@
+// ✅ VoteForm.java
 package com.ssgpack.ssgfc.vote;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,4 +21,8 @@ public class VoteForm {
 
     // ✅ 업로드된 이미지 파일 (폼에서 파일 선택을 통해 전달됨)
     private MultipartFile img;
+
+    // ✅ 투표 마감일 (추가된 필드)
+    private LocalDateTime endDate; // 👉 추가!
+
 }

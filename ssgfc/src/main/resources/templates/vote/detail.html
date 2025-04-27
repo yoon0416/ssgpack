@@ -3,56 +3,85 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>투표</title>
+    <title>투표 상세</title>
 </head>
 
 <body>
-<section layout:fragment="content">
-    <div class="container mt-4">
-        <h2>투표</h2>
+    <section layout:fragment="content">
+        <div class="container mt-4" style="max-width: 600px;">
+            <h2 class="fw-bold border-bottom pb-2 mb-4" th:text="${voteTitle.title}">투표 제목</h2>
+            
+            <!-- ✅ 마감일 시간, 분, 초까지 표시 -->
+            <div class="text-muted mb-4" th:if="${voteTitle.endDate != null}"
+                 th:text="'마감일: ' + ${#temporals.format(voteTitle.endDate, 'yyyy-MM-dd HH:mm')}"></div>
 
-        <!-- ✅ 투표 이미지 출력 -->
-        <div th:if="${contents != null and !contents.isEmpty()}">
-            <img th:if="${contents[0].voteTitle.img != null}"
-                 th:src="@{'/images/vote/' + ${contents[0].voteTitle.img}}"
-                 class="img-fluid rounded mb-4"
-                 alt="투표 이미지"
-                 style="max-height: 300px; object-fit: cover;">
-        </div>
+            <!-- ✅ 실시간 카운트다운 표시 -->
+            <div class="text-muted" id="remainingTime" th:if="${voteTitle.endDate != null}" 
+                 th:data-enddate="${voteTitle.endDate}"></div>
 
-        <h3 class="mt-4">실시간 투표 현황</h3>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>선택지</th>
-                <th>득표 수</th>
-                <th>비율 (%)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="entry : ${contents}">
-                <td th:text="${entry.content}">선택지</td>
-                <td th:text="${#lists.size(entry.userVotes)} + '표'">0표</td>
-                <td th:text="${totalVotes == 0 ? '0%' : ((#lists.size(entry.userVotes) * 100) / totalVotes) + '%'}">0%</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <form method="post" th:action="@{/vote/submit}">
-            <input type="hidden" name="voteTitleId" th:value="${voteTitleId}" />
-
-            <div class="form-check" th:each="content : ${contents}">
-                <input class="form-check-input" type="radio" name="voteContentId"
-                       th:value="${content.id}" id="opt-[[${content.id}]]" />
-                <label class="form-check-label" th:for="'opt-' + ${content.id}"
-                       th:text="${content.content}">선택지</label>
+            <!-- ✅ 에러 메시지 표시 -->
+            <div th:if="${error != null}" class="alert alert-danger" role="alert">
+                <span th:text="${error}"></span>
             </div>
+            
+            <!-- ✅ 투표 폼 -->
+            <form method="post" th:action="@{/vote/submit}">
+                <input type="hidden" name="voteTitleId" th:value="${voteTitle.id}" />
 
-            <button type="submit" class="btn btn-primary mt-3">투표하기</button>
-        </form>
+                <!-- ✅ 선택지 -->
+                <div class="form-check" th:each="content : ${contents}">
+                    <input class="form-check-input" type="radio" name="voteContentId"
+                           th:value="${content.id}" id="opt-[[${content.id}]]"
+                           th:checked="${selectedContentId != null and selectedContentId == content.id}" />
+                    <label class="form-check-label" th:for="'opt-' + ${content.id}"
+                           th:text="${content.content}">선택지</label>
+                </div>
 
-        <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
-    </div>
-</section>
+                <button type="submit" class="btn btn-primary mt-3">투표하기</button>
+            </form>
+
+            <hr class="mt-4">
+
+            <!-- ✅ 투표 결과 -->
+            <div>
+                <h5>현재 투표 결과</h5>
+                <ul class="list-group mt-2">
+                    <li class="list-group-item" th:each="content : ${contents}">
+                        <span th:text="${content.content}"></span>
+                        (<span th:text="${#numbers.formatInteger(content.voteCount, 1)}"></span> 표)
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+	<th:block layout:fragment="script">
+	    <script>
+	        // ✅ 마감일을 실시간으로 업데이트
+	        function updateRemainingTime() {
+	            const endDateElements = document.querySelectorAll('[id="remainingTime"]');
+	            endDateElements.forEach(element => {
+	                const endDate = new Date(element.getAttribute('data-enddate'));
+	                const now = new Date();
+	                const remainingTime = endDate - now;
+	
+	                if (remainingTime <= 0) {
+	                    element.textContent = "마감됨";
+	                } else {
+	                    const seconds = Math.floor(remainingTime / 1000);
+	                    const minutes = Math.floor(seconds / 60);
+	                    const hours = Math.floor(minutes / 60);
+	                    const days = Math.floor(hours / 24);
+	
+	                    const displayTime = `${days}일 ${hours % 24}시간 ${minutes % 60}분 ${seconds % 60}초 남음`;
+	                    element.textContent = displayTime;
+	                }
+	            });
+	        }
+	
+	        setInterval(updateRemainingTime, 1000); // ✅ 매 초마다 업데이트
+	    </script>
+	</th:block>
+	
 </body>
 </html>

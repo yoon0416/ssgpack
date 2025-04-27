@@ -1,3 +1,4 @@
+// ✅ VoteTitle.java
 package com.ssgpack.ssgfc.vote;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,9 @@ public class VoteTitle {
 
     // ✅ 생성일시
     private LocalDateTime createDate;
+
+    // ✅ 마감일시
+    private LocalDateTime endDate; // 👉 추가된 필드!
 
     // ✅ 이미지 파일 이름 (예: ssg_hero_vote.jpg)
     @Column(length = 255)

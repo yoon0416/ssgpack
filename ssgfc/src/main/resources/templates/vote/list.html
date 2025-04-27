@@ -1,45 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{fragments/layout}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
 <head>
-<title>투표 목록</title>
+    <title>투표 목록</title>
 </head>
 
 <body>
-	<section layout:fragment="content">
-		<div class="container mt-4" style="max-width: 700px;">
-			<h2 class="fw-bold border-bottom pb-2 mb-4">🗳️ 투표 목록</h2>
+    <section layout:fragment="content">
+        <div class="container mt-4" style="max-width: 700px;">
+            <h2 class="fw-bold border-bottom pb-2 mb-4">🗳️ 투표 목록</h2>
 
-			<!-- 투표 생성 버튼 -->
-			<div class="mb-3"
-				sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
-				<a class="btn btn-success" href="/vote/create">+ 투표 생성</a>
-			</div>
+            <!-- ✅ 투표 생성 버튼 -->
+            <div class="mb-3" sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
+                <a class="btn btn-success" href="/vote/create">+ 투표 생성</a>
+            </div>
 
-			<!-- 투표 리스트 -->
-			<ul class="list-group">
-				<li class="list-group-item d-flex justify-content-between align-items-center"
-					th:each="vote : ${votes}">
+            <!-- ✅ 투표 리스트 -->
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center" th:each="vote : ${votes}">
+                    <a th:href="@{|/vote/${vote.id}|}"
+                       th:text="${vote.title}"
+                       class="text-decoration-none text-dark fw-bold">투표 제목</a>
 
-					<a th:href="@{|/vote/${vote.id}|}"
-					   th:text="${vote.title}"
-					   class="text-decoration-none text-dark fw-bold">투표 제목</a>
+                    <!-- ✅ 마감일 표시 -->
+                    <div class="text-muted small" th:if="${vote.endDate != null}"
+                         th:text="'마감: ' + ${#temporals.format(vote.endDate, 'yyyy-MM-dd HH:mm')}"></div>
 
-					<div class="d-flex align-items-center">
-						<span class="text-muted small me-2"
-							  th:text="${#temporals.format(vote.createDate, 'yyyy.MM.dd')}">날짜</span>
+                    <!-- ✅ 마감일 카운트다운 표시 -->
+                    <div class="text-muted small" id="remainingTime" th:if="${vote.endDate != null}"
+                         th:data-enddate="${vote.endDate}"></div>
+                         
+                    <div class="d-flex align-items-center">
+                        <span class="text-muted small me-2"
+                              th:text="${#temporals.format(vote.createDate, 'yyyy.MM.dd')}">날짜</span>
 
-						<!-- 삭제 버튼: 관리자만 보이도록 -->
-						<form th:action="@{|/vote/delete/${vote.id}|}" method="post"
-							  sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
-							<button type="submit" class="btn btn-sm btn-danger"
-							        onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
-						</form>
-					</div>
-				</li>
-			</ul>
-		</div>
-	</section>
+                        <!-- ✅ 수정 버튼: 마감일이 지나지 않은 경우에만 보이도록 -->
+                        <div class="d-flex" sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_BOARD_MANAGER')">
+                            <!-- ✅ 삭제 버튼은 마감일 관계없이 항상 보이도록 -->
+                            <form th:action="@{|/vote/delete/${vote.id}|}" method="post" class="me-1">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+                            </form>
+
+                            <!-- ✅ 수정 버튼: 마감일이 지나지 않은 경우에만 보이도록 -->
+                            <a th:href="@{|/vote/edit/${vote.id}|}" class="btn btn-sm btn-outline-primary"
+                               th:if="${vote.endDate == null or vote.endDate.isAfter(T(java.time.LocalDateTime).now())}">
+                                수정
+                            </a>
+                        </div>
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+    </section>
+    
+	<th:block layout:fragment="script">
+	    <script>
+	        // ✅ 마감일을 실시간으로 업데이트
+	        function updateRemainingTime() {
+	            const endDateElements = document.querySelectorAll('[id="remainingTime"]');
+	            endDateElements.forEach(element => {
+	                const endDate = new Date(element.getAttribute('data-enddate'));
+	                const now = new Date();
+	                const remainingTime = endDate - now;
+	
+	                if (remainingTime <= 0) {
+	                    element.textContent = "마감됨";
+	                } else {
+	                    const seconds = Math.floor(remainingTime / 1000);
+	                    const minutes = Math.floor(seconds / 60);
+	                    const hours = Math.floor(minutes / 60);
+	                    const days = Math.floor(hours / 24);
+	
+	                    const displayTime = `${days}일 ${hours % 24}시간 ${minutes % 60}분 ${seconds % 60}초 남음`;
+	                    element.textContent = displayTime;
+	                }
+	            });
+	        }
+	
+	        setInterval(updateRemainingTime, 1000); // ✅ 매 초마다 업데이트
+	    </script>
+	</th:block>
+	
 </body>
 </html>
