@@ -1,5 +1,6 @@
 package com.ssgpack.ssgfc.user;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +20,8 @@ import lombok.ToString;
 @Getter  
 @Setter 
 @ToString(exclude = "board")
-public class User {
+public class User implements Serializable {
+	private static final long serialVersionUID = 1L;
 
     // PK
     @Id
