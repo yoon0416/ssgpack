@@ -109,6 +109,9 @@ public class BoardService {
             String savedName = utilUpload.fileUpload(file, "board/");
             board.setImg(savedName);
         }
+        
+        String newEmotion = sentimentService.analyzeSentiment(updatedBoard.getContent());
+        board.setEmotion(newEmotion);
 
         br.save(board);  // ✅ 수정된 게시글 저장
     }
