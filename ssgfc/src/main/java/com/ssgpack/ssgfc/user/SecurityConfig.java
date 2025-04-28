@@ -20,6 +20,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests(authorize -> authorize
+                //  카카오/구글 로그인 경로 허용
+                .antMatchers("/kakaologin", "/kakao", "/googlelogin", "/google")
+                    .permitAll()
+
+                // 관리자 대시보드
                 .antMatchers("/admin/dashboard")
                     .hasAnyAuthority(
                         UserRole.MASTER.getRoleName(),
@@ -29,7 +34,7 @@ public class SecurityConfig {
                         UserRole.GAME_MANAGER.getRoleName()
                     )
 
-                // 마스터 관리자 전용
+                // 마스터 관리자
                 .antMatchers("/admin/master/**")
                     .hasAuthority(UserRole.MASTER.getRoleName())
 
@@ -50,9 +55,12 @@ public class SecurityConfig {
                     .hasAnyAuthority(
                         UserRole.MASTER.getRoleName(),
                         UserRole.BOARD_MANAGER.getRoleName())
-                //경기요약관리자
+
+                // 경기 요약 관리자
                 .antMatchers("/admin/review/**")
-                .hasAnyAuthority(UserRole.MASTER.getRoleName(), UserRole.GAME_MANAGER.getRoleName())
+                    .hasAnyAuthority(
+                        UserRole.MASTER.getRoleName(),
+                        UserRole.GAME_MANAGER.getRoleName())
 
                 // 경기 일정 관리자
                 .antMatchers("/admin/game/**")
@@ -60,29 +68,29 @@ public class SecurityConfig {
                         UserRole.MASTER.getRoleName(),
                         UserRole.GAME_MANAGER.getRoleName())
 
-                // 투표 생성은 마스터 또는 게시판 관리자만 가능
+                // 투표 생성 (마스터 또는 게시판 관리자)
                 .antMatchers("/vote/create")
                     .hasAnyAuthority(
                         UserRole.MASTER.getRoleName(),
                         UserRole.BOARD_MANAGER.getRoleName())
 
-                // 투표 제출은 로그인 사용자만 가능
+                // 투표 제출 (로그인만 필요)
                 .antMatchers("/vote/submit")
                     .authenticated()
 
-                // 투표 상세 및 목록은 누구나 접근 가능
+                // 투표 상세, 목록 (누구나 가능)
                 .antMatchers("/vote/**")
                     .permitAll()
 
-                // 마이페이지 - 로그인된 사용자만
+                // 마이페이지 (로그인 필요)
                 .antMatchers("/user/mypage/**")
                     .authenticated()
 
-                // 게시판 - 글쓰기/수정/삭제는 로그인 필요
+                // 게시판 - 글쓰기/수정/삭제 (로그인 필요)
                 .antMatchers("/board/write", "/board/edit/**", "/board/delete/**")
                     .authenticated()
 
-                // 게시판 - 글 상세보기는 누구나 가능
+                // 게시판 - 글 상세보기 (누구나 가능)
                 .antMatchers("/board/view/**")
                     .permitAll()
 
@@ -105,14 +113,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 정적 자원은 보안 필터 제외
+    // 정적 자원 무시 설정
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
             .antMatchers("/css/**", "/js/**", "/images/**", "/lib/**");
     }
 
-    // 비밀번호 암호화 설정
+    // 비밀번호 인코더 설정
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -124,7 +132,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // 인증 제공자 설정
+    // Dao 인증 제공자
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
