@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "game_schedule")
+@Setter
 public class GameSchedule {
 
     @Id

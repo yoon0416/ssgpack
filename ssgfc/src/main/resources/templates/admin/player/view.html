@@ -5,54 +5,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>선수 상세 보기</title>
+  <title>선수 상세 보기 (관리자)</title>
 </head>
-
 <body>
 <th:block layout:fragment="content">
 
-<div class="container my-5 p-4 bg-white shadow rounded">
+  <div class="container my-5 p-4 bg-white shadow rounded">
 
-  <div class="d-flex align-items-center mb-4" style="gap: 30px;">
-    <img th:src="${player.imageUrl}" alt="선수 이미지"
-         style="width:160px; height:210px; object-fit:contain; border-radius:8px; background-color:#f9f9f9;"
-         onerror="this.src='/images/players/default.png'">
+    <!-- 선수 기본 정보 섹션 -->
+    <div class="d-flex align-items-center mb-4" style="gap: 30px;">
+      <img th:src="${player.imageUrl}" alt="선수 이미지"
+           class="rounded"
+           style="width:160px; height:210px; object-fit:contain; background-color:#f9f9f9;"
+           onerror="this.src='/images/players/default.png'">
 
-    <div>
-      <h1 class="mb-2" th:text="${player.name}">선수 이름</h1>
-      <h4 class="text-danger" th:text="${player.position}">포지션</h4>
+      <div>
+        <h1 class="mb-2" th:text="${player.name}">선수 이름</h1>
+        <h4 class="text-danger" th:text="${player.position}">포지션</h4>
+      </div>
     </div>
+
+    <!-- 상세 정보 테이블 -->
+    <table class="table table-bordered text-center">
+      <tbody>
+        <tr>
+          <th class="table-light">등번호</th>
+          <td th:text="${player.backNumber}">00</td>
+          <th class="table-light">생년월일</th>
+          <td th:text="${player.birthDate}">YYYY-MM-DD</td>
+        </tr>
+        <tr>
+          <th class="table-light">신인지명</th>
+          <td th:text="${player.draftInfo}">드래프트 정보</td>
+          <th class="table-light">활약연도</th>
+          <td th:text="${player.activeYears}">2010-2025</td>
+        </tr>
+        <tr>
+          <th class="table-light">활약팀</th>
+          <td th:text="${player.teams}">SSG 랜더스</td>
+          <th class="table-light">학교</th>
+          <td th:text="${player.school}">OO고등학교</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 액션 버튼 -->
+    <div class="text-center mt-4">
+      <a th:href="@{'/admin/player/edit/' + ${player.id}}"
+         class="btn btn-danger mx-1">✏️ 선수정보 수정</a>
+
+      <form th:action="@{'/admin/player/delete/' + ${player.id}}"
+            method="post"
+            style="display:inline;"
+            onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button type="submit" class="btn btn-outline-danger mx-1">🗑️ 삭제하기</button>
+      </form>
+
+      <a th:href="@{/admin/player/list}"
+         class="btn btn-secondary mx-1">📋 목록으로</a>
+    </div>
+
+    <!-- 시즌별 기록 섹션 -->
+    <h2 class="mt-5">🗂️ 시즌별 기록</h2>
+    <div th:each="stat : ${player.stats}" class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 th:text="${stat.season} + ' 시즌'">2024 시즌</h5>
+        <a th:href="@{'/admin/playerstat/edit/' + ${stat.id}}"
+           class="btn btn-sm btn-danger">✏️ 기록 수정</a>
+      </div>
+      <table class="table table-sm table-bordered text-center record-table">
+        <thead class="table-light">
+          <tr>
+            <th>항목</th>
+            <th>값</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="entry : ${stat.statMap}">
+            <td th:text="${entry.key}">G</td>
+            <td th:text="${entry.value}">100</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
-
-  <table class="table table-bordered text-center">
-    <tbody>
-      <tr>
-        <th class="table-light">등번호</th><td th:text="${player.backNumber}"></td>
-        <th class="table-light">생년월일</th><td th:text="${player.birthDate}"></td>
-      </tr>
-      <tr>
-        <th class="table-light">신인지명</th><td th:text="${player.draftInfo}"></td>
-        <th class="table-light">활약연도</th><td th:text="${player.activeYears}"></td>
-      </tr>
-      <tr>
-        <th class="table-light">활약팀</th><td th:text="${player.teams}"></td>
-        <th class="table-light">학교</th><td th:text="${player.school}"></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="text-center mt-4">
-    <a th:href="@{'/admin/player/edit/' + ${player.id}}" class="btn btn-danger mx-1">✏️ 수정하기</a>
-
-    <form th:action="@{'/admin/player/delete/' + ${player.id}}" method="post" style="display:inline;"
-          onsubmit="return confirm('정말 삭제하시겠습니까?');">
-      <button type="submit" class="btn btn-outline-danger mx-1">🗑️ 삭제하기</button>
-    </form>
-
-    <a th:href="@{/admin/player/list}" class="btn btn-secondary mx-1">📋 목록으로</a>
-  </div>
-
-</div>
 
 </th:block>
 </body>
