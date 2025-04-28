@@ -3,8 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>투표 생성</title>
-
+    <title>투표 수정</title>
     <script>
         let optionIndex = 0; // ✅ 전체 옵션 번호 관리용
 
@@ -20,50 +19,52 @@
             input.className = "form-control me-2";
             input.value = value;
 
+            // ✅ 동적으로 선택지 배열에 번호 추가
+            input.name = `contents[${optionIndex}]`;  // 동적으로 name 설정
+            input.id = `contents${optionIndex}`; // id 설정
+
             const button = document.createElement("button");
             button.type = "button";
             button.className = "btn btn-outline-danger btn-sm";
             button.innerText = "삭제";
             button.onclick = function () {
                 div.remove();
-                reindexOptions(); // ✅ 삭제 후 번호 재정렬
+                reindexOptions();
             };
 
             div.appendChild(input);
             div.appendChild(button);
             optionContainer.appendChild(div);
 
-            reindexOptions(); // ✅ 추가 후 번호 재정렬
+            reindexOptions();
+            optionIndex++;  // 인덱스 증가
         }
 
-        // ✅ 선택지 번호 재정렬 (name, id 수정)
+        // ✅ 선택지 번호 재정렬
         function reindexOptions() {
             const optionContainer = document.getElementById("options");
             const optionDivs = optionContainer.querySelectorAll('div');
 
             optionDivs.forEach((div, index) => {
                 const input = div.querySelector('input');
-                input.name = `contents[${index}]`;
-                input.id = `contents${index}`;
+                input.name = `contents[${index}]`;  // 동적으로 name 설정
+                input.id = `contents${index}`;  // id 설정
             });
         }
 
-        // ✅ 페이지 로드 시 기본 선택지에도 삭제 버튼 추가
+        // ✅ 페이지 로드 시 기존 선택지에도 삭제 버튼 다시 연결
         window.onload = function() {
             const optionDivs = document.querySelectorAll('#options > div');
             optionDivs.forEach(div => {
-                // 삭제 버튼이 이미 있는지 확인 (중복 추가 방지)
-                if (!div.querySelector('button')) {
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.className = "btn btn-outline-danger btn-sm";
-                    button.innerText = "삭제";
-                    button.onclick = function () {
-                        div.remove();
-                        reindexOptions();
-                    };
-                    div.appendChild(button);
-                }
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "btn btn-outline-danger btn-sm";
+                button.innerText = "삭제";
+                button.onclick = function () {
+                    div.remove();
+                    reindexOptions();
+                };
+                div.appendChild(button);
             });
             reindexOptions();
         };
@@ -73,18 +74,17 @@
 <body>
 <section layout:fragment="content">
     <div class="container mt-4" style="max-width: 600px;">
-        <h2 class="mb-4 fw-bold border-bottom pb-2">🗳️ 투표 생성</h2>
+        <h2 class="mb-4 fw-bold border-bottom pb-2">🛠️ 투표 수정</h2>
 
         <form method="post"
-              th:action="@{/vote/create}"
+              th:action="@{'/vote/edit/' + ${voteId}}"
               th:object="${form}"
               enctype="multipart/form-data">
 
             <!-- ✅ 제목 입력 -->
             <div class="mb-3">
                 <label for="title" class="form-label">투표 제목</label>
-                <input type="text" th:field="*{title}" class="form-control" id="title"
-                       placeholder="예) SSG 선수 중 최고의 수비수는?">
+                <input type="text" th:field="*{title}" class="form-control" id="title">
             </div>
 
             <!-- ✅ 마감일 입력 -->
@@ -95,26 +95,23 @@
 
             <!-- ✅ 이미지 업로드 -->
             <div class="mb-3">
-                <label for="img" class="form-label">이미지 업로드 (선택)</label>
+                <label for="img" class="form-label">이미지 변경 (선택)</label>
                 <input type="file" class="form-control" id="img" name="img" accept="image/*">
             </div>
 
-            <!-- ✅ 선택지 입력 영역 -->
+            <!-- ✅ 선택지 입력 -->
             <div id="options">
-                <!-- ✅ 기본 선택지 출력 (input만) -->
                 <div class="mb-2 d-flex align-items-center" th:each="content, iterStat : *{contents}">
                     <input type="text"
                            th:field="*{contents[__${iterStat.index}__]}"
-                           class="form-control me-2"
-                           th:id="'contents' + ${iterStat.index}">
-                    <!-- 삭제 버튼은 JS가 자동 추가 -->
+                           class="form-control me-2">
                 </div>
             </div>
 
             <!-- ✅ 버튼 영역 -->
             <div class="d-flex justify-content-between mt-3">
                 <button type="button" class="btn btn-outline-secondary" onclick="addOption()">+ 선택지 추가</button>
-                <button type="submit" class="btn btn-dark">투표 만들기</button>
+                <button type="submit" class="btn btn-dark">수정 완료</button>
             </div>
         </form>
     </div>

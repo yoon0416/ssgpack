@@ -1,6 +1,7 @@
 package com.ssgpack.ssgfc.vote;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,22 +34,32 @@ public class VoteController {
 
     // ✅ 투표 상세 페이지 출력 (선택지 + 실시간 결과 포함)
     @GetMapping("/{id}")
-    public String voteDetail(@PathVariable Long id, Model model) {
+    public String voteDetail(@PathVariable Long id, Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
         VoteTitle voteTitle = voteTitleRepository.findById(id).orElseThrow();
         List<VoteContent> contents = voteService.getContentsByTitleId(id);
 
-        long totalVotes = contents.stream()
-                .mapToLong(content -> voteService.getVoteCount(content))
-                .sum();
+        // ✅ 선택지 + 득표수 계산해서 DTO로 변환
+        List<VoteContentDto> contentDtos = contents.stream()
+                .map(content -> VoteContentDto.builder()
+                        .id(content.getId())
+                        .content(content.getContent())
+                        .voteCount(voteService.getVoteCount(content))
+                        .build())
+                .collect(Collectors.toList());
 
-        model.addAttribute("voteTitleId", id);
-        model.addAttribute("contents", contents);
-        model.addAttribute("totalVotes", totalVotes);
+        Long selectedContentId = null;
+        if (userDetails != null) {
+            selectedContentId = voteService.getUserSelectedContentId(userDetails.getUser().getId(), id);
+        }
+
+        model.addAttribute("voteTitle", voteTitle);
+        model.addAttribute("contents", contentDtos);
+        model.addAttribute("selectedContentId", selectedContentId);
 
         return "vote/detail";
     }
 
-    // ✅ 투표 제출 처리 (중복 확인 포함)
+    // ✅ 투표 제출 처리 (중복 체크, 마감 체크 포함)
     @PostMapping("/submit")
     public String submitVote(@AuthenticationPrincipal CustomUserDetails userDetails,
                              @RequestParam Long voteTitleId,
@@ -59,19 +70,27 @@ public class VoteController {
             voteService.submitVote(user, voteTitleId, voteContentId);
             return "redirect:/vote";
         } catch (Exception e) {
+            // ✅ 실패 시 detail.html로 돌아가면서 에러 메시지 전달
             VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId).orElseThrow();
             List<VoteContent> contents = voteService.getContentsByTitleId(voteTitleId);
-            long totalVotes = contents.stream()
-                    .mapToLong(content -> voteService.getVoteCount(content))
-                    .sum();
 
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("voteTitleId", voteTitleId);
-            model.addAttribute("contents", contents);
-            model.addAttribute("totalVotes", totalVotes);
+            List<VoteContentDto> contentDtos = contents.stream()
+                    .map(content -> VoteContentDto.builder()
+                            .id(content.getId())
+                            .content(content.getContent())
+                            .voteCount(voteService.getVoteCount(content))
+                            .build())
+                    .collect(Collectors.toList());
+
+            model.addAttribute("error", e.getMessage()); // ✅ 에러 메시지 추가
+            model.addAttribute("voteTitle", voteTitle);
+            model.addAttribute("contents", contentDtos);
+            model.addAttribute("selectedContentId", null); // 실패한 경우 선택지 체크 없음
+
             return "vote/detail";
         }
     }
+
 
     // ✅ 투표 생성 폼 출력 (관리자만 가능)
     @GetMapping("/create")
@@ -85,16 +104,13 @@ public class VoteController {
         return "vote/create";
     }
 
-    // ✅ 투표 생성 처리 (이미지 포함, 관리자만 가능)
+    // ✅ 투표 생성 처리
     @PostMapping("/create")
     public String createSubmit(@AuthenticationPrincipal CustomUserDetails userDetails,
                                @ModelAttribute VoteForm form,
                                @RequestParam("img") MultipartFile file) {
         checkVoteAuthority(userDetails.getUser());
-
-        // ✅ 이미지 파일까지 포함한 투표 저장 처리
         voteService.insertVote(form, file);
-
         return "redirect:/vote";
     }
 
@@ -114,4 +130,47 @@ public class VoteController {
             throw new AccessDeniedException("투표 생성 권한이 없습니다.");
         }
     }
+    
+    // ✅ 투표 수정 폼 출력 (관리자만 가능)
+    @GetMapping("/edit/{id}")
+    public String editForm(@PathVariable Long id, Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        checkVoteAuthority(userDetails.getUser());
+
+        VoteTitle voteTitle = voteTitleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 투표가 존재하지 않습니다."));
+
+        VoteForm form = voteService.convertToForm(voteTitle);
+
+        model.addAttribute("form", form);
+        model.addAttribute("voteId", id);
+
+        return "vote/edit"; // ✅ templates/vote/edit.html로 이동
+    }
+    
+    // ✅ 투표 수정 처리 (POST - 관리자만 가능)
+    @PostMapping("/edit/{id}")
+    public String editSubmit(@PathVariable Long id,
+                             @ModelAttribute VoteForm form,
+                             @RequestParam(value = "img", required = false) MultipartFile file,
+                             @AuthenticationPrincipal CustomUserDetails userDetails,
+                             Model model) {
+        checkVoteAuthority(userDetails.getUser());
+
+        try {
+            // ✅ 수정 처리
+            voteService.updateVote(id, form, file);  
+            return "redirect:/vote";  // 수정 후 투표 목록으로 리다이렉트
+        } catch (Exception e) {
+            // ✅ 수정 실패 시 에러 메시지와 함께 수정 폼으로 돌아가면서 안내
+            VoteTitle voteTitle = voteTitleRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 투표가 존재하지 않습니다."));
+
+            model.addAttribute("form", form);
+            model.addAttribute("voteId", id);
+            model.addAttribute("error", e.getMessage());  // 에러 메시지 전달
+
+            return "vote/edit";  // 수정 폼으로 돌아가기
+        }
+    }
+    
 }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>유저 정보</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Bootstrap 포함 (popup이라도 최소한 쓰자) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-3">
+
+<div class="container">
+    <!-- 닉네임 + 프로필 + 소개글 + 가입일 -->
+    <div class="text-center mb-4">
+        <img id="profileImg" src="" alt="프로필 이미지" class="rounded-circle" style="width:100px; height:100px; object-fit:cover;">
+        <h3 id="nickName" class="mt-2"></h3>
+        <p id="introduce" class="text-muted small"></p>
+        <p id="createDate" class="text-muted small"></p>
+    </div>
+
+    <!-- 작성한 글 -->
+    <h5>작성한 글</h5>
+    <div id="boardList" class="mb-4"></div>
+
+    <!-- 작성한 댓글 -->
+    <h5>작성한 댓글</h5>
+    <div id="commentList" class="mb-4"></div>
+
+    <!-- 좋아요한 글 -->
+    <h5>좋아요한 글</h5>
+    <div id="likeList" class="mb-4"></div>
+</div>
+
+<!-- 스크립트 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/userpopup.js"></script>
+
+</body>
+</html>

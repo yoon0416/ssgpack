@@ -1,9 +1,11 @@
 package com.ssgpack.ssgfc.vote;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,25 +22,26 @@ public class VoteService {
     private final VoteTitleRepository voteTitleRepository;
     private final VoteContentRepository voteContentRepository;
     private final UserVoteRepository userVoteRepository;
-    private final UtilUpload utilUpload; // ✅ 이미지 업로드 유틸 주입
+    private final UtilUpload utilUpload; // ✅ 이미지 업로드 유틸
 
-    // ✅ 전체 투표 목록을 최신순으로 정렬해 반환합니다.
+    // ✅ 전체 투표 목록 조회 (최신순 정렬)
     public List<VoteTitle> getAllVotes() {
         return voteTitleRepository.findAllByOrderByCreateDateDesc();
     }
 
-    // ✅ 특정 투표(VoteTitle)의 ID를 기반으로 연결된 선택지(VoteContent) 목록을 조회하는 메서드입니다.
+    // ✅ 특정 투표(VoteTitle)의 ID로 연결된 선택지(VoteContent) 리스트 조회
     public List<VoteContent> getContentsByTitleId(Long voteTitleId) {
-        VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId).orElseThrow();
+        VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 투표가 존재하지 않습니다."));
         return voteContentRepository.findByVoteTitle(voteTitle);
     }
 
-    // ✅ 최신 투표 1개 반환 (JPA 메서드로 간단화)
+    // ✅ 최신 투표 1개 조회 (생성일 기준 최신)
     public VoteTitle getLatestVote() {
         return voteTitleRepository.findTopByOrderByCreateDateDesc();
     }
 
-    // ✅ 투표 결과를 구성하여 선택지별 득표 수 및 퍼센트를 반환합니다.
+    // ✅ 특정 투표(VoteTitle)의 선택지별 득표 수 및 비율 계산
     public Map<String, String> getVoteResult(VoteTitle voteTitle) {
         List<VoteContent> contents = voteContentRepository.findByVoteTitle(voteTitle);
         Map<String, String> result = new LinkedHashMap<>();
@@ -58,13 +61,22 @@ public class VoteService {
         return result;
     }
 
-    // ✅ 사용자가 투표에 참여할 때 호출됩니다. 중복 여부 확인 및 투표 저장 처리.
+    // ✅ 사용자가 투표에 참여할 때 호출 (중복 참여 방지)
     public void submitVote(User user, Long voteTitleId, Long voteContentId) {
-        if (user == null) throw new IllegalArgumentException("로그인이 필요합니다.");
-        if (voteContentId == null) throw new IllegalArgumentException("선택지를 선택해주세요.");
+        if (user == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+        if (voteContentId == null) {
+            throw new IllegalArgumentException("선택지를 선택해주세요.");
+        }
 
         VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId)
                 .orElseThrow(() -> new IllegalArgumentException("투표가 존재하지 않습니다."));
+        
+        // ✅ 마감일 체크
+        if (voteTitle.getEndDate() != null && voteTitle.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("마감된 투표입니다.");
+        }
 
         VoteContent voteContent = voteContentRepository.findById(voteContentId)
                 .orElseThrow(() -> new IllegalArgumentException("선택지가 존재하지 않습니다."));
@@ -84,44 +96,108 @@ public class VoteService {
         userVoteRepository.save(userVote);
     }
 
-	// ✅ 투표 생성 처리 (선택지 + 이미지 업로드 포함)
-	public void insertVote(VoteForm form, MultipartFile file) {
-		VoteTitle voteTitle = VoteTitle.builder().title(form.getTitle()).createDate(LocalDateTime.now()).build();
+    // ✅ 투표 생성 처리 (제목, 이미지 업로드, 선택지 저장)
+    public void insertVote(VoteForm form, MultipartFile file) {
+        VoteTitle voteTitle = VoteTitle.builder()
+                .title(form.getTitle())
+                .createDate(LocalDateTime.now())
+                .endDate(form.getEndDate()) // ✅ 마감일 추가
+                .build();
 
-		// ✅ 이미지 파일 저장 처리 (try-catch 추가)
-		if (file != null && !file.isEmpty()) {
-			try {
-				String savedName = utilUpload.fileUpload(file, "vote/");
-				voteTitle.setImg(savedName);
-			} catch (Exception e) {
-				e.printStackTrace(); // ✅ 콘솔에 오류 로그 출력
-				// 상황에 따라 기본 이미지 지정도 가능
-				voteTitle.setImg("default.png"); // 예: 기본 이미지 대체
-			}
-		}
+        if (file != null && !file.isEmpty()) {
+            try {
+                String savedName = utilUpload.fileUpload(file, "vote/");
+                voteTitle.setImg(savedName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                voteTitle.setImg("default.png");
+            }
+        }
 
-		voteTitle = voteTitleRepository.save(voteTitle);
+        voteTitle = voteTitleRepository.save(voteTitle);
 
-		// ✅ 선택지 저장
-		for (String content : form.getContents()) {
-			if (!content.isBlank()) {
-				VoteContent voteContent = VoteContent.builder().content(content).voteTitle(voteTitle).build();
-				voteContentRepository.save(voteContent);
-			}
-		}
-	}
+        // ✅ 여기 수정 (null 체크 추가)
+        if (form.getContents() != null) {
+            for (String content : form.getContents()) {
+                if (content != null && !content.isBlank()) {
+                    VoteContent voteContent = VoteContent.builder()
+                            .content(content)
+                            .voteTitle(voteTitle)
+                            .build();
+                    voteContentRepository.save(voteContent);
+                }
+            }
+        }
+    }
 
-
-    // ✅ 특정 선택지의 총 투표 수를 반환합니다.
+    // ✅ 특정 선택지(VoteContent)의 총 투표 수 반환
     public long getVoteCount(VoteContent content) {
         return userVoteRepository.countByVoteContent(content);
     }
 
-    // ✅ 특정 투표를 삭제합니다.
+    // ✅ 특정 투표(VoteTitle) 삭제
     public void deleteVote(Long voteTitleId) {
         VoteTitle voteTitle = voteTitleRepository.findById(voteTitleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 투표가 존재하지 않습니다."));
         voteTitleRepository.delete(voteTitle);
     }
 
+    // ✅ 기존 VoteTitle을 수정폼(VoteForm)으로 변환 (수정 페이지용)
+    public VoteForm convertToForm(VoteTitle voteTitle) {
+        VoteForm form = new VoteForm();
+        form.setTitle(voteTitle.getTitle());
+        form.setEndDate(voteTitle.getEndDate());
+
+        List<String> contents = voteTitle.getContents().stream()
+                .map(VoteContent::getContent)
+                .collect(Collectors.toList());
+        form.setContents(contents);
+
+        return form;
+    }
+
+    // ✅ 투표 수정 처리 (제목, 선택지, 이미지, 마감일 변경)
+    public void updateVote(Long id, VoteForm form, MultipartFile file) {
+        VoteTitle voteTitle = voteTitleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("투표가 존재하지 않습니다."));
+
+        // ✅ 마감일 체크
+        if (voteTitle.getEndDate() != null && voteTitle.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("마감된 투표는 수정할 수 없습니다.");
+        }
+
+        // ✅ 투표 제목과 마감일 수정
+        voteTitle.setTitle(form.getTitle());
+        voteTitle.setEndDate(form.getEndDate());
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                String savedName = utilUpload.fileUpload(file, "vote/");
+                voteTitle.setImg(savedName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // ✅ 기존 선택지 삭제하지 않고, 새로운 선택지 이름만 수정
+        for (int i = 0; i < form.getContents().size(); i++) {
+            String content = form.getContents().get(i);
+            if (!content.isBlank()) {
+                VoteContent voteContent = voteContentRepository.findById(voteTitle.getContents().get(i).getId())
+                        .orElseThrow(() -> new IllegalArgumentException("선택지가 존재하지 않습니다."));
+                voteContent.setContent(content);  // 이름만 수정
+                voteContentRepository.save(voteContent); // 수정된 선택지 저장
+            }
+        }
+
+        // ✅ 수정된 투표와 선택지를 저장
+        voteTitleRepository.save(voteTitle);
+    }
+    // ✅ 사용자가 특정 투표에서 선택한 선택지(VoteContent)의 ID를 반환 (없으면 null 반환)
+    public Long getUserSelectedContentId(Long userId, Long voteTitleId) {
+        return userVoteRepository.findByUserIdAndVoteTitleId(userId, voteTitleId)
+                .map(userVote -> userVote.getVoteContent().getId())
+                .orElse(null);
+    }
+    
 }
