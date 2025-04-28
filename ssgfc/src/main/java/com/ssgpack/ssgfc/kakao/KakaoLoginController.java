@@ -49,7 +49,7 @@ public class KakaoLoginController {
             UsernamePasswordAuthenticationToken token =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(token);
-            return "redirect:/main";
+            return "redirect:/";
         }
 
         // 이메일이 없거나 중복된 경우, 임시 이메일 생성
@@ -79,6 +79,6 @@ public class KakaoLoginController {
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(token);
 
-        return "redirect:/main";
+        return "redirect:/";
     }
 }
