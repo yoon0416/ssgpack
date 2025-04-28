@@ -57,6 +57,6 @@ public class NaverLoginController {
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(token);
 
-        return "redirect:/main";
+        return "redirect:/";
     }
 }

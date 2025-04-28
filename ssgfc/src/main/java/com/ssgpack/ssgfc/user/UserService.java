@@ -59,21 +59,19 @@ public class UserService implements UserDetailsService {
         User user = findById(id);
         user.setNick_name(updatedUser.getNick_name());
 
-        String newEmail = updatedUser.getEmail().trim();
-        if (!newEmail.equals(user.getEmail())) {
-            if (userRepository.findByEmail(newEmail).isPresent()) {
-                throw new IllegalArgumentException("이미 등록된 이메일입니다.");
-            }
-            user.setEmail(newEmail);
-            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
+        if (updatedUser.getPwd() != null && !updatedUser.getPwd().isBlank()) {
+            user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
         }
 
-        user.setIp(updatedUser.getIp());
-        user.setRole(updatedUser.getRole());
+        if (updatedUser.getRole() != user.getRole()) {
+            user.setRole(updatedUser.getRole());
+        }
+
         return user;
     }
 
-    // ✅ 마이페이지 수정 - 소개글, 프사, 주소 포함
+
+    //  마이페이지 수정 - 소개글, 프사, 주소 포함
     public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
         User user = findById(id);
 

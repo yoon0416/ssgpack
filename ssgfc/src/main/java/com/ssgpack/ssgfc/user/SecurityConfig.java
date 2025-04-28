@@ -95,7 +95,8 @@ public class SecurityConfig {
                     .permitAll()
 
                 // 그 외 모든 요청 허용
-                .anyRequest().permitAll()
+                .anyRequest()
+                    .permitAll()
             )
             .formLogin(form -> form
                 .loginPage("/user/login")
@@ -103,6 +104,9 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
+            .oauth2Login(oauth2 -> oauth2
+            	    .defaultSuccessUrl("/", true)  // true 필수!!!
+            	)
             .logout(logout -> logout
                 .logoutUrl("/user/logout")
                 .logoutSuccessUrl("/user/login")
