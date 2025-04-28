@@ -14,9 +14,9 @@ public class GameScheduleService {
         this.repository = repository;
     }
 
-    // 전체 일정 조회
-    public List<GameSchedule> findAll() {
-        return repository.findAll();
+    // 전체 일정 조회 (✅ 날짜 오름차순 정렬)
+    public List<GameSchedule> findAllOrderByGameDate() {
+        return repository.findAllByOrderByGameDateAsc();
     }
 
     // 결과로 조회 (예정 / 취소 / 승 / 패 / 무)

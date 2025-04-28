@@ -72,7 +72,8 @@
 
       <a class="menu-tab" th:href="@{/review_today}"
       	 th:classappend="${#request.requestURI == '/review_today'} ? 'active'">오늘 경기요약</a>
-      <a class="menu-tab" href="https://www.koreabaseball.com/Schedule/Weather.aspx#none" target="_blank">야구장 날씨</a>
+      <a class="menu-tab" th:href="@{/weather}" 
+		 th:classappend="${#request.requestURI == '/weather'} ? 'active'">야구장 날씨</a>
     </div>
   </div>
 

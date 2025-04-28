@@ -1,4 +1,4 @@
-/* 달력 컨테이너 */
+/* 달력 */
 #miniCalendar {
     font-family: 'Arial', sans-serif;
     border: 1px solid #ddd;
@@ -9,7 +9,6 @@
     max-width: 320px;
 }
 
-/* 날짜 숫자 중앙 정렬 및 기본 스타일 */
 #miniCalendar .fc .fc-daygrid-day-number {
     font-weight: 600;
     font-size: 13px;
@@ -18,20 +17,17 @@
     width: 100%;
 }
 
-/* 오늘 날짜 하이라이트 */
 #miniCalendar .fc-day-today {
     background-color: #e6f0ff !important;
     border-radius: 4px;
 }
 
-/* 요일 타이틀 */
 .review-calendar .fc-toolbar-title {
     font-size: 18px !important;
     text-align: left;
     font-weight: bold;
 }
 
-/* 요일 (헤더 셀) 스타일 */
 #miniCalendar .fc .fc-col-header-cell-cushion {
     font-weight: bold;
     font-size: 13px;
@@ -39,28 +35,24 @@
     display: block;
 }
 
-/* 요일 별 색상 */
 #miniCalendar .fc-day-sun .fc-col-header-cell-cushion,
 #miniCalendar .fc-day-sun .fc-daygrid-day-number {
-    color: #e74c3c !important; /* 빨간색 */
+    color: #e74c3c !important;
 }
 
 #miniCalendar .fc-day-sat .fc-col-header-cell-cushion,
 #miniCalendar .fc-day-sat .fc-daygrid-day-number {
-    color: #2980b9 !important; /* 파란색 */
+    color: #2980b9 !important;
 }
 
-/* 월~금 요일 텍스트는 검정색 */
 #miniCalendar .fc-col-header-cell:not(.fc-day-sat):not(.fc-day-sun) .fc-col-header-cell-cushion {
     color: #222 !important;
 }
 
-/* 셀 테두리 제거 */
 .review-calendar .fc-daygrid-day {
     border: none !important;
 }
 
-/* hover 효과 */
 .review-calendar .fc-daygrid-day:hover {
     background-color: #f2f2f2 !important;
     cursor: pointer;
@@ -71,11 +63,21 @@
 /* 전체 레이아웃 */
 .review-wrapper {
     display: flex;
+    flex-direction: column;
     gap: 30px;
     padding: 30px;
-    flex-wrap: wrap;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+.top-box {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.summary-bottom-box {
+    width: 100%;
 }
 
 .calendar-box-review {
@@ -88,7 +90,6 @@
     min-width: 300px;
 }
 
-/* ✅ 경기기록, AI 한줄평 박스 스타일 */
 .record-box {
     margin-top: 20px;
     background: #f8f9fa;
@@ -107,18 +108,13 @@
     margin-bottom: 10px;
 }
 
-/* ✅ 줄바꿈과 들여쓰기 스타일 */
 #recordList li {
     white-space: normal !important;
     line-height: 1.6;
     word-break: break-word;
     margin-bottom: 8px;
 }
-#recordList br {
-    display: block;
-    content: "";
-    margin-top: 4px;
-}
+
 #recordList div {
     margin-bottom: 10px;
     line-height: 1.6;
@@ -134,4 +130,9 @@
 #recordList strong {
     display: inline-block;
     margin-bottom: 4px;
+}
+
+.indent {
+    display: block;
+    margin-left: 2em;
 }

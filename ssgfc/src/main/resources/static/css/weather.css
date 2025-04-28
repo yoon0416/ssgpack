@@ -1,0 +1,47 @@
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+}
+
+/* 지도 영역 */
+#kbo-map-container {
+    position: relative;
+    width: 600px;
+    height: auto;
+}
+
+#korea-map {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* 동그란 마커 스타일 */
+.circle-marker {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background-color: crimson; /* 기본 배경색 (팀별 색상은 JS에서 넣을 수 있음) */
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* 날씨 정보 패널 */
+#stadium-info-panel {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-height: 240px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
