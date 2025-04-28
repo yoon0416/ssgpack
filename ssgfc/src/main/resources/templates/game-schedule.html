@@ -44,12 +44,19 @@
 	background-color: white !important;
 }
 </style>
+
+
 </head>
 
 <body>
 
 	<section class="container mt-5" layout:fragment="content">
 		<h2 class="text-center mb-4">📅 SSG 랜더스 경기 일정</h2>
+		
+		<div id="monthRecord" style="text-align:center; margin-bottom:20px; font-size:18px; font-weight:bold;">
+      이번 달 전적: <span id="wins">0</span>승 <span id="losses">0</span>패 <span id="draws">0</span>무
+    </div>
+
 		<div id="calendar"></div>
 	</section>
 
@@ -70,9 +77,21 @@
             "KT": "/images/logo/KT.png"
             
         };
+        
+        
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
+            
+            axios.get('/games/api/month-record')
+            .then(response => {
+              document.getElementById('wins').textContent = response.data.wins;
+              document.getElementById('losses').textContent = response.data.losses;
+              document.getElementById('draws').textContent = response.data.draws; // 무승부 표시
+            })
+            .catch(error => {
+              console.error('이번달 전적 로딩 실패', error);
+            });
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -203,7 +222,22 @@
                             console.error("일정 로딩 실패", error);
                             failureCallback(error);
                         });
+                },
+                datesSet: function(info) {
+                    const year = info.start.getFullYear();
+                    const month = info.start.getMonth() + 1; // 0부터 시작하니까 +1
+
+                    axios.get(`/games/api/month-record?year=${year}&month=${month}`)
+                        .then(response => {
+                            document.getElementById('wins').textContent = response.data.wins;
+                            document.getElementById('losses').textContent = response.data.losses;
+                            document.getElementById('draws').textContent = response.data.draws;
+                        })
+                        .catch(error => {
+                            console.error('이번달 전적 로딩 실패', error);
+                        });
                 }
+                
             });
 
             calendar.render();
