@@ -77,7 +77,6 @@ public class PlayerCrawlingService {
 
         return playerRepository.save(player);
     }
-
     private String getText(Elements lis, String key) {
         for (Element li : lis) {
             Element label = li.selectFirst("span");

@@ -3,45 +3,92 @@
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 	layout:decorate="~{fragments/layout}">
 <head>
-    <title>SSG 랜더스 커뮤니티</title>
+    <title>SSG 랜더스 커미니티</title>
 
-    <!-- ✅ Bootstrap 포함 (디자인용) -->
+    <!-- ✅ Bootstrap 포함 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+.top-player-section {
+	background-color: #ffffff;
+    padding: 30px 0;
+    border-radius: 15px;
+    margin-bottom: 40px;
+}
+
+    .top-player-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #555555; /* ✅ 회색 계열로 */
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .top-player-grid {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin: 0 auto;
+    }
+    .player-item {
+        width: 180px;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease-in-out;
+        text-align: center;
+    }
+    .player-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .player-item img {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+    }
+    .player-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #111;
+        margin-top: 10px;
+        margin-bottom: 4px;
+        text-decoration: none;
+    }
+    .player-subinfo {
+        font-size: 1rem;
+        color: #555555;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    a {
+        text-decoration: none !important;
+    }
+</style>
+
 
 </head>
 <body>
 <th:block layout:fragment="content">
-    <!-- ✅ 조회수 높은 선수 섹션 -->
-    <div class="top-player-section container">
-      <div class="top-player-title">🔥 인기 선수</div>
-      <div class="top-player-grid" id="top-player-grid"></div>
-    </div>
-    
+
     <div class="container mt-5">
         <div class="main-grid">
 
+            <div class="left-box">
+                <h3>📰 최신 KBO 뉴스</h3>
+                <div th:replace="news :: news-fragment"></div>
+            </div>
 
-			
-			<div class="left-box">
-			  <h3>📰 최신 KBO 뉴스</h3>
-			
-			  <!-- news.html 파일의 fragment 삽입 -->
-			  <div th:replace="news :: news-fragment"></div>
-			</div>
-
-
-            <!-- 오른쪽 공간 -->
             <div class="right-box">
-
-                <!-- ✅ 인기글 출력 영역 -->
                 <div class="popular-board">
                     <div class="popular-board-title">🔥 인기글</div>
                     <table class="table table-sm table-hover">
                         <tbody>
                         <tr th:each="board : ${popularBoards}">
                             <td>
-                                <a th:href="@{'/board/view/' + ${board.id}}" th:text="${board.title}">게시글 제목</a>
+                                <a th:href="@{'/board/view/' + ${board.id}}" th:text="${board.title}">게시\uuae00 제목</a>
                                 <div class="text-muted" style="font-size: 0.8rem;">
                                     조회수 <span th:text="${board.hit}"></span> · 좋아요 <span th:text="${board.likes.size()}"/>
                                 </div>
@@ -51,67 +98,119 @@
                     </table>
                 </div>
 
-				<!-- ✅ latestVote가 있을 경우에만 제목과 이미지 출력 -->
-				<div class="right-lower-box" th:if="${latestVote != null}">
-				    <h4 class="fw-bold" th:text="${latestVote.title}">최신 투표 제목</h4>
-				
-				    <!-- ✅ 이미지 출력 (있을 경우) -->
-				    <img th:if="${latestVote.img != null}"
-				         th:src="@{'/images/vote/' + ${latestVote.img}}"
-				         class="img-fluid rounded mb-2"
-				         alt="투표 이미지"
-				         style="max-height: 150px; object-fit: cover;">
-				
-				    <!-- ✅ 선택지 리스트 -->
-				    <ul class="list-group list-group-flush" th:if="${latestVoteOptions != null}">
-				        <li class="list-group-item"
-				            th:each="opt : ${latestVoteOptions}"
-				            th:text="${opt.content}"
-				            th:onclick="'location.href=\'/vote/' + ${latestVote.id} + '\';'"
-				            style="cursor: pointer;"></li>
-				    </ul>
-				</div>
+                <div class="right-lower-box" th:if="${latestVote != null}">
+                    <h4 class="fw-bold" th:text="${latestVote.title}">최신 투표 제목</h4>
+                    <img th:if="${latestVote.img != null}"
+                         th:src="@{'/images/vote/' + ${latestVote.img}}"
+                         class="img-fluid rounded mb-2"
+                         alt="투표 이미지"
+                         style="max-height: 150px; object-fit: cover;">
+                    <ul class="list-group list-group-flush" th:if="${latestVoteOptions != null}">
+                        <li class="list-group-item"
+                            th:each="opt : ${latestVoteOptions}"
+                            th:text="${opt.content}"
+                            th:onclick="'location.href=\'/vote/' + ${latestVote.id} + '\';'"
+                            style="cursor: pointer;"></li>
+                    </ul>
+                </div>
 
             </div>
         </div>
     </div>
+
+    <!-- ✅ 조회수 높은 인기 선수 -->
+    <div class="top-player-section container" >
+        <div class="top-player-title-wrapper">
+          <!--   <div class="top-player-icon">🔥</div> -->
+            <div class="top-player-title">인기 선수</div>
+        </div>
+        <div class="top-player-grid" id="top-player-grid"></div>
+    </div>
+
+    <!-- ✅ 등점기여/승리기여도 높은 선수 -->
+    <div class="top-player-section container">
+        <div class="top-player-title-wrapper">
+            <!-- <div class="top-player-icon">🏆</div> -->
+            <div class="top-player-title">타율 Top3 (타자)</div>
+        </div>
+        <div class="top-player-grid" id="top-hitter-grid"></div>
+    </div>
+
+    <div class="top-player-section container">
+        <div class="top-player-title-wrapper">
+            <!-- <div class="top-player-icon">🏆</div> -->
+            <div class="top-player-title">승리기여도 Top3 (투수)</div>
+        </div>
+        <div class="top-player-grid" id="top-pitcher-grid"></div>
+    </div>
+
 </th:block>
-
-
 
 <th:block layout:fragment="script">
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  fetch('/api/players/top-hit?limit=5')
-    .then(response => response.json())
-    .then(players => {
-      const topPlayersList = document.getElementById('top-player-grid');
-      topPlayersList.innerHTML = '';
+    fetch('/api/players/top-hit?limit=5')
+        .then(response => response.json())
+        .then(players => {
+            const topPlayersList = document.getElementById('top-player-grid');
+            topPlayersList.innerHTML = '';
+            players.forEach(player => {
+                const photoUrl = `/images/players/${player.backNumber}.png`;
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                item.innerHTML = `
+                    <a href="/players/${player.pno}">
+                        <img src="${photoUrl}" alt="${player.name}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-subinfo">조회수 ${player.viewCount}</div>
+                    </a>
+                `;
+                topPlayersList.appendChild(item);
+            });
+        });
 
-      players.forEach(player => {
-        const photoUrl = `/images/players/${player.backNumber}.png`;
-        const card = document.createElement('div');
-        card.className = 'player-card';
-        card.innerHTML = `
-          <a href="/players/${player.pno}">
-            <img src="${photoUrl}" alt="${player.name}" class="player-image">
-            <div class="player-info">
-              <h3>${player.name}</h3>
-              <p>조회수: ${player.viewCount}</p>
-            </div>
-          </a>
-        `;
-        topPlayersList.appendChild(card);
-      });
-    })
-    .catch(err => {
-      console.error("🔥 인기 선수 로딩 실패:", err);
-    });
+    fetch('/api/players/top-hitters?limit=3&year=2024')
+        .then(response => response.json())
+        .then(players => {
+            const hitterList = document.getElementById('top-hitter-grid');
+            hitterList.innerHTML = '';
+            players.forEach(player => {
+                const photoUrl = `/images/players/${player.backNumber}.png`;
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                item.innerHTML = `
+                    <a href="/players/${player.pno}">
+                        <img src="${photoUrl}" alt="${player.name}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-subinfo">타율 ${player.mainStat}</div>
+                    </a>
+                `;
+                hitterList.appendChild(item);
+            });
+        });
+
+    fetch('/api/players/top-pitchers?limit=3&year=2024')
+        .then(response => response.json())
+        .then(players => {
+            const pitcherList = document.getElementById('top-pitcher-grid');
+            pitcherList.innerHTML = '';
+            players.forEach(player => {
+                const photoUrl = `/images/players/${player.backNumber}.png`;
+                const item = document.createElement('div');
+                item.className = 'player-item';
+                item.innerHTML = `
+                    <a href="/players/${player.pno}">
+                        <img src="${photoUrl}" alt="${player.name}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-subinfo">승리기여도 ${player.mainStat}</div>
+                    </a>
+                `;
+                pitcherList.appendChild(item);
+            });
+        });
 });
 </script>
 </th:block>
-
-
 
 </body>
 </html>

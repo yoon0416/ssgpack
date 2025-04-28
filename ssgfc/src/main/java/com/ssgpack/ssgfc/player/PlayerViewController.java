@@ -16,7 +16,11 @@ public class PlayerViewController {
 
     private final PlayerCrawlingService playerCrawlingService;
 
-    
+    @GetMapping("/player/compare")
+    public String playerCompare() {
+        return "player/player_compare"; // ✅ 정답
+    }
+
     
     // HTML로 선수 목록 보여주기 (→ templates/player/player.html)
     @GetMapping("/players")
