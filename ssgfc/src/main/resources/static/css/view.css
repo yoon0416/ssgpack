@@ -111,3 +111,17 @@
     align-items: center;
 }
 
+/* ✅ 감정 분석 결과에 따른 배경색 설정 */
+.positive-bg {
+    background-color: #fff8e1; /* 연노랑 */
+}
+
+.negative-bg {
+    background-color: #ffe6e6; /* 연분홍 */
+}
+
+.neutral-bg {
+    background-color: #ffffff; /* 흰색 */
+}
+
+
