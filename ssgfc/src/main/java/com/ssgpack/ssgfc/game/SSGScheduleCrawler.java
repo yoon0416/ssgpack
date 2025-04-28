@@ -4,75 +4,103 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+@Component
+@RequiredArgsConstructor
 public class SSGScheduleCrawler {
 
-    public static void main(String[] args) {
-        try {
-            String url = "https://statiz.sporki.com/schedule/?year=2025&month=4";
-            
-            // ✅ 브라우저처럼 위장
-            Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36")
-                    .referrer("https://www.google.com/")
-                    .timeout(15000)
-                    .get();
+    private final GameScheduleRepository gameScheduleRepository;
 
-            Elements gameCells = doc.select("div.calendar_area td");
+    public void crawlAndSave() {
+        int year = 2025; // 필요하면 나중에 LocalDate.now().getYear()로 바꿀 수 있음
 
-            LocalDate today = LocalDate.now();
-            int year = 2025;
-            int month = 4;
+        for (int month = 4; month <= 5; month++) {
+            String url = "https://statiz.sporki.com/schedule/?year=" + year + "&month=" + month;
 
-            for (Element cell : gameCells) {
+            try {
+                Document doc = Jsoup.connect(url)
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36")
+                        .referrer("https://www.google.com/")
+                        .timeout(15000)
+                        .get();
 
-                // ✅ 요청 간 딜레이 (1.5초)
-                Thread.sleep(1500);
+                Elements gameCells = doc.select("div.calendar_area td"); // html td뽑기
 
-                String dayStr = cell.select("span.day").text();
-                if (dayStr == null || dayStr.isEmpty()) continue;
+                for (Element cell : gameCells) {
+                    Thread.sleep(500);
 
-                int dayInt = Integer.parseInt(dayStr);
-                LocalDate gameDate = LocalDate.of(year, month, dayInt);
+                    String dayStr = cell.select("span.day").text();
+                    if (dayStr.isEmpty()) continue;
 
-                // 월요일 스킵
-                if (gameDate.getDayOfWeek() == DayOfWeek.MONDAY) continue;
+                    int dayInt = Integer.parseInt(dayStr);
+                    LocalDate gameDate = LocalDate.of(year, month, dayInt);
 
-                Elements games = cell.select("div.games li");
+                    Elements games = cell.select("div.games li");
 
-                for (Element game : games) {
-                    Elements teams = game.select("span.team");
-                    Elements scores = game.select("span.score");
+                    if (games.isEmpty()) continue;
 
-                    if (teams.size() == 2) {
-                        String team1 = teams.get(0).text();
-                        String team2 = teams.get(1).text();
+                    for (Element game : games) {
+                        Elements teams = game.select("span.team");
+                        Elements scores = game.select("span.score");
+                        Element hourElement = game.selectFirst("span.hour");
 
-                        String score1 = scores.size() >= 2 ? scores.get(0).text() : "";
-                        String score2 = scores.size() >= 2 ? scores.get(1).text() : "";
+                        String startTimeStr = (hourElement != null) ? hourElement.text() : "18:30";
 
-                        if (team1.contains("SSG") || team2.contains("SSG")) {
-                            // 오늘 이전
-                            if (gameDate.isBefore(today)) {
-                                if (!score1.isEmpty() && !score2.isEmpty()) {
-                                    System.out.println("4월 " + dayStr + "일 | " + team1 + " " + score1 + " vs " + team2 + " " + score2);
+                        if (teams.size() == 2) {
+                            String team1 = teams.get(0).text();
+                            String team2 = teams.get(1).text();
+
+                            String score1 = scores.size() >= 2 ? scores.get(0).text() : "";
+                            String score2 = scores.size() >= 2 ? scores.get(1).text() : "";
+                            
+
+                            if (team1.contains("SSG") || team2.contains("SSG")) {
+                                // ✅ 오늘 날짜에 해당하는 경기 찾기
+                                GameSchedule schedule = gameScheduleRepository.findByGameDate(gameDate)
+                                        .stream().findFirst().orElse(null);
+
+                                if (schedule != null) {
+                                    // ✅ 기존 경기 있으면 업데이트
+                                    if (!score1.isEmpty() && !score2.isEmpty()) {
+                                        schedule.setResult(team1 + " " + score1 + " : " + team2 + " " + score2);
+                                        schedule.setScore1(Integer.parseInt(score1));
+                                        schedule.setScore2(Integer.parseInt(score2));
+                                    }
+                                    if (startTimeStr != null && (schedule.getStartTime() == null || schedule.getStartTime().isEmpty())) {
+                                        schedule.setStartTime(startTimeStr);
+                                    }
+                                    gameScheduleRepository.save(schedule);
+                                    System.out.println("✅ 업데이트 완료: " + gameDate);
                                 } else {
-                                    System.out.println("4월 " + dayStr + "일 | 경기 취소");
+                                    // ✅ 없으면 새로 저장
+                                    GameSchedule newGame = new GameSchedule(
+                                            gameDate,
+                                            null,
+                                            (score1.isEmpty() || score2.isEmpty()) ? "경기 예정" : (team1 + " " + score1 + " : " + team2 + " " + score2),
+                                            null,
+                                            team1,
+                                            team2,
+                                            score1.isEmpty() ? null : Integer.parseInt(score1),
+                                            score2.isEmpty() ? null : Integer.parseInt(score2)
+                                    );
+                                    if (startTimeStr != null) {
+                                        newGame.setStartTime(startTimeStr);
+                                    }
+                                    gameScheduleRepository.save(newGame);
+                                    System.out.println("✅ 새로 추가 완료: " + gameDate);
                                 }
-                            } else {
-                                System.out.println("4월 " + dayStr + "일 | 경기 예정");
                             }
                         }
                     }
                 }
-            }
 
-        } catch (Exception e) {
-            System.err.println("⚠ 크롤링 중 오류 발생");
-            e.printStackTrace();
+            } catch (Exception e) {
+                System.err.println("⚠ 크롤링 오류: " + e.getMessage());
+            }
         }
     }
 }

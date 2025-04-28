@@ -7,126 +7,93 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-
 @Service
 @Transactional
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final OpenAIUtil openAIUtil;
+    private final ReviewRepository reviewRepository; //db저장
+    private final OpenAIUtil openAIUtil; //ai 요청
+    private final ReviewCrawler reviewCrawler; // 크롤링정보 불러오기
 
-    public ReviewService(ReviewRepository reviewRepository, OpenAIUtil openAIUtil) {
+    public ReviewService(ReviewRepository reviewRepository, OpenAIUtil openAIUtil, ReviewCrawler reviewCrawler) {
         this.reviewRepository = reviewRepository;
         this.openAIUtil = openAIUtil;
+        this.reviewCrawler = reviewCrawler;
     }
 
     public boolean existsByDate(String date) {
         LocalDate localDate = LocalDate.parse(date);
         return reviewRepository.existsByGameDate(localDate);
-    }
+    } // 해당날짜 DB기록 여부 확인
 
-    public void fetchAndSaveReview(String game_url) throws IOException {
-        String url = "https://api-gw.sports.naver.com/schedule/games/" + game_url + "/record";
+    public void fetchAndSaveReview(String game_url) throws Exception {
+        // ✅ 크롤링한 기록 가져오기
+        List<String> records = reviewCrawler.fetchRecords(game_url);
 
-        OkHttpClient client = new OkHttpClient();
+        if (records.isEmpty()) {
+            System.out.println("❌ 가져온 기록이 없습니다.");
+            return;
+        }
 
-        Request request = new Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0")
-                .header("Referer", "https://m.sports.naver.com")
-                .build();
+        System.out.println("✅ 가져온 기록 수: " + records.size());
 
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String json = response.body().string();
-                System.out.println(json);
+        String dateStr = game_url.substring(0, 8); //URL 주소중 8글자
+        LocalDate gameDate = LocalDate.parse(dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8));
 
-                JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-                JsonArray etcRecords = root
-                        .getAsJsonObject("result")
-                        .getAsJsonObject("recordData")
-                        .getAsJsonArray("etcRecords");
+        List<Review> reviewList = new ArrayList<>();
+        Set<String> uniqueKeys = new HashSet<>(); // 크롤링한 정보중 중복 기록 제거
 
-                System.out.println("✅ 크롤링 데이터 수: " + etcRecords.size());
+        for (String record : records) {
+            // [how] result 형식 분리
+            int start = record.indexOf('[');
+            int end = record.indexOf(']');
+            if (start != -1 && end != -1) {
+                String how = record.substring(start + 1, end);
+                String result = record.substring(end + 1).trim();
 
-                Set<String> uniqueKeys = new HashSet<>();
-                List<Review> reviewList = new ArrayList<>();
+                String key = how + "::" + result;
+                if (uniqueKeys.contains(key)) continue;
+                uniqueKeys.add(key);
 
-                String dateStr = game_url.substring(0, 8);
-                LocalDate gameDate = LocalDate.parse(dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8));
+                Review review = new Review();
+                review.setHow(how);
+                review.setResult(result);
+                review.setGameUrl(game_url);
+                review.setGameDate(gameDate);
 
-                for (JsonElement elem : etcRecords) {
-                    JsonObject obj = elem.getAsJsonObject();
+                reviewList.add(review);
+            }
+        }
 
-                    String how = obj.has("how") ? obj.get("how").getAsString() : "";
-                    String result = obj.has("result") ? obj.get("result").getAsString() : "";
+        // ✅ prompt 생성(요청형식)
+        StringBuilder combined = new StringBuilder();
+        for (Review r : reviewList) {
+            combined.append("[").append(r.getHow()).append("] ").append(r.getResult()).append("\n");
+        }
 
-                    String key = how + "::" + result;
-                    if (uniqueKeys.contains(key)) continue; // ✅ 중복이면 무시
-                    uniqueKeys.add(key);
+        String prompt = "다음은 SSG 랜더스 야구 경기 주요 기록입니다.\n" +
+                "이모지 없이, SSG 팬의 시점에서 50자 이내로 간결한 한줄 요약을 작성하세요.\n" +
+                "**주의: 'SSG 팬 입장에서' 같은 문장은 포함하지 마세요.**\n" +
+                "직접적인 요약 문장만 결과로 반환하세요.\n\n" + combined;
 
-                    Review review = new Review();
-                    review.setHow(how);
-                    review.setResult(result);
-                    review.setGameUrl(game_url);
-                    review.setGameDate(gameDate);
+        System.out.println("📝 생성된 프롬프트 내용:\n" + prompt);
 
-                    reviewList.add(review);
-                }
+        // ✅ AI 요약 요청결과 출력
+        try {
+            String summary = openAIUtil.getSummary(prompt);
+            System.out.println("🤖 GPT 응답 요약: " + summary);
 
-                // ✅ 항목별로 3개씩 묶어서 줄바꿈 적용 (백엔드 포맷팅)
-                Map<String, List<String>> grouped = new LinkedHashMap<>();
-                for (Review r : reviewList) {
-                    grouped.computeIfAbsent(r.getHow(), k -> new ArrayList<>()).add(r.getResult());
-                }
+            
+            
+            for (Review r : reviewList) {
+                r.setSummary(summary);
 
-                StringBuilder combined = new StringBuilder();
-                for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
-                    combined.append("[").append(entry.getKey()).append("] ");
-                    List<String> results = entry.getValue();
-                    for (int i = 0; i < results.size(); i++) {
-                        combined.append(results.get(i));
-                        if (i < results.size() - 1) {
-                            combined.append(" ");
-                        }
-                        if ((i + 1) % 3 == 0 && i != results.size() - 1) {
-                            combined.append("\n                    ");
-                        }
-                    }
-                    combined.append("\n");
-                }
-
-                String prompt = "다음은 SSG 랜더스 야구 경기 주요 기록입니다.\n" +
-                        "이모지 없이, SSG 팬의 시점에서 50자 이내로 간결한 한줄 요약을 작성하세요.\n" +
-                        "**주의: 'SSG 팬 입장에서' 같은 문장은 포함하지 마세요.**\n" +
-                        "직접적인 요약 문장만 결과로 반환하세요.\n\n" + combined;
-
-                System.out.println("📝 생성된 프롬프트 내용:\n" + prompt);
-
-                try {
-                    String summary = openAIUtil.getSummary(prompt);
-                    System.out.println("🤖 GPT 응답 요약: " + summary);
-
-                    for (Review r : reviewList) {
-                        r.setSummary(summary);
-                        System.out.println("✅ 실제 저장될 리뷰 확인: " + r.getGameUrl() + " / " + r.getSummary());
-
-                        if (!reviewRepository.existsByGameUrlAndHowAndResult(r.getGameUrl(), r.getHow(), r.getResult())) {
-                            reviewRepository.save(r);
-                        }
-                    }
-                } catch (Exception e) {
-                    System.out.println("❌ GPT 요약 실패: " + e.getMessage());
+                if (!reviewRepository.existsByGameUrlAndHowAndResult(r.getGameUrl(), r.getHow(), r.getResult())) {
+                    reviewRepository.save(r);
                 }
             }
+        } catch (Exception e) {
+            System.out.println("❌ GPT 요약 실패: " + e.getMessage());
         }
     }
 

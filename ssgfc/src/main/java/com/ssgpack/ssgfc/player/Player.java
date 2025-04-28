@@ -69,6 +69,11 @@ public class Player {
     @Transient
     private int viewCount;
     
+<<<<<<< HEAD
 
 
+=======
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+>>>>>>> 0220db6f37bac6ccfe90b94976f9f674944c027c
 }

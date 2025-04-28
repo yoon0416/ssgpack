@@ -15,15 +15,18 @@ public class ReviewController {
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
-
+    
+    //기록 DB존재유무확인
     @GetMapping("/api/review-exists")
     public boolean checkReviewExists(@RequestParam String date) {
         return reviewService.existsByDate(date);
     }
+    // 기록된 요약 반환
     @GetMapping("/api/review-summary")
     public String getSummaryByDate(@RequestParam String date) {
         return reviewService.findSummaryByDate(LocalDate.parse(date));
     }
+    //기록 반환
     @GetMapping("/api/review-records")
     public List<Review> getRecordsByDate(@RequestParam String date) {
         LocalDate localDate = LocalDate.parse(date);
