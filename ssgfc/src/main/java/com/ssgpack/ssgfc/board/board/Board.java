@@ -74,6 +74,10 @@ public class Board {
         this.score = score;
     }
 
+    // ✅ 감정 분석 결과 (DB에 저장, 기본값 "중립")
+    @Column(nullable = false)
+    private String emotion = "NEUTRAL";  // ✅ 기본값으로 "중립" 설정
+
     // ✅ 작성자 IP 자동 세팅용
     public void setIp() {
         try {
