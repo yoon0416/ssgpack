@@ -19,19 +19,22 @@ public class GameSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "game_date")
+    @Column(name = "game_date", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate gameDate;
 
+    @Column(length = 50)
     private String location;
 
-    private String result;	
+    private String result;    
 
     @Column(columnDefinition = "TEXT")
     private String report;
 
+    @Column(length = 20)
     private String team1;
 
+    @Column(length = 20)
     private String team2;
 
     private Integer score1;
@@ -56,6 +59,9 @@ public class GameSchedule {
         this.startTime = startTime;
     }
 
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
     public GameSchedule(LocalDate gameDate, String location, String result, String report,
                         String team1, String team2, Integer score1, Integer score2) {

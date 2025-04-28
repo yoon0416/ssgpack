@@ -21,7 +21,7 @@ public class ScheduleController {
     // 전체 경기 일정 조회
     @GetMapping
     public List<GameSchedule> all() {
-        return service.findAll();
+    	return service.findAllOrderByGameDate();
     }
 
     // 결과(예정, 취소, 승, 패 등)별 경기 조회
@@ -38,5 +38,6 @@ public class ScheduleController {
         LocalDate e = LocalDate.parse(end);
         return service.findByDateRange(s, e);
     }
+    
     
 }
