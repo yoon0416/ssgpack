@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayerStat 등록</title>
+</head>
+<body>
+<h1>새 선수 기록 등록</h1>
+
+<form th:action="@{/admin/playerstat/create}" method="post">
+    시즌: <input type="text" name="season" th:value="${stat.season}"><br><br>
+    기록(statMap JSON 문자열):<br>
+    <textarea name="statMap" cols="50" rows="10"></textarea><br><br>
+    <button type="submit">등록하기</button>
+</form>
+
+<a th:href="@{/admin/playerstat/list}">목록으로</a>
+
+</body>
+</html>

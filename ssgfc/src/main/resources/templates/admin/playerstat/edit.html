@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✏ 선수 기록 수정</title>
+
+  <style>
+    .container { max-width: 600px; margin: 50px auto; padding: 20px; }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #C8102E;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #900020;
+    }
+  </style>
+</head>
+
+<body>
+<th:block layout:fragment="content">
+
+<div class="container">
+
+  <h1 style="text-align:center; margin-bottom: 30px;">✏ 선수 기록 수정</h1>
+
+  <div class="card">
+    <form th:action="@{'/admin/playerstat/edit/' + ${stat.id}}" method="post">
+      <label>시즌</label>
+      <input type="text" name="season" th:value="${stat.season}" required>
+
+      <label>기록 (JSON 문자열)</label>
+      <textarea name="statMap" rows="10" placeholder="{'G':'100','HR':'20', ...}">[[${stat.statMap}]]</textarea>
+
+      <button type="submit">✅ 수정 완료</button>
+    </form>
+  </div>
+
+</div>
+
+</th:block>
+</body>
+</html>

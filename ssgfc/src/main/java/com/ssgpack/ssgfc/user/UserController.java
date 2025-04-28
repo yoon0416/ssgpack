@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -164,32 +165,49 @@ public class UserController {
             user.setEmail(email.trim());
 
             if (!oldEmail.equals(email.trim())) {
-                user.setEmail_chk(false); // 이메일 변경 시 인증 다시
+                user.setEmail_chk(false); // 이메일 변경시 인증 다시 필요
             }
 
             if (phone != null && !phone.isBlank()) {
                 if (phone.equals(user.getPhone())) {
-                    // 번호 그대로 유지
+                    // 기존 번호 유지
                 } else if (phone.equals(verifiedPhone)) {
                     user.setPhone(phone);
-                    session.removeAttribute("verifiedPhone");
+                    session.removeAttribute("verifiedPhone"); // 인증 성공했으면 세션값 삭제
                 } else {
                     model.addAttribute("warningMessage", "전화번호는 인증된 번호만 변경할 수 있습니다.");
                 }
             }
 
+            // 유저 정보 파일 포함 업데이트
             service.updateUserWithFile(user.getId(), user, file);
 
-            session.invalidate();
-            SecurityContextHolder.clearContext();
+            // ✨ 세션 무효화 제거
+            // session.invalidate();
+            // SecurityContextHolder.clearContext();
 
-            return "redirect:/user/login?updated=true";
+            // ✨ 인증정보 갱신
+            CustomUserDetails updatedUserDetails = new CustomUserDetails(user);
+
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    updatedUserDetails, 
+                    updatedUserDetails.getPassword(), 
+                    updatedUserDetails.getAuthorities()
+            );
+
+            // 새 Authentication을 현재 SecurityContext에 세팅
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+            // 수정 후 마이페이지로 이동
+            return "redirect:/user/mypage";
+
         } catch (IllegalArgumentException e) {
             model.addAttribute("message", e.getMessage());
             model.addAttribute("url", "/user/mypage/edit");
-            return "user/alert"; // (※ alert.html은 templates/user/alert.html에 있어야 함)
+            return "user/alert";
         }
     }
+
 
     @GetMapping("/user/password/change")
     public String showChangePasswordForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {

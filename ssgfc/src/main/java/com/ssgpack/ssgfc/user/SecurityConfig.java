@@ -20,9 +20,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeRequests(authorize -> authorize
-                //  카카오/구글 로그인 경로 허용
-                .antMatchers("/kakaologin", "/kakao", "/googlelogin", "/google")
-                    .permitAll()
+                // 카카오/구글 로그인 경로 허용
+                .antMatchers("/kakaologin", "/kakao", "/googlelogin", "/google").permitAll()
 
                 // 관리자 대시보드
                 .antMatchers("/admin/dashboard")
@@ -44,8 +43,14 @@ public class SecurityConfig {
                         UserRole.MASTER.getRoleName(),
                         UserRole.USER_MANAGER.getRoleName())
 
-                // 선수 관리자
+                // 선수 관리자 (선수 CRUD)
                 .antMatchers("/admin/player/**")
+                    .hasAnyAuthority(
+                        UserRole.MASTER.getRoleName(),
+                        UserRole.PLAYER_MANAGER.getRoleName())
+
+                // 플레이어 기록 관리자 (playerstat CRUD)
+                .antMatchers("/admin/playerstat/**")
                     .hasAnyAuthority(
                         UserRole.MASTER.getRoleName(),
                         UserRole.PLAYER_MANAGER.getRoleName())
@@ -62,11 +67,11 @@ public class SecurityConfig {
                         UserRole.MASTER.getRoleName(),
                         UserRole.GAME_MANAGER.getRoleName())
 
-                // 경기 일정 관리자
-                .antMatchers("/admin/game/**")
-                    .hasAnyAuthority(
-                        UserRole.MASTER.getRoleName(),
-                        UserRole.GAME_MANAGER.getRoleName())
+                 // 경기 일정 관리자
+                    .antMatchers("/admin/schedule/**")
+                        .hasAnyAuthority(
+                            UserRole.MASTER.getRoleName(),
+                            UserRole.GAME_MANAGER.getRoleName())
 
                 // 투표 생성 (마스터 또는 게시판 관리자)
                 .antMatchers("/vote/create")
@@ -105,8 +110,8 @@ public class SecurityConfig {
                 .permitAll()
             )
             .oauth2Login(oauth2 -> oauth2
-            	    .defaultSuccessUrl("/", true)  // true 필수!!!
-            	)
+                .defaultSuccessUrl("/", true)
+            )
             .logout(logout -> logout
                 .logoutUrl("/user/logout")
                 .logoutSuccessUrl("/user/login")
@@ -120,7 +125,7 @@ public class SecurityConfig {
     // 정적 자원 무시 설정
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
+        return web -> web.ignoring()
             .antMatchers("/css/**", "/js/**", "/images/**", "/lib/**");
     }
 
