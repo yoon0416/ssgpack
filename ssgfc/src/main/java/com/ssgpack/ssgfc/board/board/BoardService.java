@@ -2,6 +2,7 @@ package com.ssgpack.ssgfc.board.board;
 
 import com.ssgpack.ssgfc.util.UtilUpload;
 import com.ssgpack.ssgfc.board.like.LikeService;
+import com.ssgpack.ssgfc.board.api.SentimentService; // ✅ 감정 분석 서비스 import
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,9 @@ public class BoardService {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private SentimentService sentimentService; // ✅ 감정 분석 서비스 주입 (ChatGPT API 사용)
+
     // ✅ 공지글 전용 조회
     public List<Board> findNoticeBoards() {
         return br.findByTitleStartingWithOrderByCreateDateDesc("[공지]");
@@ -52,7 +56,8 @@ public class BoardService {
 
     // ✅ 게시글 단건 조회 (조회수 방지용)
     public Board find(Long id) {
-        return br.findById(id).orElseThrow();
+        Board board = br.findById(id).orElseThrow();
+        return board;
     }
 
     // ✅ 조회수 증가 (중복 방지용)
@@ -63,14 +68,21 @@ public class BoardService {
         br.save(board);
     }
 
-    // ✅ 게시글 저장
+    // ✅ 게시글 저장 (감정 분석 적용)
     public void insert(Board bd, Long member_id, MultipartFile file) throws IOException {
         bd.setIp();
+
+        // ✅ 이미지 파일 업로드 처리
         if (!file.isEmpty()) {
             String savedName = utilUpload.fileUpload(file, "board/");
             bd.setImg(savedName);
         }
-        br.save(bd);
+
+        // ✅ 글 작성 시 감정 분석 적용 (한글 텍스트에 대해 감정 분석 요청)
+        String emotion = sentimentService.analyzeSentiment(bd.getContent());
+        bd.setEmotion(emotion);  // ✅ 감정 분석 결과를 DB에 저장
+
+        br.save(bd);  // ✅ 게시글 저장
     }
 
     // ✅ 게시글 삭제
@@ -92,12 +104,16 @@ public class BoardService {
         board.setTitle(updatedBoard.getTitle());
         board.setContent(updatedBoard.getContent());
 
+        // ✅ 파일이 있으면 이미지 저장
         if (!file.isEmpty()) {
             String savedName = utilUpload.fileUpload(file, "board/");
             board.setImg(savedName);
         }
+        
+        String newEmotion = sentimentService.analyzeSentiment(updatedBoard.getContent());
+        board.setEmotion(newEmotion);
 
-        br.save(board);
+        br.save(board);  // ✅ 수정된 게시글 저장
     }
 
     // ✅ 인기글 조회 (조회수/좋아요/시간 기반 점수 계산)

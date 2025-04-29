@@ -1,5 +1,6 @@
 package com.ssgpack.ssgfc.user;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,7 +20,8 @@ import lombok.ToString;
 @Getter  
 @Setter 
 @ToString(exclude = "board")
-public class User {
+public class User implements Serializable {
+	private static final long serialVersionUID = 1L;
 
     // PK
     @Id
@@ -52,6 +54,15 @@ public class User {
     // 카카오 로그인 시 부여된 ID
     @Column(name = "kakao_id", unique = true, nullable = true)
     private Long kakaoId;
+    
+    // 구글 로그인 시 부여된 ID
+    @Column(name = "google_id", unique = true, nullable = true)
+    private String googleId;  // 구글 고유 ID
+    
+    // 네이버 로그인 시 부여된 ID
+    @Column(name = "naver_id", unique = true, nullable = true)
+    private String naverId;
+
 
     // 소개글
     @Column(columnDefinition = "TEXT")
@@ -100,4 +111,23 @@ public class User {
             this.ip = null;
         }
     }
+    
+    // profileImg로 접근할 수 있게 Getter 추가
+    public String getProfileImg() {
+        return this.profile_img;
+    }
+    
+    public String getSocialType() {
+        if (this.kakaoId != null) {
+            return "카카오";
+        } else if (this.googleId != null) {
+            return "구글";
+        } else if (this.naverId != null) {
+            return "네이버";
+        } else {
+            return "일반";
+        }
+    }
+
+
 }

@@ -11,7 +11,14 @@
 <th:block layout:fragment="content">
 
     <div class="container mt-5">
-        <h2 class="mb-4" th:text="${board.title}">제목</h2>
+
+        <h2 class="mb-4">
+            <span th:text="${board.title}"></span>
+            <!-- ✅ 감정 분석 결과에 따른 이모지 표시 -->
+            <span th:if="${board.emotion == 'POSITIVE'}">😀</span>
+            <span th:if="${board.emotion == 'NEGATIVE'}">😡</span>
+            <span th:if="${board.emotion == 'NEUTRAL'}">😐</span>
+        </h2>
 
         <!-- ✅ 작성자 및 게시글 정보 -->
         <div class="mb-3 text-muted">
@@ -33,7 +40,12 @@
         </div>
 
         <!-- ✅ 게시글 본문 내용 -->
-        <div class="mb-4 border p-3" style="min-height: 150px;" th:text="${board.content}">내용</div>
+        <div class="mb-4 border p-3" style="min-height: 150px;" 
+            th:text="${board.content}" 
+            th:classappend="
+                ${board.emotion == 'POSITIVE'} ? 'positive-bg' :
+                (${board.emotion == 'NEGATIVE'} ? 'negative-bg' : 'neutral-bg')
+            ">내용</div>
 
         <!-- ✅ 좋아요 기능 -->
         <div class="mb-3">

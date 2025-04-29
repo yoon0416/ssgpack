@@ -2,8 +2,6 @@ package com.ssgpack.ssgfc.user;
 
 import com.ssgpack.ssgfc.util.UtilUpload;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,12 +63,15 @@ public class UserService implements UserDetailsService {
             user.setPwd(passwordEncoder.encode(updatedUser.getPwd()));
         }
 
-        user.setIp(updatedUser.getIp());
-        user.setRole(updatedUser.getRole());
+        if (updatedUser.getRole() != user.getRole()) {
+            user.setRole(updatedUser.getRole());
+        }
+
         return user;
     }
 
-    // ✅ 마이페이지 수정 - 소개글, 프사, 주소 포함
+
+    //  마이페이지 수정 - 소개글, 프사, 주소 포함
     public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
         User user = findById(id);
 
@@ -85,6 +86,7 @@ public class UserService implements UserDetailsService {
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
+            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
         }
 
         // ✅ 주소 정보 저장
@@ -110,6 +112,7 @@ public class UserService implements UserDetailsService {
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
+            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
         }
     }
 
@@ -128,6 +131,7 @@ public class UserService implements UserDetailsService {
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
+            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
         }
 
         String newPwd = updatedUser.getPwd();
@@ -154,10 +158,10 @@ public class UserService implements UserDetailsService {
     public boolean checkPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPwd());
     }
+
     public void updateEmailChk(Long id) {
         User user = findById(id);
         user.setEmail_chk(true);
         userRepository.save(user); // 꼭 save 해야 DB에 반영됨
     }
-
 }

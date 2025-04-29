@@ -70,5 +70,6 @@ public class Player {
     private int viewCount;
     
 
-
+    @Column(columnDefinition = "TEXT")
+    private String summary;
 }

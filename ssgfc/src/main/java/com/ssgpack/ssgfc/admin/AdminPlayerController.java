@@ -38,9 +38,12 @@ public class AdminPlayerController {
 
     @GetMapping("/add")
     public String addPlayerForm(Model model) {
-        model.addAttribute("player", new Player());
+        Player player = new Player();
+        player.setPno("");  // ✅ 기본값 세팅 (비워둬도 되지만 명시적으로 추가)
+        model.addAttribute("player", player);
         return "admin/player/add";
     }
+
 
     @PostMapping("/add")
     public String addPlayer(@RequestParam("name") String name,

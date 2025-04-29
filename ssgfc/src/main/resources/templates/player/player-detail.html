@@ -64,6 +64,13 @@
 
     <h2 class="mt-4">🗳️ 주요 기록 🗳️</h2>
     <div id="statSection"></div>
+
+    <!-- ✅ AI 선수 한줄평: 항상 맨 아래 고정 -->
+    <div id="aiSummarySection" style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+      <h4 style="margin-bottom: 10px;">🧠 AI 선수 한줄평</h4>
+      <p id="playerSummary" style="font-size: 15px; color: #333;">요약 정보를 불러오는 중입니다...</p>
+    </div>
+
   </div>
 
   <script>
@@ -184,8 +191,20 @@
 	    });
 	});
 
+<<<<<<< HEAD
+=======
+          // ✅ AI 한줄평 표시
+          document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
+        })
+        .catch(err => {
+          console.error('❌ 선수 정보 로딩 실패:', err);
+          document.getElementById('playerName').textContent = '❌ 선수 정보 없음';
+        });
+    });
+>>>>>>> d6e3d1d8a043ddadeeb5ba0dce72c98de9dd15c9
   </script>
 
 </th:block>
 </body>
 </html>
+

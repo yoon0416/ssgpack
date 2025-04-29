@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -41,13 +42,30 @@ public class UserController {
 
         String roleName = "";
         int role = user.getRole();
-        if (role == 0) roleName = "마스터 관리자";
-        else if (role == 1) roleName = "유저 관리자";
-        else if (role == 2) roleName = "선수 관리자";
-        else if (role == 3) roleName = "게시판 관리자";
-        else if (role == 4) roleName = "경기일정 관리자";
-        else if (role == 5) roleName = "일반 사용자";
-        else roleName = "알 수 없음";
+
+        switch (role) {
+            case 0:
+                roleName = "마스터 관리자";
+                break;
+            case 1:
+                roleName = "유저 관리자";
+                break;
+            case 2:
+                roleName = "선수 관리자";
+                break;
+            case 3:
+                roleName = "게시판 관리자";
+                break;
+            case 4:
+                roleName = "경기일정 관리자";
+                break;
+            case 5:
+                roleName = "일반 사용자";
+                break;
+            default:
+                roleName = "알 수 없음";
+                break;
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("roleName", roleName);
@@ -130,48 +148,77 @@ public class UserController {
         HttpSession session = request.getSession();
         String verifiedPhone = (String) session.getAttribute("verifiedPhone");
 
-        //  비밀번호 검증
         if (!service.checkPassword(user, currentPwd)) {
             model.addAttribute("errorMessage", "현재 비밀번호가 올바르지 않습니다.");
             model.addAttribute("user", user);
             return "user/edit";
         }
 
-        //  일반 정보 수정 (전화번호 제외)
-        user.setNick_name(nick_name);
-        user.setEmail(email);
-        user.setIntroduce(introduce);
-        user.setZipcode(zipcode);
-        user.setAddress(address);
-        user.setAddressDetail(addressDetail);
+        try {
+            String oldEmail = user.getEmail();
 
-        //  전화번호 인증 여부 확인 후 변경
-        if (phone != null && !phone.isBlank()) {
-            if (phone.equals(user.getPhone())) {
-                // 같은 번호로 유지하는 경우 그대로 둠
-            } else if (phone.equals(verifiedPhone)) {
-                user.setPhone(phone); // 인증된 번호만 저장
-                session.removeAttribute("verifiedPhone"); // 저장 후 제거
-            } else {
-                model.addAttribute("warningMessage", "전화번호는 인증된 번호만 변경할 수 있습니다.");
+            user.setNick_name(nick_name);
+            user.setIntroduce(introduce);
+            user.setZipcode(zipcode);
+            user.setAddress(address);
+            user.setAddressDetail(addressDetail);
+            user.setEmail(email.trim());
+
+            if (!oldEmail.equals(email.trim())) {
+                user.setEmail_chk(false); // 이메일 변경시 인증 다시 필요
             }
+
+            if (phone != null && !phone.isBlank()) {
+                if (phone.equals(user.getPhone())) {
+                    // 기존 번호 유지
+                } else if (phone.equals(verifiedPhone)) {
+                    user.setPhone(phone);
+                    session.removeAttribute("verifiedPhone"); // 인증 성공했으면 세션값 삭제
+                } else {
+                    model.addAttribute("warningMessage", "전화번호는 인증된 번호만 변경할 수 있습니다.");
+                }
+            }
+
+            // 유저 정보 파일 포함 업데이트
+            service.updateUserWithFile(user.getId(), user, file);
+
+            // ✨ 세션 무효화 제거
+            // session.invalidate();
+            // SecurityContextHolder.clearContext();
+
+            // ✨ 인증정보 갱신
+            CustomUserDetails updatedUserDetails = new CustomUserDetails(user);
+
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    updatedUserDetails, 
+                    updatedUserDetails.getPassword(), 
+                    updatedUserDetails.getAuthorities()
+            );
+
+            // 새 Authentication을 현재 SecurityContext에 세팅
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+            // 수정 후 마이페이지로 이동
+            return "redirect:/user/mypage";
+
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("message", e.getMessage());
+            model.addAttribute("url", "/user/mypage/edit");
+            return "user/alert";
         }
-
-        service.updateUserWithFile(user.getId(), user, file);
-
-        // 로그인 세션 갱신
-        session.invalidate();
-        SecurityContextHolder.clearContext();
-
-        return "redirect:/user/login?updated=true";
     }
-
 
     @GetMapping("/user/password/change")
     public String showChangePasswordForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        if (userDetails == null) {
+            return "redirect:/user/login";
+        }
+
         model.addAttribute("user", userDetails.getUser());
         return "user/password-change";
     }
+
+
 
     @PostMapping("/user/password/change")
     public String changePassword(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -217,10 +264,10 @@ public class UserController {
             user.setPwd(tempPassword);
             service.update(user.getId(), user);
             emailService.sendTempPassword(email, tempPassword);
-            model.addAttribute("message", "임시 비밀번호가 이메일로 발송되었습니다.");
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", "해당 이메일로 가입된 사용자가 없습니다.");
+            // 무시 (존재하지 않는 이메일일 때)
         }
+        model.addAttribute("message", "임시 비밀번호가 이메일로 발송되었습니다.");
         return "user/password-reset";
     }
 
@@ -233,8 +280,6 @@ public class UserController {
         SecurityContextHolder.clearContext();
         return "redirect:/user/login?withdrawn=true";
     }
-
-    // 🔽 추가된 이메일 인증 관련 컨트롤러
 
     @GetMapping("/user/email/verify")
     public String emailVerifyPopup(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -265,15 +310,12 @@ public class UserController {
 
         if (sessionCode != null && sessionCode.equals(code) && targetEmail.equals(email)) {
             User user = userDetails.getUser();
-            service.updateEmailChk(user.getId()); 
+            service.updateEmailChk(user.getId());
             session.removeAttribute("emailCode");
             session.removeAttribute("targetEmail");
             return "<script>window.opener.location.reload(); window.close();</script>";
         } else {
-            model.addAttribute("email", email);
-            model.addAttribute("error", "인증 코드가 일치하지 않습니다.");
-            return "<script>alert('인증 실패'); history.back();</script>";  // 혹은 인증 실패 HTML로 리턴
+            return "<script>alert('인증 실패'); history.back();</script>";
         }
     }
-
 }

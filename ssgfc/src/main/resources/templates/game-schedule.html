@@ -1,73 +1,97 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{fragments/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>📅 SSG 경기일정</title>
-    <link href="/css/calendar-custom.css" rel="stylesheet">
-    <link href="/lib/fullcalendar/main.min.css" rel="stylesheet">
-    <style>
-        .fc-daygrid-day {
-            min-height: 120px !important;
-        }
+<meta charset="UTF-8">
+<title>📅 SSG 경기일정</title>
+<link href="/css/calendar-custom.css" rel="stylesheet">
+<link href="/lib/fullcalendar/main.min.css" rel="stylesheet">
+<style>
+.fc-daygrid-day {
+	min-height: 120px !important;
+}
 
-        .fc .fc-daygrid-day-frame {
-            height: 100% !important;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+.fc .fc-daygrid-day-frame {
+	height: 100% !important;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
 
-        .fc .fc-daygrid-day-number {
-            color: black !important;
-        }
+.fc .fc-daygrid-day-number {
+	color: black !important;
+}
 
-        .fc-day-sun .fc-daygrid-day-number {
-            color: #e74c3c !important;
-        }
+.fc-day-sun .fc-daygrid-day-number {
+	color: #e74c3c !important;
+}
 
-        .fc-day-sat .fc-daygrid-day-number {
-            color: #2980b9 !important;
-        }
+.fc-day-sat .fc-daygrid-day-number {
+	color: #2980b9 !important;
+}
 
-        .fc-day-sun .fc-col-header-cell-cushion {
-            color: #e74c3c !important;
-        }
+.fc-day-sun .fc-col-header-cell-cushion {
+	color: #e74c3c !important;
+}
 
-        .fc-day-sat .fc-col-header-cell-cushion {
-            color: #2980b9 !important;
-        }
-    </style>
+.fc-day-sat .fc-col-header-cell-cushion {
+	color: #2980b9 !important;
+}
+
+.fc-day-disabled {
+	background-color: white !important;
+}
+</style>
+
+
 </head>
 
 <body>
 
-<section class="container mt-5" layout:fragment="content">
-    <h2 class="text-center mb-4">📅 SSG 랜더스 경기 일정</h2>
-    <div id="calendar"></div>
-</section>
+	<section class="container mt-5" layout:fragment="content">
+		<h2 class="text-center mb-4">📅 SSG 랜더스 경기 일정</h2>
+		
+		<div id="monthRecord" style="text-align:center; margin-bottom:20px; font-size:18px; font-weight:bold;">
+      이번 달 전적: <span id="wins">0</span>승 <span id="losses">0</span>패 <span id="draws">0</span>무
+    </div>
 
-<th:block layout:fragment="script">
-    <script src="/lib/fullcalendar/main.min.js" ></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+		<div id="calendar"></div>
+	</section>
 
-    <script>
+	<th:block layout:fragment="script">
+		<script src="/lib/fullcalendar/main.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+		<script>
         const teamLogos = {
-            "DOOSAN": "/images/logo/DOOSAN.png",
+            "두산": "/images/logo/DOOSAN.png",
             "삼성": "/images/logo/SAMSUNG.png",
             "KIA": "/images/logo/KIA.png",
             "LG": "/images/logo/LG.png",
             "한화": "/images/logo/HANWHA.png",
             "NC": "/images/logo/NC.png",
             "키움": "/images/logo/KIWOOM.png",
-            "LOTTE": "/images/logo/LOTTE.png",
+            "롯데": "/images/logo/LOTTE.png",
             "KT": "/images/logo/KT.png"
+            
         };
+        
+        
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
+            
+            axios.get('/games/api/month-record')
+            .then(response => {
+              document.getElementById('wins').textContent = response.data.wins;
+              document.getElementById('losses').textContent = response.data.losses;
+              document.getElementById('draws').textContent = response.data.draws; // 무승부 표시
+            })
+            .catch(error => {
+              console.error('이번달 전적 로딩 실패', error);
+            });
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -75,6 +99,12 @@
                 height: 'auto',
                 firstDay: 1,
                 aspectRatio: 1.2,
+                validRange: {
+                    start: '2025-04-01',   // 시작 날짜
+                    end: '2025-05-31'      // 끝 날짜
+                },
+                showNonCurrentDates: false,
+                fixedWeekCount: false,
 
                 eventDidMount: function(info) {
                     const title = info.event.title;
@@ -105,8 +135,8 @@
 
                     const text = document.createElement('div');
                     text.innerHTML = `
-                        <div style="color:${color}; font-size:13px; text-align:center;">${title}</div>
-                        <div style="color:${color}; font-size:12px; text-align:center;">${status}</div>
+                        <div style="color:${color}; font-size:15px; font-weight:bold; text-align:center;">${title}</div>
+                        <div style="color:${color}; font-size:14px; font-weight:bold; text-align:center;">${status}</div>
                     `;
                     text.style.marginBottom = '4px';
                     wrapper.appendChild(text);
@@ -118,14 +148,23 @@
                 events: function (fetchInfo, successCallback, failureCallback) {
                     axios.get('/games')
                         .then(response => {
+                            const now = new Date();
                             const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            
                             const events = response.data.map(game => {
                                 const gameDate = new Date(game.gameDate);
+                                const startTime = game.startTime || '18:30';
+                                const [startHour, startMinute] = startTime.split(':').map(Number);
+                                
+                                const gameStart = new Date(gameDate);
+                                gameStart.setHours(startHour, startMinute, 0, 0)
+                                
                                 const hasScore = game.score1 !== null && game.score2 !== null;
 
                                 let rawTitle = '';
                                 let status = '';
-                                let textColor = '#C8102E';
+                                let textColor = 'black';
                                 const backgroundColor = 'white';
                                 const borderColor = 'white';
 
@@ -137,17 +176,28 @@
 
                                     if (ssgScore > oppScore) {
                                         status = '(승)';
+                                        textColor = '#2980b9';
                                     } else if (ssgScore < oppScore) {
                                         status = '(패)';
+                                        textColor = '#C8102E';
                                     } else {
                                         status = '(무)';
+                                        textColor = 'black';
                                     }
-                                } else if (gameDate < today) {
+                                } else if (now.getTime() > gameStart.getTime() && today.getTime() > gameDate.getTime()) {
+                                    // 경기가 끝날 시간이 지났고 오늘보다 과거 날짜인데 점수 없으면 취소
                                     rawTitle = `${game.team1} vs ${game.team2}`;
                                     status = '(취소)';
-                                } else {
+                                    textColor = 'gray';
+                                } else if (now < gameStart) {
+                                    // 경기 시작 전
                                     rawTitle = `${game.team1} vs ${game.team2}`;
                                     status = '(예정)';
+                                    textColor = 'black';
+                                } else {
+                                    // 경기 시작했지만 점수 없으면
+                                    rawTitle = `${game.team1} vs ${game.team2}`;
+                                    status = '(경기중)';
                                     textColor = 'black';
                                 }
 
@@ -172,13 +222,28 @@
                             console.error("일정 로딩 실패", error);
                             failureCallback(error);
                         });
+                },
+                datesSet: function(info) {
+                    const year = info.start.getFullYear();
+                    const month = info.start.getMonth() + 1; // 0부터 시작하니까 +1
+
+                    axios.get(`/games/api/month-record?year=${year}&month=${month}`)
+                        .then(response => {
+                            document.getElementById('wins').textContent = response.data.wins;
+                            document.getElementById('losses').textContent = response.data.losses;
+                            document.getElementById('draws').textContent = response.data.draws;
+                        })
+                        .catch(error => {
+                            console.error('이번달 전적 로딩 실패', error);
+                        });
                 }
+                
             });
 
             calendar.render();
         });
     </script>
-</th:block>
+	</th:block>
 
 </body>
 </html>

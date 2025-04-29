@@ -37,23 +37,40 @@
                 <td th:text="${user.ip}">192.168.0.1</td>
             </tr>
             <tr>
-                <th scope="row">카카오 ID</th>
-                <td th:text="${user.kakaoId != null ? user.kakaoId : '일반 회원'}">null</td>
+                <th scope="row">간편로그인 여부</th>
+                <td th:text="${user.socialType}">회원타입</td>
             </tr>
 
-            <!-- ✅ 추가된 주소 정보 -->
+            <!-- 주소 정보 -->
             <tr>
                 <th scope="row">우편번호</th>
-                <td th:text="${user.zipcode}">12345</td>
+                <td th:text="${user.zipcode != null ? user.zipcode : '미등록'}">12345</td>
             </tr>
             <tr>
                 <th scope="row">주소</th>
-                <td th:text="${user.address}">서울특별시 강남구</td>
+                <td th:text="${user.address != null ? user.address : '미등록'}">서울특별시 강남구</td>
             </tr>
             <tr>
                 <th scope="row">상세주소</th>
-                <td th:text="${user.addressDetail}">101동 101호</td>
+                <td th:text="${user.addressDetail != null ? user.addressDetail : '미등록'}">101동 101호</td>
             </tr>
+
+            <!-- 전화번호 -->
+            <tr>
+                <th scope="row">전화번호</th>
+                <td th:text="${user.phone != null ? user.phone : '미등록'}">010-1234-5678</td>
+            </tr>
+
+            <!-- 프로필 사진 -->
+			<tr>
+			    <th scope="row">프로필 사진</th>
+			    <td>
+			        <img th:if="${user.profile_img != null}" 
+			             th:src="@{'/images/userimage/' + ${user.profile_img}}" 
+			             style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%;">
+			        <span th:if="${user.profile_img == null}">등록된 이미지 없음</span>
+			    </td>
+			</tr>
         </tbody>
     </table>
 

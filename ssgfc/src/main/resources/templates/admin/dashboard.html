@@ -62,11 +62,11 @@
 				    📝 게시판 관리
 				</a>
 
-                <!-- 경기 일정 관리자 -->
-                <a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" 
-                   th:href="@{/admin/game}">
-                   📅 경기 일정 관리
-                </a>
+				<!-- 경기 일정 관리자 -->
+				<a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" 
+				   th:href="@{/admin/schedule/list}">
+				   📅 경기 일정 관리
+				</a>
 				
 				<!-- 경기 리뷰 요약 관리자 (마스터 or 경기일정 관리자) -->
 				<a th:if="${#authorization.expression('hasAuthority(''ROLE_MASTER'') or hasAuthority(''ROLE_GAME_MANAGER'')')}" 
