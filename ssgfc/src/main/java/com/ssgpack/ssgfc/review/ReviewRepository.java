@@ -13,5 +13,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findFirstByGameDate(LocalDate gameDate);
     boolean existsByGameUrlAndHowAndResult(String gameUrl, String how, String result);
     List<Review> findAllByGameDate(LocalDate date);
-    
+    Optional<Review> findByGameUrlAndHowAndResult(String gameUrl, String how, String result);
+    Optional<Review> findFirstByGameDateAndHow(LocalDate gameDate, String how);
+    List<Review> findAllByGameDateAndHowNot(LocalDate gameDate, String how);
 }

@@ -62,8 +62,8 @@
     <div class="menu-bar d-flex rounded-4 shadow-sm overflow-hidden menu-bar-wrapper">
       <a class="menu-tab" th:href="@{/players}"
          th:classappend="${#request.requestURI == '/players'} ? 'active'">선수목록</a>
-      <a class="menu-tab" th:href="@{/game-schedule}"
-      	 th:classappend="${#request.requestURI == '/game-schedule'} ? 'active'">쓱일정</a>
+      <a class="menu-tab" th:href="@{/game_schedule}"
+      	 th:classappend="${#request.requestURI == '/game_schedule'} ? 'active'">쓱일정</a>
       <a class="menu-tab" th:href="@{/board/list}"
          th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
  

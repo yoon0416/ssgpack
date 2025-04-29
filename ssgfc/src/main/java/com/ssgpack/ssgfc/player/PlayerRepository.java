@@ -13,7 +13,8 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 	  Optional<Player> findTopByPno(String pno);
 	  @Query("SELECT p FROM Player p WHERE p.pno = :pno")
 	  Optional<Player> findByPno(@Param("pno") String pno);
-
+	  
+	  List<Player> findAll();
 
 
 }

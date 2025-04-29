@@ -29,10 +29,12 @@
                 <button id="crawlButton" class="btn btn-danger mt-2">수동 크롤링 실행</button>
                 <div id="crawlResult" class="mt-2 text-success"></div>
             </div>
-            <!-- ✅ AI 한줄평 미리보기 -->
+
+            <!-- ✅ AI 한줄평 미리보기 + 저장 -->
             <div class="record-box mt-4">
                 <h5>🧠 AI 한줄평 미리보기</h5>
-                <p id="previewText">날짜를 선택하면 미리보기가 여기에 표시됩니다.</p>
+                <p id="previewText">gameUrl을 입력하고 크롤링을 실행하면 미리보기가 여기에 표시됩니다.</p>
+                <button id="saveReviewBtn" class="btn btn-primary mt-3">한줄평 저장하기</button>
             </div>
         </div>
     </div>
@@ -43,6 +45,8 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            let selectedDate = null;
+
             const calendarEl = document.getElementById('miniCalendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -55,20 +59,11 @@
                     const numberOnly = arg.dayNumberText.replace('일', '');
                     return { html: numberOnly };
                 },
-             // ✅ 날짜 클릭 시 미리보기 요청	
                 dateClick: function (info) {
-                    const date = info.dateStr;
-                    
-                    axios.get(`/api/review-preview?date=${date}`)
-                    .then(res => {
-                        document.getElementById("previewText").textContent = res.data;
-                    })
-                    .catch(() => {
-                        document.getElementById("previewText").textContent = "❌ 요약 미리보기 실패";
-            		});
+                    selectedDate = info.dateStr;
                 }
             });
-        
+
             calendar.render();
 
             setTimeout(() => {
@@ -87,21 +82,51 @@
                 });
             }, 10);
 
-            // ✅ 수동 크롤링 버튼 클릭 이벤트
+            // ✅ 수동 크롤링 버튼 클릭 (이제 preview-crawl API로 호출)
             document.getElementById("crawlButton").addEventListener("click", function () {
                 const gameUrl = document.getElementById("gameUrlInput").value;
                 if (!gameUrl) {
-                    alert("gameUrl을 입력하세요.");
+                    alert("📌 gameUrl을 입력하세요.");
                     return;
                 }
 
-                axios.get(`/api/review-crawl?gameUrl=${gameUrl}`)
+                axios.get(`/api/review-preview-crawl?gameUrl=${gameUrl}`)
                     .then(res => {
-                        document.getElementById("crawlResult").textContent = res.data;
+                        document.getElementById("previewText").textContent = res.data;
+                        document.getElementById("crawlResult").textContent = "✅ 미리보기 성공!";
                     })
                     .catch(err => {
-                        document.getElementById("crawlResult").textContent = "❌ 크롤링 실패";
+                        document.getElementById("previewText").textContent = "❌ 크롤링 실패";
+                        document.getElementById("crawlResult").textContent = "❌ 미리보기 실패";
                     });
+            });
+
+            // ✅ [한줄평 저장하기] 버튼 클릭 이벤트
+            document.getElementById("saveReviewBtn").addEventListener("click", function () {
+                const gameUrl = document.getElementById("gameUrlInput").value;
+                const summary = document.getElementById("previewText").textContent;
+
+                if (!gameUrl) {
+                    alert("📌 gameUrl을 먼저 입력하세요.");
+                    return;
+                }
+                if (!summary || summary.includes("❌")) {
+                    alert("🧠 미리보기를 먼저 성공시켜야 합니다.");
+                    return;
+                }
+
+                axios.get('/api/review-save',  {
+                    params: {
+                        gameUrl: gameUrl,
+                        summary: summary
+                    }
+                })
+                .then(res => {
+                    alert(res.data);
+                })
+                .catch(() => {
+                    alert("❌ 저장 실패");
+                });
             });
         });
     </script>
