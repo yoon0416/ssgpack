@@ -22,94 +22,109 @@
 	
 
 
-  <script>
-    let allPlayers = [];
+<script>
+  let allPlayers = [];
 
-    function createAccordion(pos, players) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'accordion';
+  function createAccordion(pos, players, expand = false) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'accordion';
 
-      const header = document.createElement('div');
-      header.className = 'accordion-header';
-      header.innerHTML = `${pos} <span class="sub-label">[click]</span>`;
+    const header = document.createElement('div');
+    header.className = 'accordion-header';
+    header.innerHTML = `${pos} <span class="sub-label">[click]</span>`;
 
-      const content = document.createElement('div');
-      content.className = 'accordion-content';
+    const content = document.createElement('div');
+    content.className = 'accordion-content';
 
-      const grid = document.createElement('div');
-      grid.className = 'grid';
-
-      players.forEach(player => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <a href="/players/${player.pno}" style="text-decoration: none; color: inherit; position: relative;">
-            <img src="${player.imageUrl}" alt="${player.name} 이미지"
-                 style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 10px;"
-                 onerror="this.src='/images/players/default.png'">
-            <h2>${player.name}</h2>
-            <p style="color:red"><strong>NO.${player.backNumber}</strong></p>
-            <div class="info-overlay">
-              <p><strong>포지션:</strong> ${player.position}</p>
-              <p><strong>생년월일:</strong> ${player.birthDate}</p>
-              <p><strong>학교:</strong> ${player.school}</p>
-              <p><strong>활약연도:</strong> ${player.activeYears}</p>
-            </div>
-          </a>
-        `;
-        grid.appendChild(card);
-      });
-
-      content.appendChild(grid);
-
-      header.addEventListener('click', () => {
-        const isVisible = content.style.display === 'block';
-        content.style.display = isVisible ? 'none' : 'block';
-      });
-
-      wrapper.appendChild(header);
-      wrapper.appendChild(content);
-      return wrapper;
+    if (expand) {
+      content.style.display = 'block';  // 검색했을 때 자동 펼치기
+    } else {
+      content.style.display = 'none';   // 기본은 닫힘
     }
 
-    document.getElementById('searchButton').addEventListener('click', () => {
-      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-      const filtered = allPlayers.filter(player =>
-        player.name.toLowerCase().includes(keyword)
-      );
-      renderFilteredAccordions(filtered);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    players.forEach(player => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <a href="/players/${player.pno}" style="text-decoration: none; color: inherit; position: relative;">
+          <img src="${player.imageUrl}" alt="${player.name} 이미지"
+               style="width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 10px;"
+               onerror="this.src='/images/players/default.png'">
+          <h2>${player.name}</h2>
+          <p style="color:red"><strong>NO.${player.backNumber}</strong></p>
+          <div class="info-overlay">
+            <p><strong>포지션:</strong> ${player.position}</p>
+            <p><strong>생년월일:</strong> ${player.birthDate}</p>
+            <p><strong>학교:</strong> ${player.school}</p>
+            <p><strong>활약연도:</strong> ${player.activeYears}</p>
+          </div>
+        </a>
+      `;
+      grid.appendChild(card);
     });
 
-    function renderFilteredAccordions(filteredPlayers) {
-      const container = document.getElementById('accordionContainer');
-      container.innerHTML = '';
+    content.appendChild(grid);
 
-      const grouped = {};
-      filteredPlayers.forEach(player => {
-        const pos = player.position?.trim() || '기타';
-        if (!grouped[pos]) grouped[pos] = [];
-        grouped[pos].push(player);
-      });
+    header.addEventListener('click', () => {
+      const isVisible = content.style.display === 'block';
+      content.style.display = isVisible ? 'none' : 'block';
+    });
 
-      const order = ['투수', '포수', '내야수', '외야수', '기타'];
-      order.forEach(pos => {
-        if (grouped[pos]) {
-          const accordion = createAccordion(pos, grouped[pos]);
-          container.appendChild(accordion);
-        }
-      });
+    wrapper.appendChild(header);
+    wrapper.appendChild(content);
+    return wrapper;
+  }
+
+  function renderFilteredAccordions(filteredPlayers, expandAll = false) {
+    const container = document.getElementById('accordionContainer');
+    container.innerHTML = '';
+
+    const grouped = {};
+    filteredPlayers.forEach(player => {
+      const pos = player.position?.trim() || '기타';
+      if (!grouped[pos]) grouped[pos] = [];
+      grouped[pos].push(player);
+    });
+
+    const order = ['투수', '포수', '내야수', '외야수', '기타'];
+    order.forEach(pos => {
+      if (grouped[pos]) {
+        const accordion = createAccordion(pos, grouped[pos], expandAll);
+        container.appendChild(accordion);
+      }
+    });
+  }
+
+  function handleSearch() {
+    const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+    const filtered = allPlayers.filter(player =>
+      player.name.toLowerCase().includes(keyword)
+    );
+    renderFilteredAccordions(filtered, true);  // 검색할 때는 아코디언 모두 열기
+  }
+
+  document.getElementById('searchButton').addEventListener('click', handleSearch);
+
+  document.getElementById('searchInput').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      handleSearch();
     }
+  });
 
-    fetch('/api/players')
-      .then(res => res.json())
-      .then(players => {
-        allPlayers = players;
-        renderFilteredAccordions(players);
-      })
-      .catch(err => {
-        console.error('선수 정보를 불러오는 중 오류 발생:', err);
-      });
-  </script>
+  fetch('/api/players')
+    .then(res => res.json())
+    .then(players => {
+      allPlayers = players;
+      renderFilteredAccordions(players);  // 초기에는 닫힌 상태
+    })
+    .catch(err => {
+      console.error('선수 정보를 불러오는 중 오류 발생:', err);
+    });
+</script>
+
 </th:block>
 </body>
 </html>

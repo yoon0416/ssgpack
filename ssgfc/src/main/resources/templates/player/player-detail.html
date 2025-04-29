@@ -73,138 +73,127 @@
 
   </div>
 
-  <script>
+<script>
   document.addEventListener('DOMContentLoaded', function () {
-	  const pathParts = window.location.pathname.split("/");
-	  const pNo = pathParts[pathParts.length - 1];
+    const pathParts = window.location.pathname.split("/");
+    const pNo = pathParts[pathParts.length - 1];
 
-	  fetch(`/api/players/${pNo}?t=${Date.now()}`)
-	    .then(res => res.json())
-	    .then(player => {
-	      document.getElementById('playerName').textContent = player.name;
-	      document.getElementById('playerPosition').textContent = player.position;
-	      document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
+    fetch(`/api/players/${pNo}?t=${Date.now()}`)
+      .then(res => res.json())
+      .then(player => {
+        document.getElementById('playerName').textContent = player.name;
+        document.getElementById('playerPosition').textContent = player.position;
+        document.getElementById('viewCount').textContent = `조회수: ${player.viewCount ?? 0}`;
 
-	      const imgEl = document.getElementById('playerImage');
-	      if (imgEl && player.imageUrl) {
-	        imgEl.src = player.imageUrl;
-	        imgEl.onerror = () => { imgEl.src = '/images/players/default.png'; };
-	      }
+        const imgEl = document.getElementById('playerImage');
+        if (imgEl && player.imageUrl) {
+          imgEl.src = player.imageUrl;
+          imgEl.onerror = () => { imgEl.src = '/images/players/default.png'; };
+        }
 
-	      document.getElementById('playerInfo').innerHTML = `
-	        <table class="info-table">
-	          <tr><th>등번호</th><td>${player.backNumber ?? '정보 없음'}</td>
-	          <th>생년월일</th><td>${player.birthDate ?? '정보 없음'}</td></tr>
-	          <tr><th>신인지명</th><td>${player.draftInfo ?? '정보 없음'}</td>
-	          <th>활약연도</th><td>${player.activeYears ?? '정보 없음'}</td></tr>
-	          <tr><th>활약팀</th><td>${player.teams ?? '정보 없음'}</td>
-	          <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
-	        </table>
-	      `;
+        document.getElementById('playerInfo').innerHTML = `
+          <table class="info-table">
+            <tr><th>등번호</th><td>${player.backNumber ?? '정보 없음'}</td>
+            <th>생년월일</th><td>${player.birthDate ?? '정보 없음'}</td></tr>
+            <tr><th>신인지명</th><td>${player.draftInfo ?? '정보 없음'}</td>
+            <th>활약연도</th><td>${player.activeYears ?? '정보 없음'}</td></tr>
+            <tr><th>활약팀</th><td>${player.teams ?? '정보 없음'}</td>
+            <th>학교</th><td>${player.school ?? '정보 없음'}</td></tr>
+          </table>
+        `;
 
-	      const statSection = document.getElementById('statSection');
-	      const stats = player.stats ?? [];
-	      if (stats.length === 0) {
-	        statSection.innerHTML = '<p>기록이 없습니다.</p>';
-	        return;
-	      }
+        const statSection = document.getElementById('statSection');
+        const stats = player.stats ?? [];
+        if (stats.length === 0) {
+          statSection.innerHTML = '<p>기록이 없습니다.</p>';
+          return;
+        }
 
-	      const hitterHeaders = ["Div.","Year", "G", "PA", "AB", "H", "HR", "RBI", "비율",  "SLG", "WAR", "R/ePA"];
-	      const pitcherHeaders = ["Div.","Year", "G", "IP", "W", "L", "ERA", "WHIP", "FIP", "SO", "WAR"];
+        const hitterHeaders = ["Div.","Year", "G", "PA", "AB", "H", "HR", "RBI", "비율",  "WAR", "R/ePA"];
+        const pitcherHeaders = ["Div.","Year", "G","GS", "IP", "W", "L", "ERA", "WHIP", "SO", "WAR"];
+        const statNameMapping = {
+          "Div.": "구분", "Year": "연도", "G": "경기수", "PA": "타석", "AB": "타수", "H": "안타",
+          "HR": "홈런", "RBI": "타점", "비율": "타율", "R/ePA": "승리기여도",
+          "GS":"선발","IP": "이닝", "W": "승", "L": "패", "ERA": "평균자책", "WHIP": "출루허용률", "FIP": "FIP", "SO": "삼진"
+        };
 
-	      const commonStatNameMapping = {
-	        "Div.": "구분", "G": "경기수", "PA": "타석", "AB": "타수", "H": "안타", "HR": "홈런", "RBI": "타점",
-	        "AVG": "타율", "SLG": "장타율", "OPS": "OPS", "R/ePA": "득점기여",
-	        "IP": "이닝", "W": "승", "L": "패", "ERA": "평균자책", "WHIP": "WHIP", "FIP": "FIP", "SO": "삼진",
-	        "비율": "타율"
-	      };
+        const getStatLabel = (key, isPitcher) =>
+          key === 'WAR' ? (isPitcher ? '승리기여도' : '출루율') : (statNameMapping[key] ?? key);
 
-	      let hitterTableCreated = false;
-	      let pitcherTableCreated = false;
-	      let hitterTable, hitterThead, hitterTbody;
-	      let pitcherTable, pitcherThead, pitcherTbody;
+        let hitterTableCreated = false;
+        let pitcherTableCreated = false;
+        let hitterTable, hitterThead, hitterTbody;
+        let pitcherTable, pitcherThead, pitcherTbody;
 
-	      stats.forEach(stat => {
-	        const map = stat.statMap || {};
-	        const pos = (map["Pos."] ?? '').toUpperCase();
-	        const isPitcher = pos === 'P';
+        stats.forEach(stat => {
+          const map = stat.statMap || {};
+          const pos = (map["Pos."] ?? '').toUpperCase();
+          const isPitcher = pos === 'P';
 
-	        const warLabel = isPitcher ? "승리기여도" : "출루율"; // 여기! WAR 이름 다르게 처리
-
-	        if (isPitcher) {
-	          if (!pitcherTableCreated) {
-	            pitcherTable = document.createElement('table');
-	            pitcherTable.className = 'record-table';
-	            pitcherThead = document.createElement('thead');
-	            const headerRow = document.createElement('tr');
-	            pitcherHeaders.forEach(key => {
-	              const th = document.createElement('th');
-	              th.textContent = key === "WAR" ? warLabel : (commonStatNameMapping[key] ?? key);
-	              headerRow.appendChild(th);
-	            });
-	            pitcherThead.appendChild(headerRow);
-	            pitcherTbody = document.createElement('tbody');
-	            pitcherTable.appendChild(pitcherThead);
-	            pitcherTable.appendChild(pitcherTbody);
-	            pitcherTableCreated = true;
-	          }
-	          const tr = document.createElement('tr');
-	          pitcherHeaders.forEach(key => {
-	            const td = document.createElement('td');
-	            td.textContent = map[key] ?? '-';
-	            tr.appendChild(td);
-	          });
-	          pitcherTbody.appendChild(tr);
-	        } else {
-	          if (!hitterTableCreated) {
-	            hitterTable = document.createElement('table');
-	            hitterTable.className = 'record-table';
-	            hitterThead = document.createElement('thead');
-	            const headerRow = document.createElement('tr');
-	            hitterHeaders.forEach(key => {
-	              const th = document.createElement('th');
-	              th.textContent = key === "WAR" ? warLabel : (commonStatNameMapping[key] ?? key);
-	              headerRow.appendChild(th);
-	            });
-	            hitterThead.appendChild(headerRow);
-	            hitterTbody = document.createElement('tbody');
-	            hitterTable.appendChild(hitterThead);
-	            hitterTable.appendChild(hitterTbody);
-	            hitterTableCreated = true;
-	          }
-	          const tr = document.createElement('tr');
-	          hitterHeaders.forEach(key => {
-	            const td = document.createElement('td');
-	            td.textContent = map[key] ?? '-';
-	            tr.appendChild(td);
-	          });
-	          hitterTbody.appendChild(tr);
-	        }
-	      });
-
-	      if (hitterTableCreated) statSection.appendChild(hitterTable);
-	      if (pitcherTableCreated) statSection.appendChild(pitcherTable);
-	    })
-	    .catch(err => {
-	      console.error('❌ 선수 정보 로딩 실패:', err);
-	      document.getElementById('playerName').textContent = '❌ 선수 정보 없음';
-	    });
-	});
-
-<<<<<<< HEAD
-=======
-          // ✅ AI 한줄평 표시
-          document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
-        })
-        .catch(err => {
-          console.error('❌ 선수 정보 로딩 실패:', err);
-          document.getElementById('playerName').textContent = '❌ 선수 정보 없음';
+          if (isPitcher) {
+            if (!pitcherTableCreated) {
+              pitcherTable = document.createElement('table');
+              pitcherTable.className = 'record-table';
+              pitcherThead = document.createElement('thead');
+              const headerRow = document.createElement('tr');
+              pitcherHeaders.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = getStatLabel(key, true);
+                headerRow.appendChild(th);
+              });
+              pitcherThead.appendChild(headerRow);
+              pitcherTbody = document.createElement('tbody');
+              pitcherTable.appendChild(pitcherThead);
+              pitcherTable.appendChild(pitcherTbody);
+              pitcherTableCreated = true;
+            }
+            const tr = document.createElement('tr');
+            pitcherHeaders.forEach(key => {
+              const td = document.createElement('td');
+              td.textContent = map[key] ?? '-';
+              tr.appendChild(td);
+            });
+            pitcherTbody.appendChild(tr);
+          } else {
+            if (!hitterTableCreated) {
+              hitterTable = document.createElement('table');
+              hitterTable.className = 'record-table';
+              hitterThead = document.createElement('thead');
+              const headerRow = document.createElement('tr');
+              hitterHeaders.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = getStatLabel(key, false);
+                headerRow.appendChild(th);
+              });
+              hitterThead.appendChild(headerRow);
+              hitterTbody = document.createElement('tbody');
+              hitterTable.appendChild(hitterThead);
+              hitterTable.appendChild(hitterTbody);
+              hitterTableCreated = true;
+            }
+            const tr = document.createElement('tr');
+            hitterHeaders.forEach(key => {
+              const td = document.createElement('td');
+              td.textContent = map[key] ?? '-';
+              tr.appendChild(td);
+            });
+            hitterTbody.appendChild(tr);
+          }
         });
-    });
->>>>>>> d6e3d1d8a043ddadeeb5ba0dce72c98de9dd15c9
-  </script>
+
+        if (hitterTableCreated) statSection.appendChild(hitterTable);
+        if (pitcherTableCreated) statSection.appendChild(pitcherTable);
+
+        document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
+      })
+      .catch(err => {
+        console.error('❌ 선수 정보 로딩 실패:', err);
+        document.getElementById('playerName').textContent = '❌ 선수 정보 없음';
+      });
+  });
+</script>
+
 
 </th:block>
 </body>
 </html>
-

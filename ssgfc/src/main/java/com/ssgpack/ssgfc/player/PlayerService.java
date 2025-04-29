@@ -47,7 +47,7 @@ public class PlayerService {
                 double mainStat = 0.0;
 
                 if ("P".equals(pos)) {
-                    mainStat = parseDouble(statMap.get("WAR")); // 투수는 WAR
+                    mainStat = parseDouble(statMap.get("SO")); // 투수는 WAR
                 } else {
                     mainStat = parseDouble(statMap.get("비율")); // 타자는 비율
                 }
