@@ -31,6 +31,8 @@ public class PlayerStat {
     @JoinColumn(name = "player_id")
     @JsonBackReference
     private Player player;
+    
+
 }
 
 
