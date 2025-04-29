@@ -1,79 +1,88 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{fragments/layout}">
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{fragments/layout}">
 
 <head>
-    <meta charset="UTF-8">
-    <title>경기 일정 등록/수정</title>
+<meta charset="UTF-8">
+<title>경기 일정 등록/수정</title>
 </head>
 
 <body>
 
-<section class="container mt-5" layout:fragment="content">
-    <div class="card shadow p-4">
-        <h2 class="text-center mb-4">📅 경기 일정 등록/수정</h2>
+	<section class="container mt-5" layout:fragment="content">
+		<div class="card shadow p-4">
+			<h2 class="text-center mb-4">📅 경기 일정 등록/수정</h2>
 
-        <form th:object="${gameSchedule}" 
-              th:action="@{${gameSchedule.id == null} ? '/admin/schedule/create' : '/admin/schedule/edit/' + ${gameSchedule.id}}" 
-              method="post">
-              
-            <div class="row mb-3">
-                <div class="col">
-                    <label>경기 날짜</label>
-<input type="date" class="form-control" th:field="*{gameDate}" 
-       th:value="${#temporals.format(gameSchedule.gameDate, 'yyyy-MM-dd')}" required>                </div>
-                <div class="col">
-                    <label>시작 시간</label>
-                    <input type="text" class="form-control" th:field="*{startTime}" placeholder="예: 18:30">
-                </div>
-            </div>
+			<form th:object="${gameSchedule}"
+				th:action="@{${gameSchedule.id == null} ? '/admin/schedule/create' : '/admin/schedule/edit/' + ${gameSchedule.id}}"
+				method="post">
 
-            <div class="row mb-3">
-                <div class="col">
-                    <label>팀1</label>
-                    <input type="text" class="form-control" th:field="*{team1}" required>
-                </div>
-                <div class="col">
-                    <label>팀2</label>
-                    <input type="text" class="form-control" th:field="*{team2}" required>
-                </div>
-            </div>
+				<div class="row mb-3">
+					<div class="col">
+						<label>경기 날짜</label> <input type="date" class="form-control"
+							th:field="*{gameDate}"
+							th:value="${#temporals.format(gameSchedule.gameDate, 'yyyy-MM-dd')}"
+							required>
+					</div>
+					<div class="col">
+						<label>시작 시간</label> <input type="text" class="form-control"
+							th:field="*{startTime}" placeholder="예: 18:30">
+					</div>
+				</div>
 
-            <div class="mb-3">
-                <label>경기 장소</label>
-                <input type="text" class="form-control" th:field="*{location}">
-            </div>
+				<div class="row mb-3">
+					<div class="col">
+						<label>팀1</label> <input type="text" class="form-control"
+							th:field="*{team1}" required>
+					</div>
+					<div class="col">
+						<label>팀2</label> <input type="text" class="form-control"
+							th:field="*{team2}" required>
+					</div>
+				</div>
 
-            <div class="row mb-3">
-                <div class="col">
-                    <label>팀1 점수</label>
-                    <input type="number" class="form-control" th:field="*{score1}">
-                </div>
-                <div class="col">
-                    <label>팀2 점수</label>
-                    <input type="number" class="form-control" th:field="*{score2}">
-                </div>
-            </div>
+				<div class="mb-3">
+					<label>경기 장소</label> <input type="text" class="form-control"
+						th:field="*{location}">
+				</div>
 
-            <div class="mb-3">
-                <label>경기 결과</label>
-                <input type="text" class="form-control" th:field="*{result}">
-            </div>
+				<div class="row mb-3">
+					<div class="col">
+						<label>팀1 점수</label> <input type="number" class="form-control"
+							th:field="*{score1}">
+					</div>
+					<div class="col">
+						<label>팀2 점수</label> <input type="number" class="form-control"
+							th:field="*{score2}">
+					</div>
+				</div>
 
-            <div class="mb-3">
-                <label>경기 리포트</label>
-                <textarea class="form-control" th:field="*{report}" rows="5"></textarea>
-            </div>
+				<div class="mb-3">
+					<label>경기 결과</label> <input type="text" class="form-control"
+						th:field="*{result}">
+				</div>
 
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">💾 저장하기</button>
-                <a th:href="@{/admin/schedule/list}" class="btn btn-secondary ms-2">취소</a>
-            </div>
-        </form>
+				<div class="mb-3">
+					<label>경기 리포트</label>
+					<textarea class="form-control" th:field="*{report}" rows="5"></textarea>
+				</div>
 
-    </div>
-</section>
+				<div class="text-center mt-4">
+					<button type="submit" class="btn btn-primary">💾 저장하기</button>
+					<a th:href="@{/admin/schedule/list}" class="btn btn-secondary ms-2">취소</a>
+				</div>
+			</form>
+			<form th:if="${gameSchedule.id != null}"
+				th:action="@{'/admin/schedule/delete/' + ${gameSchedule.id}}"
+				method="post" onsubmit="return confirm('정말 이 경기를 삭제하시겠습니까?');"
+				style="display: inline;">
+				<button type="submit" class="btn btn-danger">🗑️ 삭제하기</button>
+			</form>
+
+
+		</div>
+	</section>
 
 </body>
 </html>
