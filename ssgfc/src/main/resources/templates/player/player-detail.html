@@ -62,48 +62,15 @@
       </div>
     </div>
 
-<<<<<<< HEAD
     <h2 class="mt-4">🗳️ 주요 기록 🗳️</h2>
     <div id="statSection"></div>
-=======
-    <h2 class="mt-4">🗳️주요 기록🗳️</h2>
 
-    <div id="hitterSection">
-      <h3>타자 기록</h3>
-      <table class="record-table" id="hitterTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>타율</th><th>홈런</th><th>타점</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="catcherSection">
-      <h3 style="margin-top: 40px;">포수 기록</h3>
-      <table class="record-table" id="catcherTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>타율</th><th>출루율</th><th>장타율</th><th>OPS</th><th>삼진</th><th>도루저지</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div id="pitcherSection">
-      <h3 style="margin-top: 40px;">투수 기록</h3>
-      <table class="record-table" id="pitcherTable">
-        <thead>
-          <tr><th>연도</th><th>WAR</th><th>ERA</th><th>삼진</th><th>WHIP</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    
     <!-- ✅ AI 선수 한줄평: 항상 맨 아래 고정 -->
     <div id="aiSummarySection" style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
       <h4 style="margin-bottom: 10px;">🧠 AI 선수 한줄평</h4>
       <p id="playerSummary" style="font-size: 15px; color: #333;">요약 정보를 불러오는 중입니다...</p>
     </div>
->>>>>>> 0220db6f37bac6ccfe90b94976f9f674944c027c
+
   </div>
 
   <script>
@@ -212,18 +179,11 @@
             }
           });
 
-<<<<<<< HEAD
           if (hitterTableCreated) statSection.appendChild(hitterTable);
           if (pitcherTableCreated) statSection.appendChild(pitcherTable);
-=======
-          if (!hasHitter) document.getElementById('hitterSection').style.display = 'none';
-          if (!hasCatcher) document.getElementById('catcherSection').style.display = 'none';
-          if (!hasPitcher) document.getElementById('pitcherSection').style.display = 'none';
-          
-       // ✅ AI 한줄평 표시
-          document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
->>>>>>> 0220db6f37bac6ccfe90b94976f9f674944c027c
 
+          // ✅ AI 한줄평 표시
+          document.getElementById('playerSummary').textContent = player.summary ?? '요약 정보가 없습니다';
         })
         .catch(err => {
           console.error('❌ 선수 정보 로딩 실패:', err);
@@ -235,3 +195,4 @@
 </th:block>
 </body>
 </html>
+
