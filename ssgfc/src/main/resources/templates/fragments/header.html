@@ -48,6 +48,22 @@
       </div>
 
 
+  <!-- 메뉴 바 -->
+  <div class="container">
+    <div class="menu-bar d-flex rounded-4 shadow-sm overflow-hidden menu-bar-wrapper">
+      <a class="menu-tab" th:href="@{/players}"
+         th:classappend="${#request.requestURI == '/players'} ? 'active'">선수목록</a>
+      <a class="menu-tab" th:href="@{/player/compare}"
+         th:classappend="${#request.requestURI == '/player/compare'} ? 'active'">선수비교</a>
+      <a class="menu-tab" th:href="@{/game_schedule}"
+      	 th:classappend="${#request.requestURI == '/game_schedule'} ? 'active'">쓱일정</a>
+      <a class="menu-tab" th:href="@{/board/list}"
+         th:classappend="${#request.requestURI.startsWith('/board')} ? 'active'">응원게시판</a>
+ 
+      <a class="menu-tab" th:href="@{/vote}"
+         th:classappend="${#request.requestURI.startsWith('/vote')} ? 'active'">투표</a>
+
+
       <!-- 슬라이드 2 -->
       <div class="carousel-item h-100">
         <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg"
