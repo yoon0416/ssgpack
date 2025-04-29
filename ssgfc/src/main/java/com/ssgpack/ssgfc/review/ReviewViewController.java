@@ -21,10 +21,10 @@ public class ReviewViewController {
         // 템플릿에서 selectedDate를 직접 쓸 수 있게 모델에 담기
         model.addAttribute("selectedDate", date);
 
-        return "review_today"; // templates/review_today.html
+        return "review/review_today"; 
     }
     @GetMapping("/admin/review")
     public String adminReviewPage() {
-        return "admin/review/review";  // 이게 맞아야 templates/admin/review/review.html 보여짐
+        return "admin/review/review";  
     }
 }

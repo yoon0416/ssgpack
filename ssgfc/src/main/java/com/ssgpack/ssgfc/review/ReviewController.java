@@ -3,9 +3,7 @@ package com.ssgpack.ssgfc.review;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ReviewController {
@@ -15,32 +13,42 @@ public class ReviewController {
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
-    
-    //기록 DB존재유무확인
+
     @GetMapping("/api/review-exists")
     public boolean checkReviewExists(@RequestParam String date) {
         return reviewService.existsByDate(date);
     }
-    // 기록된 요약 반환
+
     @GetMapping("/api/review-summary")
     public String getSummaryByDate(@RequestParam String date) {
         return reviewService.findSummaryByDate(LocalDate.parse(date));
     }
-    //기록 반환
+
     @GetMapping("/api/review-records")
     public List<Review> getRecordsByDate(@RequestParam String date) {
         LocalDate localDate = LocalDate.parse(date);
         return reviewService.findByGameDate(localDate);
     }
-    @GetMapping("/api/review-crawl")
-    public String crawlReviewManually(@RequestParam String gameUrl) {
+
+    @GetMapping("/api/review-preview-crawl")
+    public String previewCrawl(@RequestParam String gameUrl) {
         try {
-            reviewService.fetchAndSaveReview(gameUrl);
-            return "✅ 크롤링 및 저장 성공: " + gameUrl;
+            return reviewService.fetchPreviewSummary(gameUrl);
         } catch (Exception e) {
             e.printStackTrace();
-            return "❌ 크롤링 실패: " + e.getMessage();
+            return "❌ 미리보기 실패: " + e.getMessage();
         }
     }
-    
+
+    // ✅ gameUrl 직접 받아서 저장
+    @GetMapping("/api/review-save")
+    public String saveReview(@RequestParam String gameUrl, @RequestParam String summary) {
+        try {
+            reviewService.saveSummary(gameUrl, summary);
+            return "✅ 저장 성공!";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "❌ 저장 실패: " + e.getMessage();
+        }
+    }
 }
