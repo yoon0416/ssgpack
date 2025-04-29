@@ -1,3 +1,19 @@
+/*
+로그 만들기 전 처음 구조:
+- 기본 Spring Security 필터 사용 + HTML form에 name="email" 설정
+   (loginProcessingUrl 사용 안했지만 .formLogin()은 남아있었음)
+
+- 문제 원인:
+	Spring Security의 기본 로그인 필터는 name="username"만 인식함.
+	name="email"은 무시되고 컨트롤러도 호출되지 않음 → email= 빈 값으로 로그인 시도
+
+- 중간 해결 시도:
+	form 구조 점검, 로그 확인, SecurityContext 직접 등록해도 필터가 가로채서 실패
+
+- 최종 해결:
+	.formLogin().disable() 적용 + @PostMapping("/user/login") 커스텀 로그인 컨트롤러 직접 구성 → 정상 작동
+
+*/
 package com.ssgpack.ssgfc.user;
 
 import org.springframework.context.annotation.Bean;
@@ -18,6 +34,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .csrf().disable() // ✅ 테스트 시에는 CSRF 끔
+            .formLogin().disable() // ✅ 기본 로그인 필터 제거 — 커스텀 로그인 컨트롤러 사용
             .authorizeRequests(authorize -> authorize
                 .antMatchers("/css/**", "/js/**", "/images/**", "/lib/**").permitAll()
                 .antMatchers("/kakaologin", "/kakao", "/googlelogin", "/google").permitAll()
@@ -63,12 +81,6 @@ public class SecurityConfig {
                 .antMatchers("/board/write", "/board/edit/**", "/board/delete/**").authenticated()
                 .antMatchers("/board/view/**").permitAll()
                 .anyRequest().permitAll()
-            )
-            .formLogin(form -> form
-                .loginPage("/user/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)
-                .permitAll()
             )
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint((request, response, authException) -> {

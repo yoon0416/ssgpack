@@ -28,10 +28,12 @@
                 <th scope="row">가입일</th>
                 <td th:text="${#temporals.format(user.createDate, 'yyyy-MM-dd HH:mm')}">2025-04-22</td>
             </tr>
-            <tr>
-                <th scope="row">권한</th>
-                <td th:text="${user.role}">5</td>
-            </tr>
+			<tr>
+			    <th scope="row">권한</th>
+			    <td th:text="${T(com.ssgpack.ssgfc.user.UserRole).getDisplayNameByCode(user.role)}"></td>
+
+			</tr>
+
             <tr>
                 <th scope="row">IP</th>
                 <td th:text="${user.ip}">192.168.0.1</td>
