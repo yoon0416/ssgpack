@@ -29,18 +29,22 @@ public class PlayerController {
     private final PlayerRepository playerRepository;
     private final PlayerService playerService;
 
+    // ✅ 조회수 메모리 저장소
     private final Map<String, Integer> viewCountMap = new ConcurrentHashMap<>();
 
+    // ✅ 선수 전체 목록 조회
     @GetMapping("/api/players")
     public List<Player> getAllPlayers() {
         return playerCrawlingService.findAllPlayers();
     }
 
+    // ✅ 단일 선수 조회 (조회수 증가 포함)
     @GetMapping("/api/players/{pNo}")
     public ResponseEntity<Player> getPlayerDetail(@PathVariable String pNo) {
         Player player = playerRepository.findByPno(pNo)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "선수 정보를 찾을 수 없습니다."));
 
+        // 조회수 증가
         int count = viewCountMap.getOrDefault(pNo, 0) + 1;
         viewCountMap.put(pNo, count);
         player.setViewCount(count);
@@ -48,6 +52,7 @@ public class PlayerController {
         return ResponseEntity.ok(player);
     }
 
+    // ✅ 인기 선수 조회 (조회수 기준)
     @GetMapping("/api/players/top-hit")
     public List<Player> getTopHitPlayers(@RequestParam(defaultValue = "5") int limit) {
         return playerRepository.findAll().stream()
@@ -60,41 +65,7 @@ public class PlayerController {
             .collect(Collectors.toList());
     }
 
-    @GetMapping("/api/players/top-stat")
-    public List<Map<String, Object>> getTopPlayersByStat(
-            @RequestParam(defaultValue = "5") int limit
-    ) {
-        return playerService.findTopPlayersByStat(limit);
-    }
-
-    @GetMapping("/api/players/top-hitters")
-    public List<Map<String, Object>> getTopHitters(
-            @RequestParam(defaultValue = "3") int limit
-    ) {
-        return playerService.findTopPlayersByStat(100).stream()  // 100명 충분히 가져오기
-                .filter(player -> !"P".equals(player.get("position"))) // 타자만
-                .sorted((p1, p2) -> Double.compare(
-                    Double.parseDouble(p2.getOrDefault("mainStat", "0").toString()),
-                    Double.parseDouble(p1.getOrDefault("mainStat", "0").toString())
-                ))
-                .limit(limit)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping("/api/players/top-pitchers")
-    public List<Map<String, Object>> getTopPitchers(
-            @RequestParam(defaultValue = "3") int limit
-    ) {
-        return playerService.findTopPlayersByStat(100).stream()  // 100명 충분히 가져오기
-                .filter(player -> "P".equals(player.get("position"))) // 투수만
-                .sorted((p1, p2) -> Double.compare(
-                    Double.parseDouble(p2.getOrDefault("mainStat", "0").toString()),
-                    Double.parseDouble(p1.getOrDefault("mainStat", "0").toString())
-                ))
-                .limit(limit)
-                .collect(Collectors.toList());
-    }
-
+    // ✅ 선수 기본 정보 저장 (STATIZ 팀 백넘버 페이지 기반)
     @GetMapping("/save-all")
     public String saveAllPlayers() {
         try {
@@ -116,6 +87,7 @@ public class PlayerController {
 
                     String detailUrl = "https://statiz.sporki.com" + href;
 
+                    // 차단 방지용 대기
                     try {
                         Thread.sleep((long) (Math.random() * 10000 + 10000));
                     } catch (InterruptedException e) {
@@ -132,6 +104,7 @@ public class PlayerController {
         }
     }
 
+    // ✅ 테스트 API
     @GetMapping("/api/test")
     public ResponseEntity<?> test() {
         return playerRepository.findAll().stream()
