@@ -208,12 +208,17 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/user/password/change")
     public String showChangePasswordForm(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        if (userDetails == null) {
+            return "redirect:/user/login";
+        }
+
         model.addAttribute("user", userDetails.getUser());
         return "user/password-change";
     }
+
+
 
     @PostMapping("/user/password/change")
     public String changePassword(@AuthenticationPrincipal CustomUserDetails userDetails,

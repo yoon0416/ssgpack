@@ -16,6 +16,7 @@
     <!-- 파일 업로드를 위해 enctype 추가 -->
     <form th:action="@{/admin/player/add}" method="post" enctype="multipart/form-data">
         <table class="table">
+        	<tr><th>고유번호(PNO)</th><td><input type="text" name="pno" required></td></tr>
             <tr><th>이름</th><td><input type="text" name="name" required></td></tr>
             <tr><th>포지션</th><td><input type="text" name="position"></td></tr>
             <tr><th>등번호</th><td><input type="text" name="backNumber"></td></tr>

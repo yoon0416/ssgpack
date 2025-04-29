@@ -70,6 +70,11 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendRedirect("/user/login");
+                })
+            )
             .oauth2Login(oauth2 -> oauth2
                 .defaultSuccessUrl("/", true)
             )
