@@ -90,6 +90,14 @@
     let currentType = '투수';
     let barChart;
 
+    const statNameMapping = {
+      'ERA': '평균자책', 'WHIP': '출루허용률','FIP': 'FIP', 'WAR': '출루율',
+      'AVG': '장타율', 'HR': '홈런', 'RBI': '타점', 'SLG': '장타율',"비율":"타율","R/ePA":"승리기여도"
+    };
+
+    const getStatLabel = (key, isPitcher) =>
+      key === 'WAR' ? (isPitcher ? '승리기여도' : '출루율') : (statNameMapping[key] ?? key);
+
     window.onload = function() {
       fetch('/api/players')
         .then(response => response.json())
@@ -127,7 +135,6 @@
         player2Select.appendChild(option2);
       });
 
-      // 메인 스탯 명칭 업데이트
       document.getElementById('mainStatName').textContent = (type === '투수') ? 'WAR' : '타율';
     }
 
@@ -169,15 +176,11 @@
       const statMap2 = player2.stats?.[0]?.statMap || {};
 
       const headers = currentType === '투수'
-        ? ['ERA', 'WHIP', 'SO', 'FIP', 'WAR']
-        : ['AVG', 'HR', 'RBI', 'OBP', 'SLG'];
+        ? ['ERA', 'WHIP', 'FIP', 'WAR']
+        : ['AVG', '비율', 'WAR', 'R/ePA'];
 
-      const nameMap = {
-        'ERA': '평균자책', 'WHIP': 'WHIP', 'SO': '삼진', 'FIP': 'FIP', 'WAR': 'WAR',
-        'AVG': '타율', 'HR': '홈런', 'RBI': '타점', 'OBP': '출루율', 'SLG': '장타율'
-      };
+      const labels = headers.map(key => getStatLabel(key, currentType === '투수'));
 
-      const labels = headers.map(key => nameMap[key] || key);
       const data1 = headers.map(key => parseFloat(statMap1[key]) || 0);
       const data2 = headers.map(key => parseFloat(statMap2[key]) || 0);
 
