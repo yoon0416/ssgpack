@@ -1,5 +1,6 @@
 package com.ssgpack.ssgfc.user;
 
+import com.ssgpack.ssgfc.log.LogUtil;
 import com.ssgpack.ssgfc.util.UtilUpload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
@@ -29,8 +30,15 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        LogUtil.write("user", "[LOGIN_TRY] email=" + email);
+
         User user = userRepository.findByEmail(email.trim())
-                .orElseThrow(() -> new UsernameNotFoundException("잘못된 로그인 정보입니다."));
+                .orElseThrow(() -> {
+                    LogUtil.write("user", "[LOGIN_FAIL] email=" + email + ", reason=NOT_FOUND");
+                    return new UsernameNotFoundException("잘못된 로그인 정보입니다.");
+                });
+
+        LogUtil.write("user", "[LOGIN_SUCCESS] email=" + email);
         return new CustomUserDetails(user);
     }
 
@@ -38,7 +46,9 @@ public class UserService implements UserDetailsService {
         user.setPwd(passwordEncoder.encode(user.getPwd()));
         user.setIp();
         user.setRole(5);
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        LogUtil.write("user", "[SIGNUP] email=" + saved.getEmail());
+        return saved;
     }
 
     public List<User> findAll() {
@@ -65,13 +75,14 @@ public class UserService implements UserDetailsService {
 
         if (updatedUser.getRole() != user.getRole()) {
             user.setRole(updatedUser.getRole());
+            LogUtil.write("user", "[ROLE_CHANGED] userId=" + id + ", newRole=" + updatedUser.getRole());
         }
 
+        LogUtil.write("user", "[UPDATE_BASIC_INFO] userId=" + id);
         return user;
     }
 
-
-    //  마이페이지 수정 - 소개글, 프사, 주소 포함
+    // 마이페이지 수정 - 소개글, 프사, 주소 포함
     public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
         User user = findById(id);
 
@@ -79,26 +90,28 @@ public class UserService implements UserDetailsService {
         user.setIntroduce(updatedUser.getIntroduce());
         user.setPhone(updatedUser.getPhone());
 
-        // 이메일 변경
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
             if (userRepository.findByEmail(newEmail).isPresent()) {
+                LogUtil.write("user", "[EMAIL_UPDATE_FAIL] reason=duplicate, tried=" + newEmail);
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
-            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
+            user.setEmail_chk(false);
+            LogUtil.write("user", "[EMAIL_CHANGED] userId=" + id + ", newEmail=" + newEmail);
         }
 
-        // ✅ 주소 정보 저장
         user.setZipcode(updatedUser.getZipcode());
         user.setAddress(updatedUser.getAddress());
         user.setAddressDetail(updatedUser.getAddressDetail());
 
-        // 프로필 이미지 처리
         if (file != null && !file.isEmpty()) {
             String savedName = utilUpload.uploadUserProfile(file);
             user.setProfile_img(savedName);
+            LogUtil.write("user", "[PROFILE_IMAGE_UPDATED] userId=" + id + ", fileName=" + savedName);
         }
+
+        LogUtil.write("user", "[MYPAGE_UPDATED] userId=" + id);
     }
 
     public void updateUser(Long id, User updatedUser) {
@@ -109,17 +122,22 @@ public class UserService implements UserDetailsService {
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
             if (userRepository.findByEmail(newEmail).isPresent()) {
+                LogUtil.write("user", "[EMAIL_UPDATE_FAIL] reason=duplicate, tried=" + newEmail);
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
-            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
+            user.setEmail_chk(false);
+            LogUtil.write("user", "[EMAIL_CHANGED] userId=" + id + ", newEmail=" + newEmail);
         }
+
+        LogUtil.write("user", "[MYPAGE_UPDATED_NO_FILE] userId=" + id);
     }
 
     public void updateUserWithPasswordCheck(Long id, String currentPassword, User updatedUser) {
         User user = findById(id);
 
         if (!passwordEncoder.matches(currentPassword, user.getPwd())) {
+            LogUtil.write("user", "[PASSWORD_UPDATE_FAIL] userId=" + id + ", reason=wrong_current_password");
             throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
         }
 
@@ -128,24 +146,34 @@ public class UserService implements UserDetailsService {
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
             if (userRepository.findByEmail(newEmail).isPresent()) {
+                LogUtil.write("user", "[EMAIL_UPDATE_FAIL] reason=duplicate, tried=" + newEmail);
                 throw new IllegalArgumentException("이미 등록된 이메일입니다.");
             }
             user.setEmail(newEmail);
-            user.setEmail_chk(false); // 이메일 변경 시 인증 다시 필요
+            user.setEmail_chk(false);
+            LogUtil.write("user", "[EMAIL_CHANGED] userId=" + id + ", newEmail=" + newEmail);
         }
 
         String newPwd = updatedUser.getPwd();
         if (newPwd != null && !newPwd.trim().isEmpty()) {
             user.setPwd(passwordEncoder.encode(newPwd));
+            LogUtil.write("user", "[PASSWORD_UPDATED] userId=" + id);
         }
+
+        LogUtil.write("user", "[MYPAGE_UPDATED_WITH_PASSWORD] userId=" + id);
     }
 
     public void delete(Long id) {
         userRepository.deleteById(id);
+        LogUtil.write("user", "[ACCOUNT_DELETED_BY_ADMIN] userId=" + id);
     }
 
     public void deleteByUser(Long id) {
+        // 여기에 연관 데이터 삭제 로직 삽입 가능
+        LogUtil.write("user", "[ACCOUNT_DATA_CLEANUP] userId=" + id + " (board, comment, vote 삭제 예정)");
+
         userRepository.deleteById(id);
+        LogUtil.write("user", "[ACCOUNT_SELF_DELETED] userId=" + id);
     }
 
     public Page<User> getUserList(String keyword, Pageable pageable) {
@@ -162,6 +190,25 @@ public class UserService implements UserDetailsService {
     public void updateEmailChk(Long id) {
         User user = findById(id);
         user.setEmail_chk(true);
-        userRepository.save(user); // 꼭 save 해야 DB에 반영됨
+        userRepository.save(user);
+        LogUtil.write("user", "[EMAIL_VERIFIED] userId=" + id);
     }
+    public User login(String email, String rawPassword) {
+        LogUtil.write("user", "[LOGIN_TRY] email=" + email);
+
+        User user = userRepository.findByEmail(email.trim())
+                .orElseThrow(() -> {
+                    LogUtil.write("user", "[LOGIN_FAIL] email=" + email + ", reason=NOT_FOUND");
+                    throw new UsernameNotFoundException("존재하지 않는 이메일입니다.");
+                });
+
+        if (!passwordEncoder.matches(rawPassword, user.getPwd())) {
+            LogUtil.write("user", "[LOGIN_FAIL] email=" + email + ", reason=WRONG_PASSWORD");
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        LogUtil.write("user", "[LOGIN_SUCCESS] email=" + email);
+        return user;
+    }
+
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
@@ -36,41 +37,27 @@ public class UserController {
     }
 
     @GetMapping("/user/mypage")
-    public String user(Model model, Principal principal) {
-        User user = service.findByEmail(principal.getName());
-        if (user == null) throw new UsernameNotFoundException("유저 없음");
+    public String user(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) throw new UsernameNotFoundException("유저 없음");
 
-        String roleName = "";
-        int role = user.getRole();
+        User user = userDetails.getUser();  // 👉 바로 user 꺼내면 됨
 
-        switch (role) {
-            case 0:
-                roleName = "마스터 관리자";
-                break;
-            case 1:
-                roleName = "유저 관리자";
-                break;
-            case 2:
-                roleName = "선수 관리자";
-                break;
-            case 3:
-                roleName = "게시판 관리자";
-                break;
-            case 4:
-                roleName = "경기일정 관리자";
-                break;
-            case 5:
-                roleName = "일반 사용자";
-                break;
-            default:
-                roleName = "알 수 없음";
-                break;
+        String roleName;
+        switch (user.getRole()) {
+            case 0: roleName = "마스터 관리자"; break;
+            case 1: roleName = "유저 관리자"; break;
+            case 2: roleName = "선수 관리자"; break;
+            case 3: roleName = "게시판 관리자"; break;
+            case 4: roleName = "경기일정 관리자"; break;
+            case 5: roleName = "일반 사용자"; break;
+            default: roleName = "알 수 없음"; break;
         }
 
         model.addAttribute("user", user);
         model.addAttribute("roleName", roleName);
         return "user/mypage";
     }
+
 
     @GetMapping("/user/login")
     public String login() {
@@ -217,6 +204,40 @@ public class UserController {
         model.addAttribute("user", userDetails.getUser());
         return "user/password-change";
     }
+    
+    @PostMapping("/user/login")
+    public String customLogin(@RequestParam("email") String email,
+                              @RequestParam("password") String password,
+                              HttpServletRequest request,
+                              Model model) {
+        try {
+        	
+            System.out.println("📥 email = " + email);
+            System.out.println("📥 password = " + password);
+        	
+            User user = service.login(email, password);
+
+            CustomUserDetails userDetails = new CustomUserDetails(user);
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+
+            // 🔥 SecurityContext 생성 & 등록
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+
+            // 🔥 세션에도 반드시 수동 등록
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", context);
+
+            return "redirect:/";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "user/login";
+        }
+    }
+
+
 
 
 
