@@ -1,7 +1,9 @@
 package com.ssgpack.ssgfc.game;
 
-import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,19 +19,29 @@ import lombok.RequiredArgsConstructor;
 public class LocationController {
 
     private final LocationService locationService;
-    private final LocationCrawler locationCrawler;
-    private final GameScheduleRepository gameScheduleRepository;
 
     /**
-     * 전체 구장 목록 조회
+     * ✅ 전체 구장 목록 조회 (teamKey 포함)
      */
     @GetMapping
-    public ResponseEntity<List<Location>> getAllLocations() {
-        return ResponseEntity.ok(locationService.getAllLocations());
+    public ResponseEntity<List<Map<String, Object>>> getAllLocations() {
+        List<Location> locations = locationService.getAllLocations();
+
+        List<Map<String, Object>> result = locations.stream().map(loc -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("stadiumName", loc.getStadiumName());
+            map.put("topPercent", loc.getTopPercent());
+            map.put("leftPercent", loc.getLeftPercent());
+            map.put("teamKey", loc.getTeamKey());
+            map.put("shortName", loc.getShortName());
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
     }
 
     /**
-     * 팀 키로 구장 조회 (예: sk, lg)
+     * ✅ 팀 키로 구장 조회 (예: sk, lg)
      */
     @GetMapping("/team/{teamKey}")
     public ResponseEntity<Location> getByTeamKey(@PathVariable String teamKey) {
@@ -37,32 +49,10 @@ public class LocationController {
     }
 
     /**
-     * 구장 약칭으로 조회 (예: 문학, 창원)
+     * ✅ 구장 약칭으로 조회 (예: 문학, 창원)
      */
     @GetMapping("/short/{shortName}")
     public ResponseEntity<Location> getByShortName(@PathVariable String shortName) {
         return ResponseEntity.ok(locationService.getByShortName(shortName));
     }
-    
-    @GetMapping("/update-game-schedule-locations")
-    public ResponseEntity<String> updateGameScheduleLocations() {
-        locationCrawler.crawlAndUpdateLocations();
-        return ResponseEntity.ok("게임 스케줄 location 업데이트 완료");
-    }
-    @GetMapping("/test-location/{date}")
-    public ResponseEntity<GameSchedule> testLocation(@PathVariable String date) {
-        LocalDate gameDate = LocalDate.parse(date);
-        return ResponseEntity.ok(
-            gameScheduleRepository.findByGameDate(gameDate)
-                .stream()
-                .findFirst()
-                .orElse(null)
-        );
-    }
-    @GetMapping("/null-locations")
-    public ResponseEntity<List<GameSchedule>> getNullLocations() {
-        List<GameSchedule> nullLocations = gameScheduleRepository.findByLocationIsNullOrLocationEquals("");
-        return ResponseEntity.ok(nullLocations);
-    }
-    
 }

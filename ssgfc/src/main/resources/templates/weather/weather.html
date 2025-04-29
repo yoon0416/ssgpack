@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+
+<head>
+    <title>야구장 날씨 지도</title>
+    <link rel="stylesheet" th:href="@{/css/weather.css}" />
+    <style>
+        #kbo-map-container {
+            position: relative;
+            width: 700px;
+            height: auto;
+        }
+
+        #korea-map {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .circle-marker {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 28px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        #stadium-info-panel {
+            flex: 0.6;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 300px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="container d-flex gap-4 py-4">
+        <!-- 지도 영역 -->
+        <div id="kbo-map-container">
+            <img src="/images/map/map.png" alt="KBO 지도" id="korea-map"/>
+        </div>
+
+        <!-- 오른쪽 정보 패널 -->
+        <div id="stadium-info-panel">
+            <h3>경기장을 클릭!</h3>
+        </div>
+    </div>
+</div>
+
+<!-- 스크립트 -->
+<div layout:fragment="script">
+<script>
+Promise.all([
+    fetch("/api/today-games").then(res => res.json()),
+    fetch("/api/locations").then(res => res.json())
+]).then(([todayGames, locations]) => {
+    const container = document.getElementById("kbo-map-container");
+
+    locations.forEach(location => {
+        const marker = document.createElement("div");
+        marker.className = "circle-marker";
+        marker.textContent = location.shortName;
+        marker.style.left = location.leftPercent;
+        marker.style.top = location.topPercent;
+        marker.dataset.team = location.teamKey;
+
+        const isTodayGame = todayGames.some(game => game.stadium === location.stadiumName);
+        marker.style.backgroundColor = isTodayGame ? "red" : "black";
+
+        marker.addEventListener("click", async () => {
+            const infoBox = document.getElementById("stadium-info-panel");
+
+            // 📌 1. 먼저 날씨 API 호출 (항상 날씨는 보여야 하니까)
+            const teamKey = marker.dataset.team;
+            let weather = {};
+            try {
+                const weatherRes = await fetch(`/api/weather/${teamKey}`);
+                weather = await weatherRes.json();
+            } catch (error) {
+                console.error("날씨 API 호출 실패", error);
+            }
+
+            let html = `<h3>${location.stadiumName}</h3>`;
+
+            if (isTodayGame) {
+                // 🔴 오늘 경기 있음
+                const matchedGames = todayGames.filter(game => game.stadium === location.stadiumName);
+                matchedGames.forEach(game => {
+                	html += `<p>오늘 경기: vs ${game.team}</p>`;
+                });
+            } else {
+                // ⚫ 오늘 경기 없음
+                try {
+                    const allGamesRes = await fetch("/games");
+                    const allGames = await allGamesRes.json();
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const matchedFutureGames = allGames.filter(game => {
+                        const gameDate = new Date(game.gameDate);
+                        return (game.location === location.stadiumName) &&
+                               (gameDate >= today) &&
+                               (game.team1 === 'SSG' || game.team2 === 'SSG');
+                    });
+
+                    if (matchedFutureGames.length > 0) {
+                        matchedFutureGames.forEach(game => {
+                            const opponent = game.team1 === 'SSG' ? game.team2 : game.team1;
+                            html += `<p>예정 경기: ${game.gameDate} vs ${opponent}</p>`;
+                        });
+                    } else {
+                        html += `<p>향후 SSG 일정이 없습니다.</p>`;
+                    }
+                } catch (error) {
+                    console.error("경기 일정 가져오기 실패", error);
+                    html += `<p>향후 경기 정보를 불러올 수 없습니다.</p>`;
+                }
+            }
+
+            // ✅ 2. 항상 날씨 출력
+            if (weather.weather && weather.temp) {
+                html += `<p>날씨: ${weather.weather} / ${weather.temp}</p>`;
+            } else {
+                html += `<p>날씨 정보를 불러올 수 없습니다.</p>`;
+            }
+
+            infoBox.innerHTML = html;
+        });
+
+        container.appendChild(marker);
+    });
+});
+</script>
+</div>
+</body>
+</html>

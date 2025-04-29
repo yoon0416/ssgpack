@@ -8,6 +8,6 @@ public class WeatherViewController {
 	
 	@GetMapping("/weather")
 	public String weatherPage() {
-		return "weather";	
+		return "weather/weather";	
 	}
 }
