@@ -5,8 +5,8 @@
     <link rel="stylesheet" th:href="@{/css/view.css}" />
     
     <!-- ✅ CSRF 메타태그 추가 -->
-    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}"/>
+    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+	<meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
 </head>
 
 <body>
@@ -58,6 +58,15 @@
         </form>
     </div>
     
+    <!-- ✅ 목록/수정/삭제 버튼 -->
+    <div class="d-flex justify-content-between mt-4">
+        <a th:href="@{/board/list}" class="btn btn-secondary">목록</a>
+        <div th:if="${currentUserId != null and currentUserId == board.user.id}">
+            <a th:href="@{'/board/edit/' + ${board.id}}" class="btn btn-outline-primary">수정</a>
+               <a th:href="@{'/board/delete/' + ${board.id}}" onclick="return confirm('삭제하시겠습니까?')" class="btn btn-outline-danger">삭제</a>
+        </div>
+    </div>
+ 
 	<!-- ✅ 댓글 작성 폼 (항상 고정) -->
     <div class="comment-form mt-5" sec:authorize="isAuthenticated()">
         <form th:action="@{'/board/' + ${board.id} + '/comment/add'}" method="post">
