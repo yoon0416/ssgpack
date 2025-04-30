@@ -12,6 +12,11 @@
 <div th:fragment="commentFragment(comment, level)">
     <div class="comment" th:style="|margin-left: ${level * 30}px;|">
 
+	    <!-- ✅ 꺾인 화살표: 대댓글 이상일 경우에만 -->
+	    <div class="arrow-wrapper" th:if="${level > 0}">
+	        <span class="arrow-icon">➥</span> 
+	    </div>
+
         <!-- ✅ 프로필 이미지 -->
         <div class="profile-wrapper">
             <img class="comment-profile"
@@ -22,38 +27,70 @@
                  th:onclick="|openUserPopup(${comment.user.id})|">
         </div>
 
-        <!-- ✅ 작성자, 작성일, 신고 버튼 묶음 -->
+        
         <div class="comment-text-wrapper">
 
-            <div class="comment-header">
-                <span class="comment-author"
-                      th:if="${comment.user != null}"
-                      th:text="${comment.user.nick_name}"
-                      th:onclick="|openUserPopup(${comment.user.id})|"></span>
-                <span class="comment-author" th:if="${comment.user == null}">탈퇴한 사용자</span>
+            <!-- ✅ 댓글 상단 정보 및 버튼 영역 -->
+			<div class="comment-header d-flex justify-content-between align-items-center">
 
-                <span class="comment-date" th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
-
-				<!-- ✅ 댓글 신고 버튼 -->
-				<div sec:authorize="isAuthenticated()">
-				    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-					        data-type="COMMENT"
-					        th:data-id="${comment.id}"
-					        th:data-board-id="${comment.board.id}"
-					        th:data-parent-id="${comment.parent != null ? comment.parent.id : 0}"
-					        onclick="handleReportButton(this)">
-					    🚨 신고
-					</button>
+				<!-- 왼쪽: 작성자 이름 + 작성일 -->
+				<div>
+					<span class="comment-author" th:if="${comment.user != null}"
+						th:text="${comment.user.nick_name}"
+						th:onclick="|openUserPopup(${comment.user.id})|"></span> <span
+						class="comment-author" th:if="${comment.user == null}">탈퇴한
+						사용자</span> <span class="comment-date ms-2"
+						th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
 				</div>
-            </div>
 
-            <!-- ✅ 댓글 본문 (화살표 + 내용) -->
-            <div class="comment-body"
-                 th:onclick="|toggleReplyForm(${comment.id})|"
-                 style="cursor:pointer;">
-                <span th:if="${level > 0}" style="color:#aaa; margin-right:5px;">➥</span>
-                <span th:text="${comment.content}"></span>
-            </div>
+				<!--  수정/삭제(작성자만) + 신고 버튼 (항상 보이게) -->
+				<div class="d-flex align-items-center">
+
+					<!-- 수정 / 삭제 (작성자 본인만) -->
+					<div sec:authorize="isAuthenticated()"
+						th:if="${#authentication.principal.user.id == comment.user?.id}">
+						<a href="javascript:void(0);"
+							class="btn btn-sm btn-outline-primary ms-2"
+							th:onclick="|toggleEditForm(${comment.id})|">✏️ 수정</a>
+						<form
+							th:action="@{'/board/' + ${comment.board.id} + '/comment/' + ${comment.id} + '/delete'}"
+							method="post" style="display: inline;">
+							<input type="hidden" name="boardId"
+								th:value="${comment.board.id}" />
+							<button type="submit" class="btn btn-sm btn-outline-danger ms-1"
+								onclick="return confirm('정말 삭제하시겠습니까?');">🗑 삭제</button>
+						</form>
+					</div>
+
+					<!-- 신고 버튼 (오른쪽 끝 고정) -->
+					<div sec:authorize="isAuthenticated()">
+						<button type="button" class="btn btn-sm btn-outline-danger ms-2"
+							data-type="COMMENT" th:data-id="${comment.id}"
+							th:data-board-id="${comment.board.id}"
+							th:data-parent-id="${comment.parent != null ? comment.parent.id : 0}"
+							onclick="handleReportButton(this)">🚨 신고</button>
+					</div>
+
+				</div>
+			</div>
+
+			<!-- ✅ 댓글 텍스트 영역 -->
+			<div class="comment-body"
+			     th:onclick="|toggleReplyForm(${comment.id})|"
+			     style="cursor:pointer;">
+			    <span th:text="${comment.content}"></span>
+			</div>
+			            
+            <!-- ✅ 댓글 수정 폼 (초기에는 숨김) -->
+			<div th:id="|editForm-${comment.id}|" class="edit-form" style="display:none;">
+			    <form th:action="@{'/board/' + ${comment.board.id} + '/comment/' + ${comment.id} + '/edit'}"
+				      method="post"
+				      style="display:flex; align-items:center; margin-top:10px;"
+				      onsubmit="return confirm('정말 수정하시겠습니까?');">
+				    <textarea name="content" rows="2" class="form-control me-2" th:text="${comment.content}"></textarea>
+				    <button type="submit" class="btn btn-sm btn-primary">수정 완료</button>
+				</form>
+			</div>
 
             <!-- ✅ 답글 입력 폼 -->
             <div th:id="|replyForm-${comment.id}|" class="reply-form" style="display:none;">

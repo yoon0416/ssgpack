@@ -22,18 +22,35 @@
         <span th:if="${board.emotion == 'NEUTRAL'}">😐</span>
     </h2>
 
-    <!-- ✅ 작성자/작성일/조회수/신고 버튼 -->
-    <div class="mb-3 text-muted">
-        <span>작성자:
-            <b th:if="${board.user != null}" th:text="${board.user.nick_name}" th:onclick="|openUserPopup(${board.user.id})|" style="cursor:pointer; color:#0d6efd; text-decoration:underline;"></b>
-            <b th:if="${board.user == null}">익명</b>
-        </span>
-        <span class="ms-3">작성일: <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}"></span></span>
-        <span class="ms-3">조회수: <span th:text="${board.hit}"></span></span>
-        <div sec:authorize="isAuthenticated()">
-        	<button type="button" class="btn btn-sm btn-outline-danger ms-2" th:onclick="|openReportModal('BOARD', ${board.id})|">🚨 신고</button>
-        </div>
-    </div>
+	<!-- ✅ 작성자/작성일/조회수/신고 버튼 -->
+	<div class="mb-3 text-muted d-flex align-items-center justify-content-start flex-wrap">
+	
+	    <span>작성자:
+	        <b th:if="${board.user != null}"
+	           th:text="${board.user.nick_name}"
+	           th:onclick="|openUserPopup(${board.user.id})|"
+	           style="cursor:pointer; color:#0d6efd; text-decoration:underline;"></b>
+	        <b th:if="${board.user == null}">익명</b>
+	    </span>
+	
+	    <span class="ms-3">작성일:
+	        <span th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+	    </span>
+	
+	    <!-- ✅ 조회수 + 신고 버튼 묶음 -->
+	    <span class="ms-3 d-flex align-items-center">
+	        조회수: <span th:text="${board.hit}" class="ms-1"></span>
+	
+	        <!-- ✅ 신고 버튼 - 조회수 오른쪽에 붙음 -->
+	        <div sec:authorize="isAuthenticated()">
+	            <button type="button"
+	                    class="btn btn-sm btn-outline-danger ms-3"
+	                    th:onclick="|openReportModal('BOARD', ${board.id})|">🚨 신고</button>
+	        </div>
+	    </span>
+	
+	</div>
+
 
     <!-- ✅ 게시글 이미지 -->
     <div th:if="${board.img != null}">

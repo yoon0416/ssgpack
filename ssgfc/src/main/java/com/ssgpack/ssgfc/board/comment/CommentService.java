@@ -73,4 +73,17 @@ public class CommentService {
     public void delete(Long commentId) {
         commentRepository.deleteById(commentId);
     }
+    
+    // ✅ 댓글 내용 수정 메서드 - 작성자 본인만 수정 가능
+    @Transactional
+    public void updateComment(Long commentId, String content, User currentUser) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        if (!comment.getUser().getId().equals(currentUser.getId())) {
+            throw new SecurityException("수정 권한이 없습니다.");
+        }
+
+        comment.setContent(content);
+    }
 }

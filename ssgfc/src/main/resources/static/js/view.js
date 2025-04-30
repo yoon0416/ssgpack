@@ -11,6 +11,14 @@ function toggleReplyForm(commentId) {
     }
 }
 
+// ✅ 댓글 수정 폼 열기/닫기
+function toggleEditForm(commentId) {
+    const form = document.getElementById('editForm-' + commentId);
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
 // ✅ 버튼 데이터 넘기기 
 function handleReportButton(el) {
     const type = el.getAttribute('data-type');

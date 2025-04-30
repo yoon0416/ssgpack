@@ -1,9 +1,24 @@
 /* ✅ 전체 댓글 박스 */
 .comment {
     display: flex;
-    align-items: flex-start;
+    align-items: center; /* ← 기존: flex-start → 변경: center */
     padding: 15px 0;
     border-bottom: 1px solid #e0e0e0;
+}
+
+/* ✅ 화살표 wrapper - 프로필 왼쪽에 수직 중앙 */
+.arrow-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    margin-right: 8px;
+}
+
+/* ✅ 화살표 아이콘 스타일 */
+.arrow-icon {
+    font-size: 1.5rem; /* ← 더 크게 보이게 */
+    color: black;
 }
 
 /* ✅ 프로필 이미지 */
@@ -17,6 +32,7 @@
     border-radius: 50%;
     object-fit: cover;
     cursor: pointer;
+    display: block;
 }
 
 /* ✅ 오른쪽 텍스트 묶음 */
@@ -31,6 +47,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.comment-header .btn-group .btn {
+    margin-left: 5px;
 }
 
 /* ✅ 작성자 이름 */
