@@ -128,6 +128,15 @@ public class User implements Serializable {
             return "일반";
         }
     }
+    
+    // 인증된거 체크
+    public boolean isVerified() {
+        return this.email_chk
+            || this.kakaoId != null
+            || this.googleId != null
+            || this.naverId != null
+            || (this.phone != null && !this.phone.trim().isEmpty());
+    }
 
 
 }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>인증 필요</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .auth-box {
+            max-width: 500px;
+            margin: 100px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .auth-box h2 {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .auth-box p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="auth-box">
+        <h2>⚠ 인증이 필요합니다</h2>
+        <p>이 기능은 인증된 사용자만 이용할 수 있습니다.</p>
+        <p>이메일 인증, 전화번호 인증 또는 카카오/구글/네이버 로그인을 완료해주세요.</p>
+        <a href="/user/mypage" class="btn btn-primary">마이페이지로 이동</a>
+    </div>
+</th:block>
+</body>
+</html>

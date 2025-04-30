@@ -45,7 +45,7 @@ public class SecurityConfig {
                     UserRole.PLAYER_MANAGER.getRoleName(),
                     UserRole.BOARD_MANAGER.getRoleName(),
                     UserRole.GAME_MANAGER.getRoleName()
-                )
+                )                
                 .antMatchers("/admin/master/**").hasAuthority(UserRole.MASTER.getRoleName())
                 .antMatchers("/admin/user/**").hasAnyAuthority(
                     UserRole.MASTER.getRoleName(),
@@ -75,18 +75,26 @@ public class SecurityConfig {
                     UserRole.MASTER.getRoleName(),
                     UserRole.BOARD_MANAGER.getRoleName()
                 )
+                .antMatchers("/comment/**")
+                .access("@customSecurity.checkVerified(authentication)")
+                .antMatchers("/board/**/comment/add")
+                .access("@customSecurity.checkVerified(authentication)")
+                .antMatchers("/board/write", "/board/edit/**", "/board/delete/**")
+                .access("@customSecurity.checkVerified(authentication)")
                 .antMatchers("/vote/submit").authenticated()
                 .antMatchers("/vote/**").permitAll()
                 .antMatchers("/user/mypage/**").authenticated()
-                .antMatchers("/board/write", "/board/edit/**", "/board/delete/**").authenticated()
                 .antMatchers("/board/view/**").permitAll()
                 .anyRequest().permitAll()
             )
             .exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.sendRedirect("/user/login");
-                })
-            )
+            	    .authenticationEntryPoint((request, response, authException) -> {
+            	        response.sendRedirect("/user/login");
+            	    })
+            	    .accessDeniedHandler((request, response, accessDeniedException) -> {
+            	        response.sendRedirect("/auth-required");
+            	    })
+            	)
             .oauth2Login(oauth2 -> oauth2
                 .defaultSuccessUrl("/", true)
             )
