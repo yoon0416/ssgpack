@@ -59,10 +59,22 @@
         <!-- 지도 영역 -->
         <div id="kbo-map-container">
             <img src="/images/map/map.png" alt="KBO 지도" id="korea-map"/>
+            <div id="radar-icon">
+        <img src="images/emojis/radar_loop2.gif" id="radar-img" alt="Radar Icon" />
+    </div>
         </div>
+        
+<script>
+document.getElementById("radar-icon").addEventListener("mouseenter", () => {
+  const radar = document.getElementById("radar-img");
+  const src = radar.src;        // 현재 이미지 경로를 저장
+  radar.src = "";               // 먼저 비워서 이미지 초기화
+  radar.src = src;              // 다시 같은 경로로 재설정 → 재생 시작
+});
+</script>
 
         <!-- 오른쪽 정보 패널 -->
-        <div id="stadium-info-panel">
+        <div id="stadium-info-panel" style="flex: 1; width: 100%; max-width: none;">
             <h3>경기장을 클릭!</h3>
         </div>
     </div>
@@ -96,6 +108,10 @@ Promise.all([
             // 물결 요소를 생성합니다.
             const ripple = document.createElement("div");
             ripple.className = "ripple-effect";
+            
+            ripple.style.backgroundColor = isTodayGame
+            ? "rgba(255, 0, 0, 0.8)"   //  붉은 파동
+            : "rgba(0, 0, 0, 0.6)";   //  회색 파동
 
             // 물결 요소의 위치를 마커의 중심에 맞춥니다.
             ripple.style.left = `${rect.left - containerRect.left + rect.width / 2}px`;
@@ -123,13 +139,13 @@ Promise.all([
             let html = `<h3>${location.stadiumName}</h3>`;
 
             if (isTodayGame) {
-                // 🔴 오늘 경기 있음
+                //  오늘 경기 있음
                 const matchedGames = todayGames.filter(game => game.stadium === location.stadiumName);
                 matchedGames.forEach(game => {
                 	html += `<p>오늘 경기: vs ${game.team}</p>`;
                 });
             } else {
-                // ⚫ 오늘 경기 없음
+                //  오늘 경기 없음
                 try {
                     const allGamesRes = await fetch("/games");
                     const allGames = await allGamesRes.json();
@@ -157,12 +173,18 @@ Promise.all([
                 }
             }
 
-            // ✅ 2. 항상 날씨 출력
+            // 항상 날씨 출력
             if (weather.weather && weather.temp) {
-                html += `<p>날씨: ${weather.weather} / ${weather.temp}</p>`;
-            } else {
-                html += `<p>날씨 정보를 불러올 수 없습니다.</p>`;
-            }
+    const iconPath = `/images/emojis/${weather.weathericon}`;
+    html += `
+        <div style="text-align: center; margin: 16px 0;">
+            <img src="${iconPath}" alt="${weather.weather}" width="300" height="300" style="display: block; margin: 0 auto;">
+        </div>
+        <p style="text-align: center;">${weather.weather} / ${weather.temp}</p>
+    `;
+} else {
+    html += `<p>날씨 정보를 불러올 수 없습니다.</p>`;
+}
 
             infoBox.innerHTML = html;
         });

@@ -9,6 +9,7 @@ body {
     position: relative;
     width: 600px;
     height: auto;
+    display: block;
 }
 
 #korea-map {
@@ -22,7 +23,7 @@ body {
     position: absolute;
     width: 28px;
     height: 28px;
-    background-color: crimson; /* 기본 배경색 (팀별 색상은 JS에서 넣을 수 있음) */
+    background-color: crimson;
     color: white;
     font-size: 12px;
     font-weight: bold;
@@ -38,16 +39,24 @@ body {
 /* 날씨 정보 패널 */
 #stadium-info-panel {
     flex: 1;
+    max-width: 100%;
     background: white;
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
     min-height: 240px;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 #kbo-map-container {
-  position: relative;  /* ✅ 꼭 있어야 ripple 위치 기준이 됨 */
+  position: relative;
+    width: 700px;
+  flex-shrink: 0;
 }
 
 .ripple-effect {
@@ -55,32 +64,34 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
   pointer-events: none;
-  animation: ripple 1.2s ease-out;
+  animation: ripple 1.5s ease;
   z-index: 999;
-  transform: translate(-50%, -50%) scale(1); /* 초기 scale까지 명시 */
+  transform: translate(-50%, -50%) scale(1);
 }
 
 @keyframes ripple {
   0% {
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.6;
-  }
-  25% {
-    transform: translate(-50%, -50%) scale(2);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(3);
-    opacity: 0.5;
-  }
-  75% {
-    transform: translate(-50%, -50%) scale(4);
-    opacity: 0.2;
+    opacity: 0.8;
   }
   100% {
     transform: translate(-50%, -50%) scale(5);
     opacity: 0;
   }
+}
+
+#radar-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 100px;
+    height:100px;
+    z-index: 20;
+    opacity: 0.8;
+}
+#radar-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;   
 }
