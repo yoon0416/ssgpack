@@ -117,6 +117,7 @@ public class User implements Serializable {
         return this.profile_img;
     }
     
+    //뱃지
     public String getSocialType() {
         if (this.kakaoId != null) {
             return "카카오";
@@ -127,6 +128,15 @@ public class User implements Serializable {
         } else {
             return "일반";
         }
+    }
+    
+    // 인증된거 체크
+    public boolean isVerified() {
+        return this.email_chk
+            || this.kakaoId != null
+            || this.googleId != null
+            || this.naverId != null
+            || (this.phone != null && !this.phone.trim().isEmpty());
     }
 
 

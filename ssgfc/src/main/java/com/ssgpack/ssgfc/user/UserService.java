@@ -1,8 +1,9 @@
 package com.ssgpack.ssgfc.user;
 
-import com.ssgpack.ssgfc.log.LogUtil;
-import com.ssgpack.ssgfc.util.UtilUpload;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.List;
+import com.ssgpack.ssgfc.log.LogUtil;
+import com.ssgpack.ssgfc.util.UtilUpload;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -83,12 +86,17 @@ public class UserService implements UserDetailsService {
     }
 
     // 마이페이지 수정 - 소개글, 프사, 주소 포함
-    public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
+ // ✅ 파라미터 추가
+    public void updateUserWithFile(Long id, User updatedUser, MultipartFile file, String phone) throws IOException {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
         user.setIntroduce(updatedUser.getIntroduce());
-        user.setPhone(updatedUser.getPhone());
+
+        // ✅ phone은 따로 처리
+        if (phone != null && !phone.trim().isEmpty()) {
+            user.setPhone(phone);
+        }
 
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
@@ -111,6 +119,7 @@ public class UserService implements UserDetailsService {
             LogUtil.write("user", "[PROFILE_IMAGE_UPDATED] userId=" + id + ", fileName=" + savedName);
         }
 
+        userRepository.save(user);
         LogUtil.write("user", "[MYPAGE_UPDATED] userId=" + id);
     }
 
@@ -209,6 +218,27 @@ public class UserService implements UserDetailsService {
 
         LogUtil.write("user", "[LOGIN_SUCCESS] email=" + email);
         return user;
+    }
+    public List<String> getBadgeList(User user) {
+        List<String> badges = new ArrayList<>();
+
+        if (user.getKakaoId() != null) {
+            badges.add("카카오 로그인");
+        }
+        if (user.getGoogleId() != null) {
+            badges.add("구글 로그인");
+        }
+        if (user.getNaverId() != null) {
+            badges.add("네이버 로그인");
+        }
+        if (user.isEmail_chk()) {
+            badges.add("이메일 인증");
+        }
+        if (user.getPhone() != null && !user.getPhone().trim().isEmpty()) {
+            badges.add("전화번호 인증");
+        }
+
+        return badges;
     }
 
 }

@@ -1,3 +1,9 @@
 /.metadata/
 /Servers/
 ssgfc/src/main/resources/application.properties
+
+
+ssgfc/logs/
+ssgfc/logs/*.log
+ssgfc/logs/**/*.log
+ssgfc/logs/**/*.gz

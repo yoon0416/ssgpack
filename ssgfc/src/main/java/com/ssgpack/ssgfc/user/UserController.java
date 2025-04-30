@@ -1,7 +1,7 @@
 package com.ssgpack.ssgfc.user;
 
 import java.io.IOException;
-import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +19,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
@@ -52,9 +56,11 @@ public class UserController {
             case 5: roleName = "일반 사용자"; break;
             default: roleName = "알 수 없음"; break;
         }
-
+        List<String> badges = service.getBadgeList(user);
+        
         model.addAttribute("user", user);
         model.addAttribute("roleName", roleName);
+        model.addAttribute("badges", badges); 
         return "user/mypage";
     }
 
@@ -167,23 +173,22 @@ public class UserController {
             }
 
             // 유저 정보 파일 포함 업데이트
-            service.updateUserWithFile(user.getId(), user, file);
+            service.updateUserWithFile(user.getId(), user, file, phone);
 
             // ✨ 세션 무효화 제거
             // session.invalidate();
             // SecurityContextHolder.clearContext();
 
             // ✨ 인증정보 갱신
-            CustomUserDetails updatedUserDetails = new CustomUserDetails(user);
-
+            User refreshedUser = service.findById(user.getId()); // ✅ DB에서 다시 조회
+            CustomUserDetails updatedUserDetails = new CustomUserDetails(refreshedUser);
             UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
                     updatedUserDetails, 
                     updatedUserDetails.getPassword(), 
                     updatedUserDetails.getAuthorities()
             );
-
-            // 새 Authentication을 현재 SecurityContext에 세팅
             SecurityContextHolder.getContext().setAuthentication(newAuth);
+
 
             // 수정 후 마이페이지로 이동
             return "redirect:/user/mypage";
@@ -193,6 +198,7 @@ public class UserController {
             model.addAttribute("url", "/user/mypage/edit");
             return "user/alert";
         }
+        
     }
 
     @GetMapping("/user/password/change")
@@ -332,11 +338,23 @@ public class UserController {
         if (sessionCode != null && sessionCode.equals(code) && targetEmail.equals(email)) {
             User user = userDetails.getUser();
             service.updateEmailChk(user.getId());
+
+            // ✅ 세션 정보 최신화
+            User refreshedUser = service.findById(user.getId());
+            CustomUserDetails updatedUserDetails = new CustomUserDetails(refreshedUser);
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    updatedUserDetails,
+                    updatedUserDetails.getPassword(),
+                    updatedUserDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
             session.removeAttribute("emailCode");
             session.removeAttribute("targetEmail");
+
             return "<script>window.opener.location.reload(); window.close();</script>";
         } else {
             return "<script>alert('인증 실패'); history.back();</script>";
         }
     }
+
 }

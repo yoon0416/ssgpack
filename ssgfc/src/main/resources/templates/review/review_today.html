@@ -8,6 +8,19 @@
     <title>오늘의 경기 요약</title>
     <link rel="stylesheet" href="/lib/fullcalendar/main.min.css">
     <link rel="stylesheet" href="/css/review.css">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Honk&display=swap" rel="stylesheet">
+    <style>
+        /* 선택된 날짜 강조 스타일 */
+        #miniCalendar .selected-day {
+            background-color: #ff6b6b !important;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 
 <body>
@@ -43,8 +56,30 @@
     <script src="/lib/fullcalendar/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", async function () {
             const calendarEl = document.getElementById('miniCalendar');
+            const params = new URLSearchParams(window.location.search);
+            const selectedDate = params.get("date");
+
+            let reviewMonths = await axios.get("/api/review-available-months")
+            .then(res => res.data)
+            .catch(() => {
+                alert("⚠ 경기 요약 월 데이터를 불러오지 못했습니다.");
+                return [];
+            });
+            const today = new Date();
+            const todayMonth = today.toISOString().slice(0, 7); // 예: "2025-04"
+
+            // 오늘이 포함된 달이 없다면 추가
+            if (!reviewMonths.includes(todayMonth)) {
+                reviewMonths.push(todayMonth);
+            }
+
+            // 정렬 후 범위 계산
+            const sorted = reviewMonths.sort();
+            const validStart = sorted[0] + "-01";
+            const validEnd = sorted[sorted.length - 1] + "-31";
+            
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'ko',
@@ -52,11 +87,24 @@
                 height: 'auto',
                 dayMaxEventRows: true,
                 firstDay: 1,
+                validRange: {
+                    start: validStart,
+                    end: validEnd
+                },
                 dayCellContent: function (arg) {
                     const numberOnly = arg.dayNumberText.replace('일', '');
                     return { html: numberOnly };
                 },
                 dateClick: function (info) {
+                    // 날짜 클릭 시 이전 강조 제거
+                    document.querySelectorAll('#miniCalendar .fc-daygrid-day').forEach(cell => {
+                        cell.classList.remove('selected-day');
+                    });
+
+                    // 클릭한 셀에 강조 추가
+                    info.dayEl.classList.add('selected-day');
+
+                    // 이동
                     const date = info.dateStr;
                     axios.get(`/api/review-exists?date=${date}`)
                         .then(res => {
@@ -71,6 +119,7 @@
 
             calendar.render();
 
+            // 주말 색상 처리
             setTimeout(() => {
                 const dayCells = document.querySelectorAll('#miniCalendar .fc-daygrid-day');
                 dayCells.forEach(cell => {
@@ -87,17 +136,26 @@
                 });
             }, 10);
 
-            const params = new URLSearchParams(window.location.search);
-            const selectedDate = params.get("date");
+            // ✅ URL 파라미터에 따라 선택된 셀 강조
             if (selectedDate) {
+                setTimeout(() => {
+                    const targetCell = document.querySelector(`#miniCalendar .fc-daygrid-day[data-date="${selectedDate}"]`);
+                    if (targetCell) {
+                        targetCell.classList.add('selected-day');
+                    }
+                }, 50);
+
+                // 타이틀 표시
                 document.getElementById("selectedDateTitle").textContent = `${selectedDate} 경기 요약`;
 
+                // AI 요약 가져오기
                 fetch(`/api/review-summary?date=${selectedDate}`)
                     .then(res => res.text())
                     .then(text => {
                         document.getElementById("summaryText").textContent = text;
                     });
 
+                // 기록 목록 가져오기
                 fetch(`/api/review-records?date=${selectedDate}`)
                     .then(res => res.json())
                     .then(list => {

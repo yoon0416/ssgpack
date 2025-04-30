@@ -41,7 +41,7 @@ class Board_Test {
 	@Disabled //@Test
     public void insertMultipleBoards() {
         User user = new User();
-        user.setId(2L); 
+        user.setId(3L); 
 
         for (int i = 1; i <= 101; i++) {
             Board bd = new Board();
