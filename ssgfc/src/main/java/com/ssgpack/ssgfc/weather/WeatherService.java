@@ -66,24 +66,31 @@ public class WeatherService {
                         break;
                     case "PTY":
                         String status = "";
+                        String weathericon = "";   // lottiefiles.com
                         switch (value) {
                             case "0":
                                 status = "맑음";
+                                weathericon = "sunny_loop2.gif";
                                 break;
                             case "1":
                                 status = "비";
+                                weathericon = "rain_loop2.gif";
                                 break;
                             case "2":
                                 status = "비/눈";
+                                weathericon = "rain_snow_loop2.gif";
                                 break;
                             case "3":
                                 status = "눈";
+                                weathericon = "snow_loop2.gif";
                                 break;
                             default:
                                 status = "정보 없음";
+                                weathericon = "";
                                 break;
                         }
                         weatherMap.put("weather", status);
+                        weatherMap.put("weathericon", weathericon);
                         break;
                 }
             }
