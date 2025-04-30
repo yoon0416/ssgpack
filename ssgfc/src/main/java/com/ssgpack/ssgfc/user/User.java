@@ -117,6 +117,7 @@ public class User implements Serializable {
         return this.profile_img;
     }
     
+    //뱃지
     public String getSocialType() {
         if (this.kakaoId != null) {
             return "카카오";

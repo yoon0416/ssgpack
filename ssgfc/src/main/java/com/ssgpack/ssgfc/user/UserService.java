@@ -86,12 +86,17 @@ public class UserService implements UserDetailsService {
     }
 
     // 마이페이지 수정 - 소개글, 프사, 주소 포함
-    public void updateUserWithFile(Long id, User updatedUser, MultipartFile file) throws IOException {
+ // ✅ 파라미터 추가
+    public void updateUserWithFile(Long id, User updatedUser, MultipartFile file, String phone) throws IOException {
         User user = findById(id);
 
         user.setNick_name(updatedUser.getNick_name());
         user.setIntroduce(updatedUser.getIntroduce());
-        user.setPhone(updatedUser.getPhone());
+
+        // ✅ phone은 따로 처리
+        if (phone != null && !phone.trim().isEmpty()) {
+            user.setPhone(phone);
+        }
 
         String newEmail = updatedUser.getEmail().trim();
         if (!newEmail.equals(user.getEmail())) {
@@ -114,7 +119,7 @@ public class UserService implements UserDetailsService {
             LogUtil.write("user", "[PROFILE_IMAGE_UPDATED] userId=" + id + ", fileName=" + savedName);
         }
 
-        userRepository.save(user); 
+        userRepository.save(user);
         LogUtil.write("user", "[MYPAGE_UPDATED] userId=" + id);
     }
 
