@@ -157,11 +157,26 @@
 				</div>
 
 				<!-- 프로필 사진 -->
-				<img
-					th:src="${user.profile_img != null} ? '/images/userimage/' + ${user.profile_img} : '/default-profile.png'"
-					class="profile-img" alt="프사">
+<img th:if="${user.profile_img != null}"
+     th:src="@{/images/userimage/{file}(file=${user.profile_img})}"
+     class="profile-img" alt="프사" />
+
+<img th:if="${user.profile_img == null}"
+     th:src="@{/images/userimage/default-profile.png}"
+     class="profile-img" alt="프사" />
+
+
 
 				<h2>마이페이지</h2>
+<div th:unless="${user.verified}" class="alert alert-warning text-start mt-3" style="font-size: 15px;">
+    <strong>⚠ 아직 인증되지 않았습니다.</strong><br>
+    아래 중 하나 이상을 완료하면 글쓰기 및 댓글 기능을 이용할 수 있습니다:
+    <ul class="mt-2 mb-0">
+        <li>이메일 인증</li>
+        <li>카카오 / 네이버 / 구글 간편 로그인</li>
+        <li>전화번호 인증</li>
+    </ul>
+</div>
 
 				<div class="text-start px-3">
 					<!-- 이메일 + 인증 상태 -->

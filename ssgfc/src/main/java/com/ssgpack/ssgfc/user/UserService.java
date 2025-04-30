@@ -114,6 +114,7 @@ public class UserService implements UserDetailsService {
             LogUtil.write("user", "[PROFILE_IMAGE_UPDATED] userId=" + id + ", fileName=" + savedName);
         }
 
+        userRepository.save(user); 
         LogUtil.write("user", "[MYPAGE_UPDATED] userId=" + id);
     }
 
