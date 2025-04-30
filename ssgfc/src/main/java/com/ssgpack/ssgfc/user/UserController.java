@@ -173,7 +173,7 @@ public class UserController {
             }
 
             // 유저 정보 파일 포함 업데이트
-            service.updateUserWithFile(user.getId(), user, file);
+            service.updateUserWithFile(user.getId(), user, file, phone);
 
             // ✨ 세션 무효화 제거
             // session.invalidate();
@@ -338,11 +338,23 @@ public class UserController {
         if (sessionCode != null && sessionCode.equals(code) && targetEmail.equals(email)) {
             User user = userDetails.getUser();
             service.updateEmailChk(user.getId());
+
+            // ✅ 세션 정보 최신화
+            User refreshedUser = service.findById(user.getId());
+            CustomUserDetails updatedUserDetails = new CustomUserDetails(refreshedUser);
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    updatedUserDetails,
+                    updatedUserDetails.getPassword(),
+                    updatedUserDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
             session.removeAttribute("emailCode");
             session.removeAttribute("targetEmail");
+
             return "<script>window.opener.location.reload(); window.close();</script>";
         } else {
             return "<script>alert('인증 실패'); history.back();</script>";
         }
     }
+
 }

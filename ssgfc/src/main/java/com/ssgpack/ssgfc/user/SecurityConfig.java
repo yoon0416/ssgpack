@@ -46,6 +46,7 @@ public class SecurityConfig {
                     UserRole.BOARD_MANAGER.getRoleName(),
                     UserRole.GAME_MANAGER.getRoleName()
                 )                
+                .antMatchers("/vote/edit/**").access("@customSecurity.checkVerified(authentication)")
                 .antMatchers("/admin/master/**").hasAuthority(UserRole.MASTER.getRoleName())
                 .antMatchers("/admin/user/**").hasAnyAuthority(
                     UserRole.MASTER.getRoleName(),
@@ -59,6 +60,10 @@ public class SecurityConfig {
                     UserRole.MASTER.getRoleName(),
                     UserRole.PLAYER_MANAGER.getRoleName()
                 )
+                .antMatchers("/admin/notifications").hasAnyAuthority(
+                	    UserRole.MASTER.getRoleName(),
+                	    UserRole.BOARD_MANAGER.getRoleName()
+                	)
                 .antMatchers("/admin/board/**").hasAnyAuthority(
                     UserRole.MASTER.getRoleName(),
                     UserRole.BOARD_MANAGER.getRoleName()
