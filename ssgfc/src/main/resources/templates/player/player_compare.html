@@ -12,30 +12,192 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Honk&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
-    .comparison-title {
-      font-family: 'Honk', cursive;
-      font-size: 3.5rem;
-    }
-    .compare-section { margin-top: 50px; }
-    .compare-type button.active { font-weight: bold; }
-    #pitcherButton.active { background-color: #0d6efd; border-color: #0d6efd; }
-    #batterButton.active { background-color: #198754; border-color: #198754; }
-    .chart-container { max-width: 1000px; margin: 60px auto; }
-    canvas { width: 100% !important; height: 500px !important; }
-    #analysisResult { max-width: 1000px; margin: 30px auto; }
-    .learn-more { position: relative; display: inline-block; cursor: pointer; border: 0; font-size: 1rem;
-      font-family: 'Rubik', sans-serif; font-weight: 600; color: #382b22; padding: 1.25em 2em;
-      background: #fff0f0; border: 2px solid #b18597; border-radius: 0.75em; transform-style: preserve-3d;
-      transition: 150ms ease; }
-    .learn-more::before { content: ''; position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-      background: #f9c4d2; border-radius: inherit; box-shadow: 0 0 0 2px #b18597, 0 0.625em 0 0 #ffe3e2;
-      transform: translate3d(0, 0.75em, -1em); transition: 150ms ease; z-index: -1; }
-    .learn-more:hover { background: #ffe9e9; transform: translate(0, 0.25em); }
-    .learn-more:hover::before { transform: translate3d(0, 0.5em, -1em); }
-    .learn-more:active { background: #ffe9e9; transform: translate(0, 0.75em); }
-    .learn-more:active::before { transform: translate3d(0, 0, -1em); }
+  @font-face {
+  font-family: 'NeoDunggeunmo';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.3/NeoDunggeunmo.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+  .comparison-title {
+    font-family: 'Honk', cursive;
+    font-size: 3.5rem;
+  }
+  
+  .compare-section {
+    margin-top: 50px;
+    background-image: url('/images/img/pink.png');  /*원하는 이미지 경로 */
+    background-repeat: repeat;
+    background-size: 600px; /* 배경 이미지 크기 조정 */
+    background-position: top left; /* 배경 이미지 위치 설정 */
+  }
+  
+  .compare-type button.active { font-weight: bold; }
+  
+.chart-container {
+  max-width: 1000px;
+  margin: 60px auto;
+  background-color: rgba(255, 255, 255, 0.8);  /* 반투명 흰 배경 */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+  canvas { width: 100% !important; height: 500px !important; }
+  
+  
+  
+  
+  #analysisResult { max-width: 1000px; margin: 30px auto; }
+  
+  .learn-more { 
+    position: relative; display: inline-block; cursor: pointer; 
+    border: 0; font-size: 1rem;
+    font-family: 'Rubik', sans-serif; font-weight: 600; color: #382b22;
+    padding: 1.25em 2em;
+    background: #fff0f0; border: 2px solid #b18597; border-radius: 0.75em; 
+    transform-style: preserve-3d;
+    transition: 150ms ease;
+  }
+  
+  .learn-more::before { 
+    content: ''; position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+    background: #f9c4d2; border-radius: inherit; box-shadow: 0 0 0 2px #b18597, 0 0.625em 0 0 #ffe3e2;
+    transform: translate3d(0, 0.75em, -1em); transition: 150ms ease; z-index: -1; 
+  }
+  
+  .learn-more:hover { background: #ffe9e9; transform: translate(0, 0.25em); }
+  .learn-more:hover::before { transform: translate3d(0, 0.5em, -1em); }
+  .learn-more:active { background: #ffe9e9; transform: translate(0, 0.75em); }
+  .learn-more:active::before { transform: translate3d(0, 0, -1em); }
+  
+  .pixel-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: 'NeoDunggeunmo', sans-serif;
+    font-size: 22px;
+    background-color: #ffe9e9;
+    color: #382b22;
+    padding: 0.8em 1em;
+    border: 1px solid #b18597;
+    border-radius: 0.75em;
+    box-shadow: 0 4px 0 #f9c4d2; /* 얇고 자연스러운 아래 그림자만 */
+    transition: all 150ms ease;
+    width: 100%;
+    height: auto;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .pixel-select:focus {
+    outline: none;
+    background-color: #fff0f0;
+    box-shadow: 0 2px 0 #f9c4d2; /* 눌렀을 때는 더 얇게 */
+  }
+
+  .pixel-select option {
+    font-family: 'NeoDunggeunmo', sans-serif;
+  }
+
+  /* 투수 강조 스타일 */
+#pitcherButton.active img {
+
+  border-radius: 15px;
+  padding: 4px;
+  background: linear-gradient(135deg, #ff99cc, #ffcce0, #ffccff);
+  box-shadow: 0 0 15px rgba(255, 153, 204, 0.5);
+  transition: all 0.3s ease-in-out;
+}
+
+/* 타자 강조 스타일 */
+#batterButton.active img {
+  border-radius: 15px;
+  padding: 4px;
+  background: linear-gradient(135deg, #ff99cc, #ffcce0, #ffccff);
+  box-shadow: 0 0 15px rgba(255, 153, 204, 0.5);
+  transition: all 0.3s ease-in-out;
+}
+#analysisResult {
+  position: relative;
+  width: 770px;
+  height: 570px;
+  margin: 30px auto;
+
+  background-image: url('/images/img/분석결과.jpg'); 
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  font-family: 'NeoDunggeunmo', sans-serif;
+  color: #000;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+}
+
+/* 제목 위치 조정 (하얀 박스 안으로) */
+#analysisTitle {
+  position: absolute;
+  top: 90px;
+  left: 150px;
+  margin: 0;
+  font-size: 25px;
+}
+
+/* 텍스트 본문 위치 조정 */
+#analysisText {
+  position: absolute;
+  top: 125px; /* 제목 아래 */
+  left: 150px;
+  width: 590px;
+  height: 370px;
+  overflow-y: auto;
+  
+  font-size: 20px; /* ✅ 글씨 크게! */
+  line-height: 1.6; /* ✅ 줄간격 넉넉하게 */
+}
+
+#player1Name {
+  background-image: url('/images/img/이름표.gif');  /* 🎞 여기에 GIF 경로 */
+  background-size: 120%;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  color:black;               /* 텍스트 잘 보이도록 */
+  padding: 12px 20px;
+  border-radius: 10px;
+  display: inline-block;
+}
+#player2Name {
+  background-image: url('/images/img/이름표.gif');  /* 🎞 여기에 GIF 경로 */
+  background-size: 120%;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  color:black;               /* 텍스트 잘 보이도록 */
+  padding: 20px 20px;
+  border-radius: 10px;
+  display: inline-block;
+}
+.name-bubble {
+  position: absolute;
+  top: -15px;  /* 살짝 위로 */
+  left: -15px; /* 왼쪽으로 붙이기 */
+  background-image: url('/images/img/이름표.gif');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+ padding: 6px 12px;
+  color: black;
+  font-family: 'NeoDunggeunmo', sans-serif;
+  font-size: 22px;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+
   </style>
 </head>
 
@@ -43,226 +205,273 @@
 <th:block layout:fragment="content">
   <div class="container compare-section">
     <div class="d-flex justify-content-center align-items-center gap-4 mb-3">
-      <img th:src="@{/images/logo/wordmark_02.png}" alt="로고" style="height: 100px;" />
-      <h2 class="comparison-title m-0">Player Compare</h2>
-      <img th:src="@{/images/logo/wordmark_02.png}" alt="로고" style="height: 100px;" />
+      <img th:src="@{/images/logo/wordmark_02.png}" alt="로고" style="height: 200px;" />
+      <img src="/images/img/player비교.PNG" alt="Player Compare" style="height: 400px; width: auto;" />
+      <img th:src="@{/images/logo/wordmark_02.png}" alt="로고" style="height: 200px;" />
     </div>
 
-    <div class="text-center mb-4 compare-type">
-      <button id="pitcherButton" class="btn btn-outline-primary me-2" onclick="loadPlayers('투수')">투수 비교</button>
-      <button id="batterButton" class="btn btn-outline-success" onclick="loadPlayers('타자')">타자 비교</button>
+    <!-- 버튼 바로 수정 -->
+    <div class="d-flex justify-content-center align-items-center gap-3 mb-4 compare-type">
+      <button id="pitcherButton" onclick="loadPlayers('투수')"
+              style="background: none; border: none; padding: 0; width: 167px;
+               height: auto;">
+        <img src="/images/img/투수버튼_투명.png" alt="투수 비교"
+             style="width: 100%; height: auto; display: block;" />
+      </button>
+
+      <button id="batterButton" onclick="loadPlayers('타자')"
+              style="background: none; border: none; padding: 0; width: 160px; height: auto;">
+        <img src="/images/img/타자버튼_투명.png" alt="타자 비교"
+             style="width: 100%; height: auto; display: block;" />
+      </button>
     </div>
 
-    <div class="row justify-content-center my-4">
-      <div class="col-5">
-        <select class="form-select" id="player1">
-          <option value="">선수 1 선택</option>
-        </select>
-      </div>
-      <div class="col-1 text-center fs-3 fw-bold text-danger">VS</div>
-      <div class="col-5">
-        <select class="form-select" id="player2">
-          <option value="">선수 2 선택</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="text-center">
-      <button class="learn-more" onclick="comparePlayers()">비교하기</button>
-    </div>
-
-    <!-- 선수 이미지 비교 -->
-    <div id="playerCompareArea" class="row justify-content-center my-5" style="display: none;">
-      <div class="col-md-5 text-center">
-        <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
-          <img id="player1Img" src="/images/players/default.png"
-               style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수1">
-          <img src="/images/logo/fire.png"
-               style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+      <div class="row justify-content-center my-4" style="max-width: 1000px; margin: 0 auto;">
+        <div class="col-5">
+          <select class="pixel-select" id="player1">
+            <option value="">선수 1 선택</option>
+          </select>
         </div>
-        <h4 id="player1Name">선수1</h4>
-        <p id="player1Stat" class="text-muted">-</p>
-      </div>
 
-      <div class="col-md-1 d-flex align-items-center justify-content-center">
-        <h2 class="text-danger fw-bold">VS</h2>
-      </div>
+        <div class="col-1 text-center fs-3 fw-bold text-danger">  </div>
 
-      <div class="col-md-5 text-center">
-        <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
-          <img id="player2Img" src="/images/players/default.png"
-               style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수2">
-          <img src="/images/logo/fire.png"
-               style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+        <div class="col-5">
+          <select class="pixel-select" id="player2">
+            <option value="">선수 2 선택</option>
+          </select>
         </div>
-        <h4 id="player2Name">선수2</h4>
-        <p id="player2Stat" class="text-muted">-</p>
+      </div>
+
+		<div class="text-center">
+		  <button class="bg-transparent border-0 p-0" onclick="comparePlayers()">
+		    <img src="/images/img/비교하기.png" alt="비교하기 버튼" style="width: 180px; height: auto;" />
+		  </button>
+		</div>
+
+
+      <!-- 선수 이미지 비교 -->
+      <div id="playerCompareArea" class="row justify-content-center my-5" style="display: none;">
+        <div class="col-md-5 text-center">
+          <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
+            <h4 id="player1Name" class="name-bubble">선수1</h4>
+            <img id="player1Img" src="/images/players/default.png" style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수1">
+            <img src="/images/logo/fire.png" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+          </div>
+          
+          
+        </div>
+
+<div class="col-md-1 d-flex align-items-center justify-content-center">
+  <img src="/images/img/vs.PNG" alt="VS 이미지" style="height: 80px; width: auto;" />
+</div>
+
+
+        <div class="col-md-5 text-center">
+          <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
+            <h4 id="player2Name" class="name-bubble">선수2</h4>
+            <img id="player2Img" src="/images/players/default.png" style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수2">
+            <img src="/images/logo/fire.png" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+          </div>
+          
+          
+        </div>
+      </div>
+
+<div id="analysisResult">
+  <h5 id="analysisTitle">📊 자동 분석 결과</h5>
+  <div id="analysisText" class="text-muted">선수를 선택하고 비교를 누르세요.</div>
+</div>
+
+
+
+      <div class="chart-container">
+        <canvas id="compareChart"></canvas>
       </div>
     </div>
 
-    <div id="analysisResult" class="mt-5 p-4 border rounded bg-light">
-      <h5 class="mb-3">📊 자동 분석 결과</h5>
-      <div id="analysisText" class="text-muted">선수를 선택하고 비교를 누르세요.</div>
-    </div>
+    <script>
+      let allPlayers = [];
+      let currentType = '투수';
+      let barChart;
 
-    <div class="chart-container">
-      <canvas id="compareChart"></canvas>
-    </div>
-  </div>
-
-  <script>
-    let allPlayers = [];
-    let currentType = '투수';
-    let barChart;
-
-    window.onload = function () {
-      fetch('/api/players')
-        .then(response => response.json())
-        .then(players => {
-          allPlayers = players;
-          loadPlayers('투수');
-        });
-    };
-
-    function loadPlayers(type) {
-      currentType = type;
-      const player1Select = document.getElementById('player1');
-      const player2Select = document.getElementById('player2');
-
-      document.querySelectorAll('.compare-type button').forEach(btn => btn.classList.remove('active'));
-      document.getElementById(type === '투수' ? 'pitcherButton' : 'batterButton').classList.add('active');
-
-      player1Select.innerHTML = '<option value="">선수 1 선택</option>';
-      player2Select.innerHTML = '<option value="">선수 2 선택</option>';
-
-      const filtered = allPlayers.filter(player => {
-        const pos = (player.position || '').toUpperCase();
-        return type === '투수' ? (pos === '투수' || pos === 'P') : (pos !== '투수' && pos !== 'P');
-      });
-
-      filtered.forEach(player => {
-        const option1 = document.createElement('option');
-        option1.value = player.pno;
-        option1.textContent = player.name;
-        player1Select.appendChild(option1);
-
-        const option2 = document.createElement('option');
-        option2.value = player.pno;
-        option2.textContent = player.name;
-        player2Select.appendChild(option2);
-      });
-    }
-
-    function extractMainStat(player) {
-      if (!player.stats || player.stats.length === 0) return '-';
-      const statMap = player.stats[0].statMap;
-      const pos = (statMap['Pos.'] || '').toUpperCase();
-      return pos === 'P' ? (statMap['WAR'] || '-') : (statMap['AVG'] || '-');
-    }
-
-    function localizeStats(statMap, isPitcher) {
-      const nameMap = {
-        'ERA': '평균자책', 'WHIP': '출루허용률', 'FIP': 'FIP',
-        'WAR': isPitcher ? '승리기여도' : '출루율',
-        'AVG': '타율', 'OBP': '출루율', 'SLG': '장타율',
-        'HR': '홈런', 'RBI': '타점', 'R/ePA': '승리기여도',
-        'OPS': '종합공격지표', 'dWAR': '수비기여도'
+      window.onload = function () {
+        fetch('/api/players')
+          .then(response => response.json())
+          .then(players => {
+            allPlayers = players;
+            loadPlayers('투수');
+          });
       };
-      const localized = {};
-      for (const key in statMap) {
-        const newKey = nameMap[key] || key;
-        localized[newKey] = statMap[key];
-      }
-      return localized;
-    }
 
-    function comparePlayers() {
-      const pno1 = document.getElementById('player1').value;
-      const pno2 = document.getElementById('player2').value;
+      function loadPlayers(type) {
+        currentType = type;
+        const player1Select = document.getElementById('player1');
+        const player2Select = document.getElementById('player2');
 
-      if (!pno1 || !pno2) {
-        alert('두 명의 선수를 모두 선택하세요.');
-        return;
-      }
+        document.querySelectorAll('.compare-type button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(type === '투수' ? 'pitcherButton' : 'batterButton').classList.add('active');
 
-      document.getElementById('playerCompareArea').style.display = 'flex';
+        player1Select.innerHTML = '<option value="">선수 1 선택</option>';
+        player2Select.innerHTML = '<option value="">선수 2 선택</option>';
 
-      Promise.all([
-        fetch(`/api/players/${pno1}`).then(res => res.json()),
-        fetch(`/api/players/${pno2}`).then(res => res.json())
-      ]).then(([player1, player2]) => {
-        document.getElementById('player1Name').textContent = player1.name;
-        document.getElementById('player2Name').textContent = player2.name;
-
-        document.getElementById('player1Img').src = player1.imageUrl || '/images/players/default.png';
-        document.getElementById('player2Img').src = player2.imageUrl || '/images/players/default.png';
-
-        const mainStat1 = extractMainStat(player1);
-        const mainStat2 = extractMainStat(player2);
-        document.getElementById('player1Stat').textContent = mainStat1;
-        document.getElementById('player2Stat').textContent = mainStat2;
-
-        drawBarChart(player1, player2);
-
-        const isPitcher = currentType === '투수';
-        const playerData = {
-          [player1.name]: localizeStats(player1.stats?.[0]?.statMap || {}, isPitcher),
-          [player2.name]: localizeStats(player2.stats?.[0]?.statMap || {}, isPitcher)
-        };
-
-        const readableStats = Object.entries(playerData).map(([name, stats]) => {
-          return Object.entries(stats).map(([k, v]) => `${name}의 ${k}는 ${v}입니다.`).join("\n");
-        }).join("\n\n");
-
-        fetch("/api/ai/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: readableStats })
-        })
-        .then(res => res.text())
-        .then(result => {
-          document.getElementById("analysisText").innerText = result;
-        })
-        .catch(error => {
-          document.getElementById("analysisText").innerText = "❌ 분석 실패: " + error.message;
+        const filtered = allPlayers.filter(player => {
+          const pos = (player.position || '').toUpperCase();
+          return type === '투수' ? (pos === '투수' || pos === 'P') : (pos !== '투수' && pos !== 'P');
         });
-      });
-    }
 
-    function drawBarChart(player1, player2) {
-      const statMap1 = player1.stats?.[0]?.statMap || {};
-      const statMap2 = player2.stats?.[0]?.statMap || {};
-      const headers = currentType === '투수'
-        ? ['ERA', 'WHIP', 'FIP', 'WAR']
-        : ['AVG', 'OBP', 'SLG', 'HR'];
+        filtered.forEach(player => {
+          const option1 = document.createElement('option');
+          option1.value = player.pno;
+          option1.textContent = player.name;
+          player1Select.appendChild(option1);
 
-      const labels = headers.map(key => key);
-      const data1 = headers.map(key => parseFloat(statMap1[key]) || 0);
-      const data2 = headers.map(key => parseFloat(statMap2[key]) || 0);
+          const option2 = document.createElement('option');
+          option2.value = player.pno;
+          option2.textContent = player.name;
+          player2Select.appendChild(option2);
+        });
+      }
 
-      const ctx = document.getElementById('compareChart').getContext('2d');
-      if (barChart) barChart.destroy();
+      function extractMainStat(player) {
+        if (!player.stats || player.stats.length === 0) return '-';
+        const statMap = player.stats[0].statMap;
+        const pos = (statMap['Pos.'] || '').toUpperCase();
+        return pos === 'P' ? (statMap['WAR'] || '-') : (statMap['AVG'] || '-');
+      }
 
-      barChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            { label: player1.name, data: data1, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
-            { label: player2.name, data: data2, backgroundColor: 'rgba(255, 99, 132, 0.7)' }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: currentType + ' 주요 스탯 비교' }
-          },
-          scales: { y: { beginAtZero: true } }
+      function localizeStats(statMap, isPitcher) {
+        const nameMap = {
+          'ERA': '평균자책', 'WHIP': '출루허용률', 'FIP': 'FIP',
+          'WAR': isPitcher ? '승리기여도' : '출루율',
+          'AVG': '타율', 'OBP': '출루율', 'SLG': '장타율',
+          'HR': '홈런', 'RBI': '타점', 'R/ePA': '승리기여도',
+          'OPS': '종합공격지표', 'dWAR': '수비기여도'
+        };
+        const localized = {};
+        for (const key in statMap) {
+          const newKey = nameMap[key] || key;
+          localized[newKey] = statMap[key];
         }
-      });
-    }
-  </script>
-</th:block>
+        return localized;
+      }
+
+      function comparePlayers() {
+        const pno1 = document.getElementById('player1').value;
+        const pno2 = document.getElementById('player2').value;
+
+        if (!pno1 || !pno2) {
+          alert('두 명의 선수를 모두 선택하세요.');
+          return;
+        }
+
+        document.getElementById('playerCompareArea').style.display = 'flex';
+
+        Promise.all([
+          fetch(`/api/players/${pno1}`).then(res => res.json()),
+          fetch(`/api/players/${pno2}`).then(res => res.json())
+        ]).then(([player1, player2]) => {
+          document.getElementById('player1Name').textContent = player1.name;
+          document.getElementById('player2Name').textContent = player2.name;
+
+          document.getElementById('player1Img').src = player1.imageUrl || '/images/players/default.png';
+          document.getElementById('player2Img').src = player2.imageUrl || '/images/players/default.png';
+
+          const mainStat1 = extractMainStat(player1);
+          const mainStat2 = extractMainStat(player2);
+          document.getElementById('player1Stat').textContent = mainStat1;
+          document.getElementById('player2Stat').textContent = mainStat2;
+
+          drawBarChart(player1, player2);
+
+          const isPitcher = currentType === '투수';
+          const playerData = {
+            [player1.name]: localizeStats(player1.stats?.[0]?.statMap || {}, isPitcher),
+            [player2.name]: localizeStats(player2.stats?.[0]?.statMap || {}, isPitcher)
+          };
+
+          const readableStats = Object.entries(playerData).map(([name, stats]) => {
+            return Object.entries(stats).map(([k, v]) => `${name}의 ${k}는 ${v}입니다.`).join("\n");
+          }).join("\n\n");
+
+          fetch("/api/ai/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: readableStats })
+          })
+          .then(res => res.text())
+          .then(result => {
+            document.getElementById("analysisText").innerText = result;
+          })
+          .catch(error => {
+            document.getElementById("analysisText").innerText = "❌ 분석 실패: " + error.message;
+          });
+        });
+      }
+
+      function drawBarChart(player1, player2) {
+        const statMap1 = player1.stats?.[0]?.statMap || {};
+        const statMap2 = player2.stats?.[0]?.statMap || {};
+        const headers = currentType === '투수'
+          ? ['ERA', 'WHIP', 'FIP', 'WAR']
+          : ['AVG', 'OBP', 'SLG', 'HR'];
+
+        const labels = headers.map(key => key);
+        const data1 = headers.map(key => parseFloat(statMap1[key]) || 0);
+        const data2 = headers.map(key => parseFloat(statMap2[key]) || 0);
+
+        const ctx = document.getElementById('compareChart').getContext('2d');
+        if (barChart) barChart.destroy();
+
+        barChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: player1.name, data: data1, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
+              { label: player2.name, data: data2, backgroundColor: 'rgba(255, 99, 132, 0.7)' }
+            ]
+          },
+          options: {
+        	  responsive: true,
+        	  plugins: {
+        	    legend: {
+        	      position: 'top',
+        	      labels: {
+        	        font: {
+        	          size: 16  // ← 글자 크기 키움
+        	        }
+        	      }
+        	    },
+        	    title: {
+        	      display: true,
+        	      text: currentType + ' 주요 스탯 비교',
+        	      font: {
+        	        size: 20  // ← 제목 글자 크기
+        	      }
+        	    }
+        	  },
+        	  scales: {
+        	    y: {
+        	      beginAtZero: true,
+        	      ticks: {
+        	        font: {
+        	          size: 14  // ← y축 숫자 크기
+        	        }
+        	      }
+        	    },
+        	    x: {
+        	      ticks: {
+        	        font: {
+        	          size: 14  // ← x축 레이블 크기
+        	        }
+        	      }
+        	    }
+        	  }
+        	}
+
+        });
+      }
+    </script>
+  </th:block>
 </body>
 </html>

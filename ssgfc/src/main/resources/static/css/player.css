@@ -49,13 +49,15 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.12);
       background-color: #fff;
+      overflow: hidden; /* ✅ 추가 */
     }
 
     .accordion-header {
+      font-family: 'Noto Sans KR', sans-serif !important;
+  	  font-weight: 700 !important;
       padding: 16px 20px;
       background-color: #fff;
       cursor: pointer;
-      font-weight: 600;
       font-size: 17px;
       border-bottom: 1px solid #eee;
       transition: background-color 0.2s ease;
@@ -79,6 +81,8 @@
       padding: 20px;
       border-top: 1px solid #eee;
       animation: fadeIn 0.3s ease-in-out;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
     }
 
     @keyframes fadeIn {
