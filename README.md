@@ -1,98 +1,75 @@
-# SSG 응원 커뮤니티
+# ⚾ SSG 응용 커뮤니티
 
-팬들과 소통하고, SSG 랜더스를 응원하는 커뮤니티 플랫폼입니다.
-경기일정 조회, 응원 게시판, 투표 시스템 등을 제공합니다.
+**SSG 래더스 패드를 위한 올인워드 커뮤니티 플랫폼**  
+게시판, 투표, 선수 정보, 게이징 일정, 날씨까지 한고에서 소통하고 응용하세요!
 
-📎 [트러블슈팅 모음 바로가기](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)
+> ✅ 로그인 기반 커뮤니티  
+> ✅ 관리자 기능 완비  
+> ✅ 게이징 요조 + 감정 분석 + AI 평가 기능 탈장  
+> ✅ 전화번호/이메일 인증 + 로그 시스템
 
-📦 [버전 히스토리 보기](https://github.com/yoon0416/ssgpack/blob/main/version.md)
+## 🔍 관련문서 바로가기
+- [버전 히스토리 보기](./version.md)
+- [트러블슈팅 목록](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)
+---
+
+## 🔥 해당 기능
+
+| 기능 | 설명 |
+|--------|-------|
+| 👤 회원가입/로그인 | 커뮤니티 및 카카오 간편로그인, 이메일/전화 인증 포함 |
+| 🏟️ 게시판 | 감정분석 기본 범위, 이미지 업데이드, 신고 기능 포함 |
+| 🗳️ 패드 투표 | 관리자 생성 / 유저 참여 / 결과 확인 가능 |
+| 🧑‍💼 관리자 기능 | 유저 / 게시판 / 투표 / 선수 / 게이징 / 신고 관리 |
+| ⚾ 선수 목록 | 관리자 등록, AI 감정평가 진행 |
+| 🗓️ 게이징 요조 | \uub0a0짜 보기 + 게이 후 요조 회고 |
+| 🌤️ 날씨 정보 | 기상청 API 기본 연동, 신뢰성 폼도/감수확률 표시 |
+| 📄 로그 기본 | 기능별/날짜별 자동 로그 저장, 30일 건 자동 삭제 |
 
 ---
 
-## 📌 활용 사이트 및 활용코드
-- [스탯티즈 - 선수 기록](https://statiz.sporki.com/?team=NC&year=2023)
-- [SSG 랜더스 공식사이트 - 경기 일정](https://www.ssglanders.com/game/schedule)
-- [쌤과 CRUD 정리](https://hi-sally03915.tistory.com/1724)
-- [자바라이브러리정리](https://github.com/yoon0416/java_2025/blob/main/%EC%9E%90%EB%B0%94%20%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%20%EC%A0%95%EB%A6%AC.md)
-- [알고리즘정리초급](https://github.com/yoon0416/java_2025/blob/main/%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%20%EC%A0%95%EB%A6%AC(%EC%B4%88%EA%B8%89).md)
-- [데이터정규화유튜브](https://youtu.be/Y1FbowQRcmI?si=uGIWDYPTpNVdiFUn)
-- [NF 개념](https://github.com/yoon0416/java_2025/blob/main/NF%EA%B0%9C%EB%85%90.md)
-- [부트스트랩](https://www.w3schools.com/bootstrap/bootstrap_ver.asp)
-- [CoolSMS](https://console.coolsms.co.kr/)
----
-
-## 🔥 주요 기능
-- 회원가입 및 로그인 (간편 로그인 예정)
-- 선수 목록 조회
-  - 선수목록 크롤링으로 데이터 가져오기
-- 응원 게시판 (CRUD)
-- 경기일정/요약 조회
-  - 경기일정 크롤링으로 데이터 가져오기
-- 야구장 날씨 조회
-  - 기상청 api 사용
-- 팬 투표 시스템
+## 🔒 인증 및 보안
+- **Spring Security 기반 커뮤니티 로그인 구조**
+- 사용자 역할(Role)에 따라 가방 제어
+  - 일반 유저: 게시물 작성/수정
+  - 관리자: 선수, 게이징, 투표, 신고 관리 허용
+- 본인만 게시물 수정/삭제 가능
+- 비로그인 상황에서는 기능 제외
 
 ---
 
-## 🛡️ 보안 설정
-- Spring Security 기반 로그인/로그아웃 구현
-- 사용자 역할(Role)에 따라 접근 제어
-  - 일반 유저: 게시글 작성/수정
-  - 관리자: 선수/일정 등록, 관리자 페이지 접근 가능
-- 본인만 글 수정/삭제 가능하도록 컨트롤러에서 인증 처리
-- 로그인하지 않은 사용자는 게시글 작성/수정 불가능
-  
----
-
-## 🛠️ 사용 기술
-- Java 11
-- Spring Boot 2.7.14
-- MySQL 8
-- Thymeleaf
-- Spring Security
-- JPA (Hibernate)
-- Maven
+## 🛠️ 기술 스탭
+- `Java 11`, `Spring Boot 2.7.14`, `MySQL 8`
+- `Thymeleaf`, `Spring Security`, `JPA (Hibernate)`, `Maven`
+- 외부 API: **기상청, 카카오, 네이버 메일**
 
 ---
 
-## 크롤링 (JSOUP 사용 아마?)
-- 선수목록
-- 경기일정
+## 📆 크롤링/외부 API
+| 대상 | 방식/출처 |
+|--------|-----------|
+| 선수 목록 | Jsoup 기본 해석 |
+| 게이징 | SSG 공식사이트 크롤링 |
+| 날씨 정보 | 기상청 차원 복사 API |
+| 비밀번호 메일 | 네이버 Mail API |
+| 간편 로그인 | Kakao API |
 
 ---
 
-## 사용 api
-- 네이버 메일 api
-  - 유저가 비밀번호 찾기를 하면 서버는 유저의 이메일에 새 임시 pw를 줌
-    - 유저 pw는 암호화를 하여 서버에서 못넘겨줌
-- 카카오로그인 api
-  - 간편 로그인
-- 기상청 api
-  - 야구에서 날씨는 중요한 포인트이기 때문에 경기장 날씨 보여주기
+## 📂 규정 프로젝트 구조 (v2.0.0 기준)
+
+```
+com.ssgpack.ssgfc
+├── admin              # 관리자 페이지 (User, Board, Player 등 역할별 분류)
+├── board              # 게시판 CRUD + 감정분석 + 신고 기능
+├── user               # 회원 정보 관리 + 인증/인간 + 로그인 처리
+├── vote               # 패드 투표 시스템
+├── schedule           # 게이일정 등록/수정 + 요조 크롤링
+├── weather            # 기상청 API 연동
+├── logs               # 로그 기본 유틸리티 + 스칼저
+├── player             # 선수 정보 관리 + AI 감정평가 버튼
+└── SsgfcApplication   # 메인 시작 클래스
+```
 
 ---
 
-## 📂 프로젝트 구조 (25.04.20 기준)
-
-
-com.ssgpack.ssgfc  
-├── admin                        # 관리자 전용 컨트롤러  
-│   └── AdminDashboardController.java  
-├── board                        # 게시판 도메인  
-│   ├── Board.java  
-│   ├── BoardController.java  
-│   ├── BoardService.java  
-│   └── BoardRepository.java  
-├── user                         # 사용자 및 인증 관련  
-│   ├── User.java  
-│   ├── UserController.java  
-│   ├── UserService.java  
-│   ├── UserRepository.java  
-│   ├── CustomUserDetails.java  
-│   ├── SecurityConfig.java  
-│   └── UserDetailsService.java  
-└── SsgfcApplication.java        # 메인 실행 파일
-
----
-
-## 웹접근성에 맞게 홈페이지 구현
