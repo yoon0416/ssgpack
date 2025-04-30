@@ -89,9 +89,9 @@
                         <tr th:each="board : ${popularBoards}">
                             <td>
                                 <a th:href="@{'/board/view/' + ${board.id}}" th:text="${board.title}">게시\uuae00 제목</a>
-                                <div class="text-muted" style="font-size: 0.8rem;">
-                                    조회수 <span th:text="${board.hit}"></span> · 좋아요 <span th:text="${board.likes.size()}"/>
-                                </div>
+								<div class="text-muted" style="font-size: 0.8rem;">
+								    조회수 <span th:text="${board.hit}"></span> · 좋아요 <span th:text="${board.likeCount}"></span>
+								</div>
                             </td>
                         </tr>
                         </tbody>

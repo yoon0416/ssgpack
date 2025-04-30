@@ -1,10 +1,12 @@
 package com.ssgpack.ssgfc.admin;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,13 +20,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ssgpack.ssgfc.board.board.Board;
+import com.ssgpack.ssgfc.board.board.BoardListDto;
 import com.ssgpack.ssgfc.board.board.BoardService;
 import com.ssgpack.ssgfc.board.board.PagingDto;
-import com.ssgpack.ssgfc.board.comment.Comment;
 import com.ssgpack.ssgfc.board.comment.CommentService;
 import com.ssgpack.ssgfc.report.Report;
 import com.ssgpack.ssgfc.report.ReportService;
-import com.ssgpack.ssgfc.report.ReportType;
 import com.ssgpack.ssgfc.user.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -47,20 +48,19 @@ public class AdminBoardController {
                        @RequestParam(value = "keyword", required = false) String keyword,
                        Model model) {
 
-        // ✅ 공지글만 별도 조회 (최신순)
+        // ✅ 공지글만 따로 조회
         List<Board> noticeBoards = boardService.findNoticeBoards();
 
-        // ✅ 일반 게시글만 페이징 + 검색
-        Page<Board> normalPaging = boardService.getPaging(page, keyword);
-        PagingDto paging = new PagingDto((int) normalPaging.getTotalElements(), page);
+        // ✅ Pageable 생성
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createDate"));
 
-        // ✅ 공지 + 일반 합치기 (공지 먼저)
-        List<Board> mergedList = new ArrayList<>();
-        mergedList.addAll(noticeBoards);
-        mergedList.addAll(normalPaging.getContent());
+        // ✅ DTO 기반 일반글 조회 (검색 포함)
+        Page<BoardListDto> boardPage = boardService.getBoardListWithCounts(keyword, pageable);
+        PagingDto paging = boardService.createPagingDto(boardPage);
 
-        // ✅ 모델로 전달
-        model.addAttribute("boardList", mergedList);
+        // ✅ 모델에 전달
+        model.addAttribute("noticeBoards", noticeBoards); // 공지
+        model.addAttribute("normalBoards", boardPage.getContent()); // 일반글 DTO
         model.addAttribute("paging", paging);
         model.addAttribute("keyword", keyword);
 
@@ -84,8 +84,17 @@ public class AdminBoardController {
         @RequestParam(required = false) Long commentId,
         @RequestParam(required = false) Long parentId,
         Model model) {
-        
-        Board board = boardService.findById(boardId); // 게시글 찾기
+
+        // ✅ 게시글 존재 여부 확인
+        Board board = boardService.findByIdOrNull(boardId);
+        if (board == null) {
+            if (reportId != null) {
+                reportService.processReport(reportId); // 신고는 처리 상태로 전환
+            }
+            model.addAttribute("errorMessage", "⚠️ 해당 게시글은 삭제된 상태입니다.");
+            return "admin/board/alert"; // alert 템플릿 사용
+        }
+
         model.addAttribute("board", board);
 
         if (reportId != null) {
@@ -94,10 +103,10 @@ public class AdminBoardController {
             model.addAttribute("reportType", report.getReportType());
         }
 
-        model.addAttribute("commentId", commentId); // 댓글 강조용
-        model.addAttribute("parentId", parentId); 
-        
-        return "admin/board/view"; // 뷰로 이동
+        model.addAttribute("commentId", commentId);
+        model.addAttribute("parentId", parentId);
+
+        return "admin/board/view";
     }
     
     //✅ 유지하기처기 버튼

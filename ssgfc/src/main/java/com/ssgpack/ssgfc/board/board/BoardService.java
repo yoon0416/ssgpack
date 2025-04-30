@@ -1,13 +1,12 @@
 package com.ssgpack.ssgfc.board.board;
 
-import com.ssgpack.ssgfc.util.UtilUpload;
+import com.ssgpack.ssgfc.board.api.SentimentService;
 import com.ssgpack.ssgfc.board.like.LikeService;
-import com.ssgpack.ssgfc.board.api.SentimentService; // ✅ 감정 분석 서비스 import
+import com.ssgpack.ssgfc.util.UtilUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,34 +32,33 @@ public class BoardService {
     private LikeService likeService;
 
     @Autowired
-    private SentimentService sentimentService; // ✅ 감정 분석 서비스 주입 (ChatGPT API 사용)
+    private SentimentService sentimentService;
 
-    // ✅ 공지글 전용 조회
+    // ✅ 공지글만 조회
     public List<Board> findNoticeBoards() {
         return br.findByTitleStartingWithOrderByCreateDateDesc("[공지]");
     }
 
-    // ✅ 일반 게시글 최신순 + 페이징 + 검색 처리
-    public Page<Board> getPaging(int page, String keyword) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createDate"));
+    // ✅ DTO 기반 게시글 조회 (검색 포함)
+    public Page<BoardListDto> getBoardListWithCounts(String keyword, Pageable pageable) {
         if (keyword != null && !keyword.trim().isEmpty()) {
-            return br.findExcludeNoticeByKeyword(keyword, pageable);
+            return br.findAllBoardListWithCounts(keyword, pageable); // keyword 포함
+        } else {
+            return br.findAllBoardListWithCounts(pageable); // 일반 목록
         }
-        return br.findExcludeNotice(pageable);
     }
 
-    // ✅ 전체 게시글 수 조회 (페이징 계산용)
-    public long getTotalCount() {
-        return br.count();
+    // ✅ 페이징 정보 생성
+    public PagingDto createPagingDto(Page<BoardListDto> boardPage) {
+        return new PagingDto((int) boardPage.getTotalElements(), boardPage.getNumber());
     }
 
-    // ✅ 게시글 단건 조회 (조회수 방지용)
+    // ✅ 게시글 단건 조회
     public Board find(Long id) {
-        Board board = br.findById(id).orElseThrow();
-        return board;
+        return br.findById(id).orElseThrow();
     }
 
-    // ✅ 조회수 증가 (중복 방지용)
+    // ✅ 조회수 증가
     public void increaseViewCount(Long id) {
         Board board = br.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
@@ -68,32 +66,19 @@ public class BoardService {
         br.save(board);
     }
 
-    // ✅ 게시글 저장 (감정 분석 적용)
+    // ✅ 게시글 등록
     public void insert(Board bd, Long member_id, MultipartFile file) throws IOException {
         bd.setIp();
 
-        // ✅ 이미지 파일 업로드 처리
         if (!file.isEmpty()) {
             String savedName = utilUpload.fileUpload(file, "board/");
             bd.setImg(savedName);
         }
 
-        // ✅ 글 작성 시 감정 분석 적용 (한글 텍스트에 대해 감정 분석 요청)
         String emotion = sentimentService.analyzeSentiment(bd.getContent());
-        bd.setEmotion(emotion);  // ✅ 감정 분석 결과를 DB에 저장
+        bd.setEmotion(emotion);
 
-        br.save(bd);  // ✅ 게시글 저장
-    }
-
-    // ✅ 게시글 삭제
-    public void delete(Long id) {
-        br.deleteById(id);
-    }
-
-    // ✅ 단순 조회 (게시글 수정 시 활용)
-    public Board findById(Long id) {
-        return br.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("게시글이 없음"));
+        br.save(bd);
     }
 
     // ✅ 게시글 수정
@@ -104,34 +89,36 @@ public class BoardService {
         board.setTitle(updatedBoard.getTitle());
         board.setContent(updatedBoard.getContent());
 
-        // ✅ 파일이 있으면 이미지 저장
         if (!file.isEmpty()) {
             String savedName = utilUpload.fileUpload(file, "board/");
             board.setImg(savedName);
         }
-        
+
         String newEmotion = sentimentService.analyzeSentiment(updatedBoard.getContent());
         board.setEmotion(newEmotion);
 
-        br.save(board);  // ✅ 수정된 게시글 저장
+        br.save(board);
     }
 
-    // ✅ 인기글 조회 (조회수/좋아요/시간 기반 점수 계산)
-    public List<Board> getPopularBoards(int limit) {
-        List<Board> boards = br.findAll();
+    // ✅ 게시글 삭제
+    public void delete(Long id) {
+        br.deleteById(id);
+    }
 
-        return boards.stream()
-                .map(board -> {
-                    long likeCount = likeService.countByBoard(board);
-                    long hit = board.getHit();
-                    long hours = Duration.between(board.getCreateDate(), LocalDateTime.now()).toHours();
-                    double timeScore = Math.max(0, 48 - hours) * 0.5;
-                    double score = (hit / 10.0) + (likeCount * 3) + timeScore;
-                    board.setScore(score);
-                    return board;
-                })
-                .sorted(Comparator.comparingDouble(Board::getScore).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
+    // ✅ DTO 기반 인기글 조회 (쿼리 최적화)
+    public List<BoardListDto> getPopularBoards(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return br.findTopPopularBoards(pageable);
+    }
+
+    // ✅ 수정 시 조회
+    public Board findById(Long id) {
+        return br.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 없음"));
+    }
+    
+    // ✅ NULL 체크
+    public Board findByIdOrNull(Long id) {
+        return br.findById(id).orElse(null);
     }
 }

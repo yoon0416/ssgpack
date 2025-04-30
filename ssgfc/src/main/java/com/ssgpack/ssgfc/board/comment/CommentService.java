@@ -86,4 +86,9 @@ public class CommentService {
 
         comment.setContent(content);
     }
+    
+    // ✅ NULL 체크
+    public Comment findByIdOrNull(Long id) {
+        return commentRepository.findById(id).orElse(null);
+    }
 }

@@ -102,26 +102,39 @@ public class ReportService {
     public void deleteContentAndProcessReport(Long reportId, Long dummyUserId) {
         Report report = findById(reportId);
         User dummyUser = userRepository.findById(dummyUserId)
-                .orElseThrow(() -> new IllegalArgumentException("더미 유저를 찾을 수 없습니다."));
+                .orElse(null);
 
-        if (report.getReportType() == ReportType.BOARD) {
-            Board board = boardRepository.findById(report.getBoardId())
-                    .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-            board.setTitle("내용이 삭제되었습니다.");
-            board.setContent("내용이 삭제되었습니다.");
-            board.setUser(dummyUser);
-            boardRepository.save(board);
-        } else if (report.getReportType() == ReportType.COMMENT) {
-            Comment comment = commentRepository.findById(report.getCommentId())
-                    .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
-            comment.setContent("내용이 삭제되었습니다.");
-            comment.setUser(dummyUser);
-            commentRepository.save(comment);
+        if (dummyUser == null) {
+            System.out.println("❌ 더미 유저(ID=" + dummyUserId + ")를 찾을 수 없습니다.");
+            return;
         }
 
+        if (report.getReportType() == ReportType.BOARD) {
+            Board board = boardRepository.findById(report.getBoardId()).orElse(null);
+            if (board != null) {
+                board.setTitle("내용이 삭제되었습니다.");
+                board.setContent("내용이 삭제되었습니다.");
+                board.setUser(dummyUser);
+                boardRepository.save(board);
+            } else {
+                System.out.println("⚠️ 게시글(ID=" + report.getBoardId() + ")은 이미 삭제되었습니다.");
+            }
+        } else if (report.getReportType() == ReportType.COMMENT) {
+            Comment comment = commentRepository.findById(report.getCommentId()).orElse(null);
+            if (comment != null) {
+                comment.setContent("내용이 삭제되었습니다.");
+                comment.setUser(dummyUser);
+                commentRepository.save(comment);
+            } else {
+                System.out.println("⚠️ 댓글(ID=" + report.getCommentId() + ")은 이미 삭제되었습니다.");
+            }
+        }
+
+        // ✅ 신고는 항상 처리 완료로 변경 + 알림 삭제
         reportRepository.markReportAsProcessed(reportId);
         notificationService.deleteByReportId(reportId);
     }
+
 
     // ✅ 신고 번호 찾기
     public Report findById(Long id) {

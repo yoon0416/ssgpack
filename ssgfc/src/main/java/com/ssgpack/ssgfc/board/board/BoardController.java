@@ -5,6 +5,9 @@ import com.ssgpack.ssgfc.user.CustomUserDetails;
 import com.ssgpack.ssgfc.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,31 +29,30 @@ public class BoardController {
 
     // ✅ 게시글 목록 (공지 + 일반 + 검색 + 페이징)
     @GetMapping("/list")
-    public String list(Model model,
-                       @RequestParam(value = "page", defaultValue = "0") int page,
-                       @RequestParam(value = "keyword", required = false) String keyword) {
+    public String list(@PageableDefault(size = 10, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable,
+                       @RequestParam(value = "keyword", required = false) String keyword,
+                       Model model) {
 
-        // ✅ 공지글만 따로 조회
+        // 공지글 별도 조회
         List<Board> noticeBoards = boardService.findNoticeBoards();
 
-        // ✅ 일반 게시글 페이징 + 검색 포함
-        Page<Board> pagingList = boardService.getPaging(page, keyword);
-        PagingDto paging = new PagingDto((int) pagingList.getTotalElements(), page);
+        // 일반글 + 검색 포함 DTO 조회
+        Page<BoardListDto> normalBoards = boardService.getBoardListWithCounts(keyword, pageable);
+        PagingDto paging = boardService.createPagingDto(normalBoards);
 
         model.addAttribute("noticeBoards", noticeBoards);
-        model.addAttribute("normalBoards", pagingList.getContent());
+        model.addAttribute("normalBoards", normalBoards.getContent());
         model.addAttribute("paging", paging);
         model.addAttribute("keyword", keyword);
-
         return "board/list";
     }
 
-    // ✅ 인기글 조회
+    // ✅ 인기글 조회 (메인페이지 등에서 사용)
     @GetMapping("/popular")
     public String popular(Model model) {
-        List<Board> popularBoards = boardService.getPopularBoards(3);
+        List<BoardListDto> popularBoards = boardService.getPopularBoards(3);
         model.addAttribute("popularBoards", popularBoards);
-        return "redirect:/";
+        return "redirect:/"; // ✅ main.html에서 바로 popularBoards 출력에 활용
     }
 
     // ✅ 글쓰기 폼
@@ -75,17 +77,15 @@ public class BoardController {
         return "redirect:/board/list";
     }
 
-    // ✅ 게시글 상세조회 (조회수 증가, 좋아요 여부 포함)
+    // ✅ 게시글 상세조회 (조회수 증가 + 좋아요 포함)
     @GetMapping("/view/{id}")
     public String view(@PathVariable Long id,
                        @AuthenticationPrincipal CustomUserDetails userDetails,
                        Model model,
                        HttpSession session) {
 
-        // ✅ 조회수 중복 증가 방지
         Set<Long> viewedBoards = (Set<Long>) session.getAttribute("viewedBoards");
         if (viewedBoards == null) viewedBoards = new HashSet<>();
-
         if (!viewedBoards.contains(id)) {
             boardService.increaseViewCount(id);
             viewedBoards.add(id);
@@ -112,7 +112,6 @@ public class BoardController {
                            Model model,
                            @AuthenticationPrincipal CustomUserDetails userDetails) {
         Board board = boardService.find(id);
-
         if (!board.getUser().getId().equals(userDetails.getUser().getId())) {
             return "redirect:/board/list";
         }
