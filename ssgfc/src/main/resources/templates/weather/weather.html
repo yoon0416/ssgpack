@@ -89,6 +89,25 @@ Promise.all([
         marker.style.backgroundColor = isTodayGame ? "red" : "black";
 
         marker.addEventListener("click", async () => {
+            // 마커의 위치와 크기 정보를 가져옵니다.
+            const rect = marker.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            // 물결 요소를 생성합니다.
+            const ripple = document.createElement("div");
+            ripple.className = "ripple-effect";
+
+            // 물결 요소의 위치를 마커의 중심에 맞춥니다.
+            ripple.style.left = `${rect.left - containerRect.left + rect.width / 2}px`;
+            ripple.style.top = `${rect.top - containerRect.top + rect.height / 2}px`;
+
+            // 물결 요소를 컨테이너에 추가합니다.
+            container.appendChild(ripple);
+
+            // 애니메이션이 끝난 후 물결 요소를 제거합니다.
+            setTimeout(() => ripple.remove(), 1200);
+
+            // 경기장 정보 패널을 업데이트합니다.
             const infoBox = document.getElementById("stadium-info-panel");
 
             // 📌 1. 먼저 날씨 API 호출 (항상 날씨는 보여야 하니까)
