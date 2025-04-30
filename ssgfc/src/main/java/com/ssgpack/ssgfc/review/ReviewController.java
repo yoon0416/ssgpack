@@ -3,15 +3,20 @@ package com.ssgpack.ssgfc.review;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ReviewRepository reviewRepository;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService , ReviewRepository reviewRepository) {
         this.reviewService = reviewService;
+        this.reviewRepository = reviewRepository;
     }
 
     @GetMapping("/api/review-exists")
@@ -50,5 +55,10 @@ public class ReviewController {
             e.printStackTrace();
             return "❌ 저장 실패: " + e.getMessage();
         }
+    }
+    @GetMapping("/api/review-available-months")
+    public ResponseEntity<List<String>> getAvailableMonths() {
+        List<String> months = reviewRepository.findDistinctMonths(); // 예: ["2025-03", "2025-04"]
+        return ResponseEntity.ok(months);
     }
 }
