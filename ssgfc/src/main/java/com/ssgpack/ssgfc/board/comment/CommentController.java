@@ -58,4 +58,15 @@ public class CommentController {
 
         return "redirect:/board/view/" + boardId;
     }
+    
+    // ✅ 댓글 수정 처리 - 댓글창에서 바로 수정하는 방식용
+    @PostMapping("/{commentId}/edit")
+    public String editComment(@PathVariable Long boardId,
+                              @PathVariable Long commentId,
+                              @RequestParam String content,
+                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        commentService.updateComment(commentId, content, userDetails.getUser());
+        return "redirect:/board/view/" + boardId;
+    }
 }
