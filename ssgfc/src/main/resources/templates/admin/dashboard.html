@@ -74,6 +74,12 @@
                    📊 경기 리뷰 요약 관리
 				</a>
 				
+				<!-- 🚨 신고 알림 관리자 추가 -->
+				<a th:if="${#authorization.expression('hasAnyAuthority(''ROLE_MASTER'', ''ROLE_BOARD_MANAGER'')')}" 
+				   th:href="@{/admin/notifications}">
+				   🚨 신고 알림 관리
+				</a>
+				
             </div>
         </div>
     </div>

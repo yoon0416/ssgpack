@@ -1,20 +1,33 @@
 package com.ssgpack.ssgfc.admin;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.ssgpack.ssgfc.board.board.Board;
 import com.ssgpack.ssgfc.board.board.BoardService;
 import com.ssgpack.ssgfc.board.board.PagingDto;
+import com.ssgpack.ssgfc.board.comment.Comment;
 import com.ssgpack.ssgfc.board.comment.CommentService;
+import com.ssgpack.ssgfc.report.Report;
+import com.ssgpack.ssgfc.report.ReportService;
+import com.ssgpack.ssgfc.report.ReportType;
 import com.ssgpack.ssgfc.user.CustomUserDetails;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import java.io.IOException;
-import java.util.*;
+import lombok.RequiredArgsConstructor;
 
 
 //✅ 관리자 전용 게시판 컨트롤러 - 공지 + 일반글 모두 처리 - CRUD + 댓글 관리 포함
@@ -25,6 +38,7 @@ public class AdminBoardController {
 
     private final BoardService boardService;
     private final CommentService commentService;
+    private final ReportService reportService;
 
     
     //✅ 관리자 게시판 목록 페이지 - 공지글 + 일반글 통합 후 최신순 정렬
@@ -61,7 +75,45 @@ public class AdminBoardController {
         model.addAttribute("board", board);
         return "admin/board/view";
     }
+    
+    //✅ 리포트 게시글 상세 보기
+    @GetMapping("/report/view/{boardId}")
+    public String viewReport(
+        @PathVariable Long boardId,
+        @RequestParam(required = false) Long reportId,
+        @RequestParam(required = false) Long commentId,
+        @RequestParam(required = false) Long parentId,
+        Model model) {
+        
+        Board board = boardService.findById(boardId); // 게시글 찾기
+        model.addAttribute("board", board);
 
+        if (reportId != null) {
+            Report report = reportService.findById(reportId);
+            model.addAttribute("report", report);
+            model.addAttribute("reportType", report.getReportType());
+        }
+
+        model.addAttribute("commentId", commentId); // 댓글 강조용
+        model.addAttribute("parentId", parentId); 
+        
+        return "admin/board/view"; // 뷰로 이동
+    }
+    
+    //✅ 유지하기처기 버튼
+    @PostMapping("/report/approve/{reportId}")
+    @ResponseBody
+    public void approveReport(@PathVariable Long reportId) {
+        reportService.processReport(reportId); // 신고 처리 완료 + 알림 삭제
+    }
+    
+    //✅ 내용삭제처리 버튼
+    @PostMapping("/report/delete-content/{reportId}")
+    @ResponseBody
+    public void deleteContentFromReport(@PathVariable Long reportId) {
+        reportService.deleteContentAndProcessReport(reportId, 2L); // 2번 더미 유저로 변경 + 처리 완료
+    }
+    
     //✅ 공지글 작성 폼
     @GetMapping("/write")
     public String writeForm(Model model) {
@@ -110,6 +162,13 @@ public class AdminBoardController {
         boardService.delete(id);
         return "redirect:/admin/board/list";
     }
+    
+    //✅ 신고 관리 페이지용 글 삭제 (리포트 전용)
+    @PostMapping("/report/delete/{id}")
+    public String deleteFromReport(@PathVariable Long id) {
+        boardService.delete(id);
+        return "redirect:/admin/report/list"; // 신고 관리 페이지로 리다이렉트
+    }
 
     //✅ 댓글 삭제 (관리자용)
     @PostMapping("/comment/delete/{commentId}")
@@ -118,4 +177,5 @@ public class AdminBoardController {
         commentService.delete(commentId);
         return "redirect:/admin/board/view/" + boardId;
     }
+
 }

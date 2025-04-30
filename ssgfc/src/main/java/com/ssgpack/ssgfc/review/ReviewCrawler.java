@@ -28,20 +28,26 @@ public class ReviewCrawler {
                 String json = response.body().string();
 
                 JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-                JsonArray etcRecords = root
-                        .getAsJsonObject("result")
-                        .getAsJsonObject("recordData")
-                        .getAsJsonArray("etcRecords");
+                JsonObject result = root.getAsJsonObject("result");
+                if (result == null || !result.has("recordData")) {
+                    throw new Exception("❌ recordData 없음");
+                }
 
+                JsonObject recordData = result.getAsJsonObject("recordData");
+                if (recordData == null || !recordData.has("etcRecords")) {
+                    throw new Exception("❌ etcRecords 없음");
+                }
+
+                JsonArray etcRecords = recordData.getAsJsonArray("etcRecords");
                 List<String> records = new ArrayList<>();
 
                 for (JsonElement elem : etcRecords) {
                     JsonObject obj = elem.getAsJsonObject();
                     String how = obj.has("how") ? obj.get("how").getAsString() : "";
-                    String result = obj.has("result") ? obj.get("result").getAsString() : "";
+                    String resultText = obj.has("result") ? obj.get("result").getAsString() : "";
 
-                    if (!how.isEmpty() && !result.isEmpty()) {
-                        records.add("[" + how + "] " + result);
+                    if (!how.isEmpty() && !resultText.isEmpty()) {
+                        records.add("[" + how + "] " + resultText);
                     }
                 }
 

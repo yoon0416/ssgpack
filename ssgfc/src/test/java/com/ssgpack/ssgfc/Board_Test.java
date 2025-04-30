@@ -31,9 +31,27 @@ class Board_Test {
 		br.save(bd);
 	}
 
-	@Test
+	@Disabled //@Test
 	public void selectAll() {
 		List<Board> list = br.findAll();
 		for(Board b : list) {System.out.println(b);}
 	}
+	
+	// 게시물 101개 만들기용
+	@Disabled //@Test
+    public void insertMultipleBoards() {
+        User user = new User();
+        user.setId(2L); 
+
+        for (int i = 1; i <= 101; i++) {
+            Board bd = new Board();
+            bd.setTitle("TEST " + i);
+            bd.setContent("TEST_CONTENT " + i);
+            bd.setIp();
+            bd.setUser(user);
+            br.save(bd);
+        }
+        
+        System.out.println("게시글 총 개수: " + br.count());
+    }
 }
