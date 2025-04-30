@@ -35,6 +35,11 @@ public class CommentController {
         if (ip == null || ip.isEmpty()) {
             ip = request.getRemoteAddr();
         }
+        
+        // ✅ IPv6 localhost (0:0:0:0:0:0:0:1) -> IPv4 localhost (127.0.0.1) 변환
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+            ip = "127.0.0.1";
+        }
 
         // ✅ 원댓글이든 대댓글이든 service에서 parentId 처리
         commentService.saveComment(boardId, user, content, ip, parentId);
