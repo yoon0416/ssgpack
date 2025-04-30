@@ -33,29 +33,42 @@
 
 <!-- 히어로 슬라이드 배너 -->
 <div class="container mt-4">
-  <div id="mainCarousel" class="carousel slide rounded-4 shadow overflow-hidden banner-wrapper" data-bs-ride="carousel" style="height: 400px; position: relative;">
+  <div id="mainCarousel" class="carousel slide rounded-4 shadow overflow-hidden banner-wrapper" data-bs-ride="carousel" style="height: 415px; position: relative;">
     <div class="carousel-inner h-100">
 
       <!-- 슬라이드 1 - 텍스트 오버레이 -->
       <div class="carousel-item active h-100 position-relative">
-        <img src="https://cdn.incheontoday.com/news/photo/202501/261780_257882_1951.jpg"
+        <img src="/images/img/단체.jpg"
              class="d-block w-100 h-100" style="object-fit: cover;">
-        <div class="carousel-caption d-flex flex-column justify-content-center align-items-center h-100" style="background: rgba(0,0,0,0.4);">
-          <h1 class="text-white fw-bold display-5 text-shadow">참여하세요! 선수 비교의 세계</h1>
-          <p class="text-light fs-5 mb-4 text-shadow">나만의 비교와 분석, 지금 시작하세요</p>
-          <a href="/player/compare" class="btn btn-outline-light px-4 py-2">비교하러 가기</a>
-        </div>
-      </div>
 
-      <!-- 슬라이드 2 -->
-      <div class="carousel-item h-100">
-        <img src="https://ecimg.cafe24img.com/pg1634b17479477052/keienkbo/web/upload/category/shop1_79_top_629159.jpg"
-             class="d-block w-100 h-100" style="object-fit: cover;">
       </div>
+		
+		<!-- 슬라이드 2 -->
+		<div class="carousel-item h-100 position-relative">
+		  <img src="/images/img/최정.jpg"
+		       class="d-block w-100 h-100" style="object-fit: cover;">
+		
+		  <!-- 오버레이 배경은 pointer 막지 않음 -->
+		  <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+		       style="background: rgba(0,0,0,0.4); z-index: 2; pointer-events: none;">
+		
+		    <!-- 안의 텍스트/버튼만 클릭되도록 따로 감싸기 -->
+		    <div style="pointer-events: auto;" class="text-center">
+		      <h1 class="text-white fw-bold display-5 text-shadow">참여하세요! 선수 비교의 세계</h1>
+		      <p class="text-light fs-5 mb-4 text-shadow">나만의 비교와 분석, 지금 시작하세요</p>
+		      <a href="/player/compare" class="btn btn-outline-light px-5 py-3 fs-5 fw-bold rounded-3 shadow-sm">
+		        비교하러 가기
+		      </a>
+		    </div>
+		
+		  </div>
+		</div>
+
+
 
       <!-- 슬라이드 3 -->
       <div class="carousel-item h-100">
-        <img src="https://i.ytimg.com/vi/ztBkXy1OS7o/hq720.jpg"
+        <img src="/images/img/header.PNG"
              class="d-block w-100 h-100" style="object-fit: cover;">
       </div>
     </div>
