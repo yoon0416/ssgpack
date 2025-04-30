@@ -1,14 +1,15 @@
 package com.ssgpack.ssgfc;
 
-import com.ssgpack.ssgfc.board.board.Board;
-import com.ssgpack.ssgfc.board.board.BoardService;
-import com.ssgpack.ssgfc.vote.VoteService;
-import com.ssgpack.ssgfc.vote.VoteTitle;
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
+import com.ssgpack.ssgfc.board.board.BoardListDto;
+import com.ssgpack.ssgfc.board.board.BoardService;
+import com.ssgpack.ssgfc.vote.VoteService;
+import com.ssgpack.ssgfc.vote.VoteTitle;
 
 @Controller
 public class MainController {
@@ -24,7 +25,7 @@ public class MainController {
     // ✅ 메인 페이지에서 인기글과 최신 투표를 모델에 담아 전달합니다.
     @GetMapping("/")
     public String home(Model model) {
-        List<Board> popularBoards = boardService.getPopularBoards(3);
+        List<BoardListDto> popularBoards = boardService.getPopularBoards(3);
         model.addAttribute("popularBoards", popularBoards);
 
         // ✅ 최신 투표 1개와 해당 선택지들을 모델에 추가
