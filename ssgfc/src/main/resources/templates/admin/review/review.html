@@ -8,6 +8,13 @@
     <title>오늘의 경기 요약</title>
     <link rel="stylesheet" href="/lib/fullcalendar/main.min.css">
     <link rel="stylesheet" href="/css/review.css">
+        <style>
+        /* 선택된 날짜 강조 스타일 */
+        #miniCalendar .selected-day {
+            background-color: #ff6b6b !important;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 
 <body>
@@ -60,8 +67,17 @@
                     return { html: numberOnly };
                 },
                 dateClick: function (info) {
+                    document.querySelectorAll('#miniCalendar .fc-daygrid-day').forEach(cell => {
+                        cell.classList.remove('selected-day');
+                    });
+
+                    // ✅ 현재 클릭한 셀 강조
+                    info.dayEl.classList.add('selected-day');
+
+                    // ✅ 클릭한 날짜 값 저장 (관리자 전용 로직)
                     selectedDate = info.dateStr;
                 }
+
             });
 
             calendar.render();

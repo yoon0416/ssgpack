@@ -60,9 +60,11 @@ public class GameWeatherController {
                 continue;
             }
 
+            String opponent = game.getTeam1().equalsIgnoreCase("SSG") ? game.getTeam2() : game.getTeam1();
+
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("stadium", loc.getStadiumName());
-            map.put("team", loc.getTeamKey());
+            map.put("team", opponent);
             map.put("top", loc.getTopPercent());
             map.put("left", loc.getLeftPercent());
             map.put("weather", weatherService.getStadiumWeather(

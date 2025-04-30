@@ -44,7 +44,7 @@ public class ReviewPreviewController {
 
             String gameUrl = optionalReview.get().getGameUrl();
             String url = "https://api-gw.sports.naver.com/schedule/games/" + gameUrl + "/record";
-
+            
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
                     .url(url)
@@ -119,8 +119,8 @@ public class ReviewPreviewController {
                             + playerHighlight + combined;	
 
                     // 🔥 여기서 선택해서 사용
-                    String prompt = promptWin;
-                    //String prompt = promptLose;
+                    //String prompt = promptWin;
+                    String prompt = promptLose;
                      
                      
                     System.out.println("🔥 [PREVIEW] 프롬프트:\n" + prompt);

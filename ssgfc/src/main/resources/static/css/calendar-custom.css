@@ -4,20 +4,41 @@
     font-weight: bold;
 }
 
+/* ✅ 날짜 숫자 공통 스타일 */
 .fc .fc-daygrid-day-number {
     color: black !important;
+    font-size: 0.85rem !important;
+    font-weight: bold !important;
+    margin: 0 !important;
 }
 
-/* ✅ review_today.html 전용 스타일 (id로 제한) */
+/* ✅ miniCalendar 전용 스타일 (작은 달력일 때만 적용됨) */
 #miniCalendar .fc .fc-daygrid-day {
     min-height: 80px !important;
 }
 
 #miniCalendar .fc .fc-daygrid-day-number {
-    font-size: 0.9rem;
+    font-size: 0.9rem !important;
     color: #2c3e50 !important;
 }
 
 #miniCalendar .fc .fc-col-header-cell-cushion {
     color: #2c3e50 !important;
+}
+
+/* ✅ 실제 적용되는 FullCalendar 셀 스타일 */
+#calendar .fc .fc-daygrid-day-frame {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;   /* ⬆️ 위로 */
+    align-items: flex-end !important;         /* 👉 오른쪽으로 */
+    padding: 4px !important;
+}
+
+/* ✅ 날짜 숫자가 들어 있는 div 자체 정렬 */
+.fc .fc-daygrid-day-top {
+    display: flex !important;
+    justify-content: flex-end !important;     /* 👉 오른쪽 정렬 */
+    align-items: flex-start !important;       /* ⬆️ 위쪽 정렬 */
+    padding: 2px 6px !important;              /* 약간의 여백 */
 }
