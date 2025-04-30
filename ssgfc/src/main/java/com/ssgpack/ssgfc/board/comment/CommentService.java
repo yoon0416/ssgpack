@@ -16,6 +16,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
 
+    // ✅ 댓글 ID로 댓글 하나 조회 (게시글 찾기용)
+    @Transactional
+    public Comment findById(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+    }
+    
     // ✅ 게시글 ID를 기준으로 댓글 전체를 조회합니다 (원댓글 + 대댓글 포함)
     public List<Comment> getCommentsByBoard(Long boardId) {
         return commentRepository.findByBoardId(boardId);

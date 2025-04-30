@@ -1,47 +1,63 @@
-<!-- ✅ 댓글 재귀 템플릿 (board/comment.html) -->
+<!-- ✅ 댓글 전체 리스트 뿌리기 -->
+<div th:fragment="commentListFragment(comments)">
+    <div class="comment-list mt-4">
+        <h5>댓글</h5>
+        <div th:each="comment : ${comments}" th:if="${comment.parent == null}">
+            <div th:replace="board/comment :: commentFragment(${comment}, 0)"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ 댓글 하나 출력 + 대댓글 재귀 -->
 <div th:fragment="commentFragment(comment, level)">
-    <div class="comment" th:style="|margin-left: ${level * 30}px;|"> <!-- ✅ 전체 comment에 margin 적용 -->
+    <div class="comment" th:style="|margin-left: ${level * 30}px;|">
 
         <!-- ✅ 프로필 이미지 -->
         <div class="profile-wrapper">
             <img class="comment-profile"
                  th:src="${comment.user != null and comment.user.profile_img != null} ? 
                          @{/images/userimage/{img}(img=${comment.user.profile_img})} : 
-                         @{/images/userimage/default-profile.png}"
+                         '/images/userimage/default-profile.png'"
                  alt="프로필"
                  th:onclick="|openUserPopup(${comment.user.id})|">
         </div>
 
-        <!-- ✅ 텍스트 묶음 -->
+        <!-- ✅ 작성자, 작성일, 신고 버튼 묶음 -->
         <div class="comment-text-wrapper">
 
-            <!-- ✅ 작성자+작성일 -->
             <div class="comment-header">
-                <div>
-                    <span class="comment-author"
-                          th:if="${comment.user != null}"
-                          th:text="${comment.user.nick_name}"
-                          th:onclick="|openUserPopup(${comment.user.id})|"></span>
-                    <span class="comment-author" th:if="${comment.user == null}">탈퇴한 사용자</span>
+                <span class="comment-author"
+                      th:if="${comment.user != null}"
+                      th:text="${comment.user.nick_name}"
+                      th:onclick="|openUserPopup(${comment.user.id})|"></span>
+                <span class="comment-author" th:if="${comment.user == null}">탈퇴한 사용자</span>
 
-                    <span class="comment-date"
-                          th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
-                </div>
+                <span class="comment-date" th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+
+				<!-- ✅ 댓글 신고 버튼 -->
+				<div sec:authorize="isAuthenticated()">
+				    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+					        data-type="COMMENT"
+					        th:data-id="${comment.id}"
+					        th:data-board-id="${comment.board.id}"
+					        th:data-parent-id="${comment.parent != null ? comment.parent.id : 0}"
+					        onclick="handleReportButton(this)">
+					    🚨 신고
+					</button>
+				</div>
             </div>
 
-            <!-- ✅ 댓글 본문 (여기에 꺾인 화살표) -->
+            <!-- ✅ 댓글 본문 (화살표 + 내용) -->
             <div class="comment-body"
                  th:onclick="|toggleReplyForm(${comment.id})|"
                  style="cursor:pointer;">
-                 
-                <span th:if="${level > 0}" style="color: #aaa; margin-right:5px;">➥</span> 
+                <span th:if="${level > 0}" style="color:#aaa; margin-right:5px;">➥</span>
                 <span th:text="${comment.content}"></span>
-
             </div>
 
-            <!-- ✅ 답글 입력폼 -->
+            <!-- ✅ 답글 입력 폼 -->
             <div th:id="|replyForm-${comment.id}|" class="reply-form" style="display:none;">
-                <form th:action="@{'/board/' + ${comment.board.id} + '/comment/add'}" method="post" style="display:flex; align-items: center;">
+                <form th:action="@{'/board/' + ${comment.board.id} + '/comment/add'}" method="post" style="display:flex; align-items:center;">
                     <input type="hidden" name="parentId" th:value="${comment.id}" />
                     <textarea name="content" placeholder="답글을 입력하세요" rows="2"></textarea>
                     <button type="submit" class="reply-submit-btn">등록</button>
@@ -53,6 +69,6 @@
 
     <!-- ✅ 대댓글 재귀 호출 -->
     <div th:each="child : ${comment.children}">
-        <div th:replace="~{board/comment :: commentFragment(${child}, ${level + 1})}"></div>
+        <div th:replace="board/comment :: commentFragment(${child}, ${level + 1})"></div>
     </div>
 </div>

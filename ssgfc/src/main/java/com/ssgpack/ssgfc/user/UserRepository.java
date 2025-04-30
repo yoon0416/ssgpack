@@ -1,5 +1,6 @@
 package com.ssgpack.ssgfc.user;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -13,4 +14,7 @@ public interface UserRepository extends JpaRepository<User,Long>{
 	    Optional<User> findByKakaoId(Long kakaoId);
 	    @Query("SELECT u FROM User u WHERE u.email LIKE %:keyword% OR u.nick_name LIKE %:keyword%")
 	    Page<User> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+	    
+	    // ✅ 게시판(마스터) 관리자 조회
+	    List<User> findByRoleIn(List<Integer> roles);
 }

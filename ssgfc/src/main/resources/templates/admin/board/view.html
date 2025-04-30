@@ -4,21 +4,33 @@
       layout:decorate="~{fragments/layout}">
 <head>
     <title>게시글 상세보기</title>
+    
+    <meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    
     <style>
+        .highlight {
+               background-color: #fff3cd !important;
+			   border: 2px solid orange;
+			   transition: background-color 0.3s;
+        }
         .reply {
             margin-left: 30px;
         }
     </style>
 </head>
 <body>
-<th:block layout:fragment="content">
-    <div class="container mt-5">
-        <h2 class="mb-4">📌 게시글 상세보기</h2>
 
+<th:block layout:fragment="content">
+<div class="container mt-5">
+    <h2 class="mb-4">📌 게시글 상세보기</h2>
+
+    <!-- ✅ 게시글 정보 -->
+    <form th:action="@{/admin/board/edit/{id}(id=${board.id})}" method="post">
         <table class="table table-bordered">
             <tr>
                 <th>제목</th>
-                <td th:text="${board.title}"></td>
+                <td th:text="${board.title}" ></td>
             </tr>
             <tr>
                 <th>작성자</th>
@@ -30,92 +42,142 @@
             </tr>
             <tr>
                 <th>내용</th>
-                <td th:utext="${board.content}"></td> <!-- utext로 HTML 허용 -->
+                <td th:utext="${board.content}" th:id="${report != null and report.reportType.toString() == 'BOARD' ? 'highlight-target' : null}"></td>
             </tr>
-            <!-- ✅ 첨부 이미지 출력 -->
             <tr th:if="${board.img != null}">
                 <th>첨부 이미지</th>
-                <td>
-                    <img th:src="@{'/images/board/' + ${board.img}}" style="max-width: 300px;">
-                </td>
+                <td><img th:src="@{'/images/board/' + ${board.img}}" style="max-width: 300px;"></td>
             </tr>
+<tr>
+   	<th>디버그용:</th>
+    <td>
+        reportId = [[${report != null ? report.id : 'null'}]]<br>
+        reportType = [[${report != null ? report.reportType : 'null'}]]
+    </td>
+</tr>
+
         </table>
+    </form>
+    
+    <!-- ✅ 수정/목록 버튼 -->
+    <div class="mt-3">
+    	<!-- ✅ 게시판관리 경로 버튼 -->
+        <th:block th:if="${report == null}">
+		    <a th:href="@{'/admin/board/edit/' + ${board.id}}" class="btn btn-warning">수정</a>
+		    <a th:href="@{/admin/board/list}" class="btn btn-secondary">목록</a>
+		</th:block>
 
-        <!-- ✅ 버튼 -->
-        <div class="mt-3">
-            <a th:href="@{'/admin/board/edit/' + ${board.id}}" class="btn btn-warning">수정</a>
-            <a th:href="@{/admin/board/list}" class="btn btn-secondary">목록</a>
-        </div>
-
-        <!-- ✅ 댓글 + 대댓글 + 대대댓글 출력 (IP: comment.ip 기준) -->
-        <div class="mt-5">
-            <h5>댓글</h5>
-            <ul class="list-group">
-                <li class="list-group-item"
-                    th:each="comment : ${board.comments}"
-                    th:if="${comment.parent == null}">
-                    
-                    <div class="d-flex justify-content-between">
-                        <span>
-                            <b th:text="${comment.user != null ? comment.user.nick_name : '익명'}"></b> 
-                            (IP: <span th:text="${comment.ip}"></span>)
-                            : <span th:text="${comment.content}"></span>
-                        </span>
-                        <form th:action="@{/admin/board/comment/delete/{id}(id=${comment.id})}" method="post">
-                            <input type="hidden" name="boardId" th:value="${board.id}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-                        </form>
-                    </div>
-
-                    <!-- 대댓글 (1단계) -->
-                    <ul class="list-group mt-2 ms-4">
-                        <li class="list-group-item reply"
-                            th:each="reply : ${board.comments}"
-                            th:if="${reply.parent != null and reply.parent.id == comment.id}">
-                            
-                            <div class="d-flex justify-content-between">
-                                <span>
-                                    <b th:text="${reply.user != null ? reply.user.nick_name : '익명'}"></b> 
-                                    (IP: <span th:text="${reply.ip}"></span>)
-                                    : <span th:text="${reply.content}"></span>
-                                </span>
-                                <form th:action="@{/admin/board/comment/delete/{id}(id=${reply.id})}" method="post">
-                                    <input type="hidden" name="boardId" th:value="${board.id}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-                                </form>
-                            </div>
-
-                            <!-- 대대댓글 (2단계) -->
-                            <ul class="list-group mt-2 ms-4">
-                                <li class="list-group-item reply"
-                                    th:each="child : ${board.comments}"
-                                    th:if="${child.parent != null and child.parent.id == reply.id}">
-                                    
-                                    <div class="d-flex justify-content-between">
-                                        <span>
-                                            <b th:text="${child.user != null ? child.user.nick_name : '익명'}"></b> 
-                                            (IP: <span th:text="${child.ip}"></span>)
-                                            : <span th:text="${child.content}"></span>
-                                        </span>
-                                        <form th:action="@{/admin/board/comment/delete/{id}(id=${child.id})}" method="post">
-                                            <input type="hidden" name="boardId" th:value="${board.id}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-                                        </form>
-                                    </div>
-
-                                </li>
-                            </ul>
-                            <!-- 대대댓글 끝 -->
-
-                        </li>
-                    </ul>
-                    <!-- 대댓글 끝 -->
-
-                </li>
-            </ul>
-        </div>
-
+        <!-- ✅ 신고관리 경로 버튼 -->
+		<th:block th:if="${report != null and !report.processed}">
+		    <button type="button" id="approveReportBtn" class="btn btn-outline-success ms-2">✅ 유지하기</button>
+		    <button type="button" id="deleteContentBtn" class="btn btn-outline-danger ms-2">❌ 내용 삭제</button>
+		</th:block>
     </div>
+	<input type="hidden" id="reportId" th:value="${report.id}">
+    <!-- ✅ 댓글 리스트 -->
+    <div class="mt-5">
+        <h5>댓글</h5>
+        <ul class="list-group">
+            <th:block th:each="comment : ${board.comments}" th:if="${comment.parent == null}">
+                <li class="list-group-item" th:insert="~{this :: commentFragment(${comment})}"></li>
+            </th:block>
+        </ul>
+    </div>
+
+</div>
 </th:block>
+
+<!-- ✅ 댓글 재귀 fragment -->
+<th:block th:fragment="commentFragment(comment)">
+    <div th:id="${comment.id == commentId ? 'highlight-target' : null}" class="d-flex justify-content-between">
+        <span>
+            <b th:text="${comment.user != null ? comment.user.nick_name : '익명'}"></b>
+            (IP: <span th:text="${comment.ip}"></span>) :
+            <span th:text="${comment.content}"></span>
+        </span>
+        <form th:if="${report == null}" th:action="@{/admin/board/comment/delete/{id}(id=${comment.id})}" method="post">
+            <input type="hidden" name="boardId" th:value="${comment.board.id}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+        </form>
+    </div>
+    <ul class="list-group mt-2 ms-4">
+        <th:block th:each="child : ${comment.children}">
+            <li class="list-group-item reply" th:insert="~{this :: commentFragment(${child})}"></li>
+        </th:block>
+    </ul>
+</th:block>
+
+<!-- ✅ 스크립트: 강조 처리 -->
+<th:block layout:fragment="script">
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const highlightTarget = document.getElementById('highlight-target');
+        const reportIdInput = document.getElementById('reportId');
+
+        // ✅ 강조 표시
+        if (highlightTarget && reportIdInput) {
+            highlightTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+            highlightTarget.classList.add('highlight');
+        }
+
+        const reportId = reportIdInput?.value;
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const approveBtn = document.getElementById('approveReportBtn');
+        const deleteContentBtn = document.getElementById('deleteContentBtn');
+
+        // ✅ 유지하기 버튼
+        if (approveBtn && reportId) {
+            approveBtn.addEventListener('click', () => {
+                if (confirm('정말 이 신고를 처리 완료하시겠습니까?')) {
+                    fetch(`/admin/board/report/approve/${reportId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        }
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            alert('신고가 처리되었습니다.');
+                            approveBtn.remove();
+                            deleteContentBtn.remove();
+                        } else {
+                            alert('처리 실패');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ✅ 내용삭제 버튼
+        if (deleteContentBtn && reportId) {
+            deleteContentBtn.addEventListener('click', () => {
+                if (confirm('정말 이 글의 내용을 삭제 처리하시겠습니까?')) {
+                    fetch(`/admin/board/report/delete-content/${reportId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        }
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            alert('내용이 삭제 처리되었습니다.');
+                            approveBtn.remove();
+                            deleteContentBtn.remove();
+                            window.location.reload();
+                        } else {
+                            alert('삭제 실패');
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+</th:block>
+
 </body>
 </html>

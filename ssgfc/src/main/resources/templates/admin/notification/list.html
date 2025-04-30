@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>신고 알림 목록</title>
+    <style>
+        .highlight {
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mt-5">
+
+        <!-- ✅ 알림 리스트 영역 -->
+        <h2>✅ 알림 목록</h2>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>내용</th>
+                <th>생성 시간</th>
+            </tr>
+            </thead>
+            <tbody id="notificationTableBody">
+            <tr th:each="notification : ${notifications}" th:id="'notification-' + ${notification.id}">
+                <td>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-link notification-click"
+                                th:data-report-id="${notification.reportId}"
+                                style="text-decoration: none;">
+                            🚨 <span th:text="|${notification.content}|"></span>
+                        </button>
+                    </div>
+                </td>
+                <td th:text="${#temporals.format(notification.createdDate, 'yyyy-MM-dd HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- ✅ 신고 리스트 영역 -->
+        <h2 class="mt-5">✅ 신고 목록</h2>
+        <div class="text-end mb-2">
+            <button id="toggleReportViewBtn" class="btn btn-outline-secondary btn-sm">전체 보기</button>
+        </div>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>신고자</th>
+                <th>타입</th>
+                <th>신고 대상</th>
+                <th>신고 사유</th>
+                <th>신고 일시</th>
+                <th>처리 상태</th>
+            </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+        </table>
+
+        <div class="text-center mt-3">
+            <button id="loadMoreBtn" class="btn btn-primary">더보기</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- ✅ 스크립트 영역 -->
+<th:block layout:fragment="script">
+    <script>
+	    let currentPage = 0;
+	    let showingAll = false;
+	
+	    document.addEventListener('DOMContentLoaded', () => {
+	        loadReports();
+	    });
+	
+	    document.getElementById('loadMoreBtn').addEventListener('click', function () {
+	        currentPage++;
+	        loadReports();
+	    });
+	
+	    document.getElementById('toggleReportViewBtn').addEventListener('click', function () {
+	        showingAll = !showingAll;
+	        currentPage = 0;
+	
+	        this.textContent = showingAll ? '미처리' : '전체 보기';
+	
+	        document.getElementById('reportTableBody').innerHTML = '';
+	        loadReports();
+	    });
+
+
+        function loadReports() {
+            const endpoint = showingAll ? '/report/all' : '/report/unprocessed';
+            fetch(`${endpoint}?page=${currentPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('reportTableBody');
+                    data.forEach(report => {
+                        const targetText = (report.reportType === 'BOARD' ? report.title : report.content) || '';
+                        const displayText = (targetText.length > 15) ? targetText.substring(0, 15) + '...' : targetText;
+                        const reportTarget = `(${report.nickname}) ${displayText}`;
+
+                        let link = "#";
+                        if (report.reportType === 'BOARD') {
+                            link = `/admin/board/report/view/${report.boardId}?reportId=${report.reportId}`;
+                        } else if (report.reportType === 'COMMENT') {
+                        	link = `/admin/board/report/view/${report.boardId}?reportId=${report.reportId}&commentId=${report.commentId}${report.parentCommentId ? '&parentId=' + report.parentCommentId : ''}`;
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.id = `report-${report.reportId}`;
+                        tr.innerHTML = `
+                            <td>${report.nickname}</td>
+                            <td>${report.reportType}</td>
+                            <td><a href="${link}" class="report-link">${reportTarget}</a></td>
+                            <td>${report.reason}</td>
+                            <td>${report.createdDate}</td>
+                            <td>${report.processed ? '완료' : '미처리'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error loading reports:', error));
+        }
+
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.notification-click');
+            if (!button) return;
+
+            const reportId = button.dataset.reportId;
+            if (!reportId || reportId === "undefined") return;
+
+            const target = document.getElementById(`report-${reportId}`);
+            if (target) {
+                target.classList.add('highlight');
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                setTimeout(() => {
+                    target.classList.remove('highlight');
+                }, 20000);
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+</html>
