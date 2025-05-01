@@ -45,6 +45,10 @@ public class GameSchedule {
     
     private String startTime;
     
+    @ManyToOne
+    @JoinColumn(name = "stadium_id")  // 외래키는 여기!
+    private Location stadiumLocation;
+    
     public void setResult(String result) {
         this.result = result;
     }

@@ -3,6 +3,9 @@ package com.ssgpack.ssgfc.review;
 import lombok.*;
 
 import javax.persistence.*;
+
+import com.ssgpack.ssgfc.game.GameSchedule;
+
 import java.time.LocalDate;
 
 @Entity
@@ -30,6 +33,9 @@ public class Review {
     @Column(length = 1000)
     private String summary;
     
-    
+    @OneToOne
+    @JoinColumn(name = "game_schedule_id")  // FK 위치
+    private GameSchedule gameSchedule;
+
     
 }
