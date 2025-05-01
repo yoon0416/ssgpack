@@ -23,6 +23,7 @@ import com.ssgpack.ssgfc.board.board.Board;
 import com.ssgpack.ssgfc.board.board.BoardListDto;
 import com.ssgpack.ssgfc.board.board.BoardService;
 import com.ssgpack.ssgfc.board.board.PagingDto;
+import com.ssgpack.ssgfc.board.comment.Comment;
 import com.ssgpack.ssgfc.board.comment.CommentService;
 import com.ssgpack.ssgfc.report.Report;
 import com.ssgpack.ssgfc.report.ReportService;
@@ -76,7 +77,7 @@ public class AdminBoardController {
         return "admin/board/view";
     }
     
-    //✅ 리포트 게시글 상세 보기
+  //✅ 리포트 게시글 상세 보기
     @GetMapping("/report/view/{boardId}")
     public String viewReport(
         @PathVariable Long boardId,
@@ -95,6 +96,18 @@ public class AdminBoardController {
             return "admin/board/alert"; // alert 템플릿 사용
         }
 
+        // ✅ 댓글 존재 여부 확인
+        if (commentId != null) {
+            Comment comment = commentService.findByIdOrNull(commentId); // 댓글이 존재하지 않을 수 있음
+            if (comment == null) {
+                if (reportId != null) {
+                    reportService.processReport(reportId);
+                }
+                model.addAttribute("errorMessage", "⚠️ 해당 댓글은 삭제된 상태입니다.");
+                return "admin/board/alert";
+            }
+        }
+
         model.addAttribute("board", board);
 
         if (reportId != null) {
@@ -108,6 +121,7 @@ public class AdminBoardController {
 
         return "admin/board/view";
     }
+
     
     //✅ 유지하기처기 버튼
     @PostMapping("/report/approve/{reportId}")

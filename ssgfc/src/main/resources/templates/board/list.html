@@ -38,6 +38,20 @@
           </tr>
         </thead>
         <tbody>
+          <!-- ✅ 공지사항 섹션 -->
+		  <tr th:each="notice : ${noticeBoards}" class="notice-row">
+		    <td th:text="${notice.id}">공지</td>
+		    <td class="text-start">
+		      <a th:href="@{'/board/view/' + ${notice.id}}" th:text="${notice.title}">[공지]</a>
+		      <span class="badge-circle" th:if="${notice.comments.size() > 0}" th:text="${notice.comments.size()}">1</span>
+		    </td>
+		    <td><span th:text="${notice.user.nick_name}">작성자</span></td>
+		    <td th:text="${#temporals.format(notice.createDate, 'yyyy-MM-dd')}">작성일</td>
+		    <td th:text="${notice.hit}">조회수</td>
+		    <td><span class="like-icon">⚾ <span th:text="${notice.likes.size()}">0</span></span></td>
+		  </tr>
+		  
+          <!-- ✅ 일반글 섹션 -->
           <tr th:each="board : ${normalBoards}">
             <td th:text="${board.id}">1</td>
             <td class="text-start">
