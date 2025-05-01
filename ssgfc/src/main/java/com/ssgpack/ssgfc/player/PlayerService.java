@@ -29,7 +29,7 @@ public class PlayerService {
 
     // ⬆️ mainStat(비율 or WAR) 기준 상위 선수 ("season"이 통산인 경우만)
     public List<Map<String, Object>> findTopPlayersByStat(int limit) {
-        List<Player> players = playerRepository.findAll();
+        List<Player> players = playerRepository.findAllWithStats();
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (Player player : players) {
