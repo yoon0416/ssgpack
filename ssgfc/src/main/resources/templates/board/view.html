@@ -88,6 +88,27 @@
                <a th:href="@{'/board/delete/' + ${board.id}}" onclick="return confirm('삭제하시겠습니까?')" class="btn btn-outline-danger">삭제</a>
         </div>
     </div>
+    
+    
+    <!-- ✅ 작성자 프로필 카드 -->
+    <div class="card mb-4 p-3" style="max-width: 100%; margin: 20px auto;">
+        <div class="d-flex align-items-center">
+            <div class="text-center me-4">
+                <img th:src="${board.user != null and board.user.profile_img != null} ? @{'/images/userimage/' + ${board.user.profile_img}} : '/images/userimage/default-profile.png'"
+                     alt="프로필 이미지"
+                     style="width:100px; height:100px; object-fit:cover; border-radius:50%; cursor:pointer;"
+                     th:onclick="|openUserPopup(${board.user.id})|">
+                <h6 class="mt-2"
+                    th:text="${board.user != null ? board.user.nick_name : '알 수 없음'}"
+                    th:onclick="|openUserPopup(${board.user.id})|"
+                    style="cursor: pointer; color: #0d6efd; text-decoration: underline;"></h6>
+            </div>
+            <div class="flex-grow-1 border rounded p-3" style="min-height:100px;">
+                <p class="mb-0" th:text="${board.user != null && board.user.introduce != null ? board.user.introduce : '자기소개가 없습니다.'}"
+                   style="font-size: 0.9rem; color: #666;"></p>
+            </div>
+        </div>
+    </div>
  
 	<!-- ✅ 댓글 작성 폼 (항상 고정) -->
     <div class="comment-form mt-5" sec:authorize="isAuthenticated()">

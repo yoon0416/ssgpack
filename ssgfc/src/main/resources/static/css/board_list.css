@@ -1,0 +1,123 @@
+@charset "UTF-8";
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.container-lg {
+  max-width: 1080px;
+  padding: 40px 35px 60px;
+  background-color: #fff;
+}
+
+.section-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #c8102e;
+  border-left: 6px solid #c8102e;
+  padding-left: 15px;
+  margin-bottom: 1.5rem;
+}
+
+.write-btn-red {
+  background-color: #fff;
+  color: #c8102e;
+  border: 1px solid #c8102e;
+  font-weight: bold;
+  transition: 0.2s ease-in-out;
+}
+.write-btn-red:hover {
+  background-color: #c8102e;
+  color: white;
+}
+
+.board-search-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin: 20px 0;
+}
+.board-search {
+  display: flex;
+  align-items: center;
+}
+.board-search input[type="text"] {
+  border-radius: 20px;
+  padding: 6px 15px;
+  border: 1px solid #ccc;
+  width: 250px;
+}
+.board-search .btn {
+  border-radius: 20px;
+  margin-left: 10px;
+  border-color: #c8102e;
+  color: #c8102e;
+}
+.board-search .btn:hover {
+  background-color: #c8102e;
+  color: white;
+}
+
+.table {
+  background-color: #fff;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 60px;
+}
+.table th {
+  background-color: #f7f7f7;
+  color: #444;
+  padding: 12px;
+  font-size: 0.95rem;
+}
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  font-size: 0.95rem;
+}
+.table tr:hover td {
+  background-color: #fdfdfd;
+}
+
+.badge-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background-color: #c8102e;
+  color: white;
+  border-radius: 50%;
+  margin-left: 6px;
+}
+
+.like-icon {
+  color: #c8102e;
+  font-weight: bold;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+.pagination a {
+  margin: 0 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  color: #333;
+  transition: 0.2s ease;
+}
+.pagination a.active {
+  background-color: #c8102e;
+  color: white;
+  border-color: #c8102e;
+}
+.pagination a:hover {
+  background-color: #f8d7da;
+}
