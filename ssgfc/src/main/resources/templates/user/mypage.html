@@ -229,6 +229,7 @@
 						th:href="@{/admin/dashboard}" class="btn btn-outline-primary"
 						sec:authorize="hasAnyAuthority('ROLE_MASTER', 'ROLE_USER_MANAGER', 'ROLE_PLAYER_MANAGER', 'ROLE_BOARD_MANAGER', 'ROLE_GAME_MANAGER')">
 						관리자 페이지 </a>
+						 <a th:href="@{/mygame/player-memory}" class="btn btn-success">🧠 기억력 게임</a>
 				</div>
 
 				<!-- 슬라이드 버튼 -->
