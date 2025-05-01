@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>선수 카드 맞추기 게임</title>
+  <style>
+    .game-wrapper {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 120px);
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 120px;
+      height: 160px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .flipped .inner {
+      transform: rotateY(180deg);
+    }
+
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .front {
+      background: white;
+      transform: rotateY(180deg);
+    }
+
+    .front img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+
+    .front .player-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+      line-height: 30px;
+      background-color: #fff;
+    }
+
+    .back {
+      background: #dc3545;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .matched {
+      visibility: hidden;
+    }
+
+    .reset-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+
+<section layout:fragment="content">
+  <div class="game-wrapper">
+    <h2>선수 카드 맞추기 게임</h2>
+
+    <div class="grid" id="gameBoard">
+      <!-- 카드 반복: 각 선수 카드를 2개씩 보여주기 위해 2배로 반복 -->
+      <div class="card" th:each="player : ${shuffledPlayers}"
+           th:data-id="${player.id}" onclick="flipCard(this)">
+        <div class="inner">
+          <div class="front">
+            <img th:src="@{${player.imageUrl}}" th:alt="${player.name}" />
+            <div class="player-name" th:text="${player.name}">선수이름</div>
+          </div>
+          <div class="back">SSG</div>
+        </div>
+      </div>
+
+      <div class="card" th:each="player : ${shuffledPlayers}"
+           th:data-id="${player.id}" onclick="flipCard(this)">
+        <div class="inner">
+          <div class="front">
+            <img th:src="@{${player.imageUrl}}" th:alt="${player.name}" />
+            <div class="player-name" th:text="${player.name}">선수이름</div>
+          </div>
+          <div class="back">SSG</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="location.reload()">🔄 다시 시작</button>
+  </div>
+
+  <script>
+    let flipped = [];
+    let lock = false;
+
+    function flipCard(card) {
+      if (lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      card.classList.add('flipped');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        lock = true;
+        const id1 = flipped[0].getAttribute('data-id');
+        const id2 = flipped[1].getAttribute('data-id');
+
+        if (id1 === id2) {
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.add('matched'));
+            flipped = [];
+            lock = false;
+          }, 600);
+        } else {
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.remove('flipped'));
+            flipped = [];
+            lock = false;
+          }, 1000);
+        }
+      }
+    }
+  </script>
+</section>
+</html>
