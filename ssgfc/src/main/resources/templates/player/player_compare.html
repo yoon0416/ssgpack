@@ -242,236 +242,238 @@
         </div>
       </div>
 
-		<div class="text-center">
-		  <button class="bg-transparent border-0 p-0" onclick="comparePlayers()">
-		    <img src="/images/img/비교하기.png" alt="비교하기 버튼" style="width: 180px; height: auto;" />
-		  </button>
-		</div>
-
-
-      <!-- 선수 이미지 비교 -->
-      <div id="playerCompareArea" class="row justify-content-center my-5" style="display: none;">
-        <div class="col-md-5 text-center">
-          <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
-            <h4 id="player1Name" class="name-bubble">선수1</h4>
-            <img id="player1Img" src="/images/players/default.png" style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수1">
-            <img src="/images/logo/fire.png" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
-          </div>
-          
-          
-        </div>
-
-<div class="col-md-1 d-flex align-items-center justify-content-center">
-  <img src="/images/img/vs.PNG" alt="VS 이미지" style="height: 80px; width: auto;" />
-</div>
-
-
-        <div class="col-md-5 text-center">
-          <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
-            <h4 id="player2Name" class="name-bubble">선수2</h4>
-            <img id="player2Img" src="/images/players/default.png" style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수2">
-            <img src="/images/logo/fire.png" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
-          </div>
-          
-          
-        </div>
+      <div class="text-center">
+        <button class="bg-transparent border-0 p-0" onclick="comparePlayers()">
+          <img src="/images/img/비교하기.png" alt="비교하기 버튼" style="width: 180px; height: auto;" />
+        </button>
       </div>
 
+<!-- 선수 이미지 비교 영역 -->
+<div id="playerCompareArea" class="row justify-content-center my-5" style="display: none;">
+  <div class="col-md-5 text-center">
+    <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
+      <h4 id="player1Name" class="name-bubble">선수1</h4>
+      <p id="player1Stat" class="mt-2 fw-bold d-none"></p> <!-- ✅ 숨김 기본 -->
+      <img id="player1Img" src="/images/players/default.png"
+           style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수1">
+      <img src="/images/logo/fire.png"
+           style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+    </div>
+  </div>
+
+  <div class="col-md-1 d-flex align-items-center justify-content-center">
+    <img src="/images/img/vs.PNG" alt="VS 이미지" style="height: 80px; width: auto;" />
+  </div>
+
+  <div class="col-md-5 text-center">
+    <div style="position: relative; display: inline-block; width: 100%; max-width: 320px;">
+      <h4 id="player2Name" class="name-bubble">선수2</h4>
+      <p id="player2Stat" class="mt-2 fw-bold d-none"></p> <!-- ✅ 숨김 기본 -->
+      <img id="player2Img" src="/images/players/default.png"
+           style="width: 100%; max-height: 320px; object-fit: contain; border-radius: 10px;" alt="선수2">
+      <img src="/images/logo/fire.png"
+           style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 2; pointer-events: none;" alt="불">
+    </div>
+  </div>
+</div>
+
+<!-- 자동 분석 결과 영역 -->
 <div id="analysisResult">
   <h5 id="analysisTitle">📊 자동 분석 결과</h5>
   <div id="analysisText" class="text-muted">선수를 선택하고 비교를 누르세요.</div>
 </div>
 
+<!-- 비교 차트 영역 -->
+<div class="chart-container">
+  <canvas id="compareChart"></canvas>
+</div>
 
+<!-- 스크립트 부분 -->
+<script>
+  let allPlayers = [];
+  let currentType = '투수';
+  let barChart;
 
-      <div class="chart-container">
-        <canvas id="compareChart"></canvas>
-      </div>
-    </div>
+  window.onload = function () {
+    fetch('/api/players')
+      .then(response => response.json())
+      .then(players => {
+        allPlayers = players;
+        loadPlayers('투수');
+      });
+  };
 
-    <script>
-      let allPlayers = [];
-      let currentType = '투수';
-      let barChart;
+  function loadPlayers(type) {
+    currentType = type;
+    const player1Select = document.getElementById('player1');
+    const player2Select = document.getElementById('player2');
 
-      window.onload = function () {
-        fetch('/api/players')
-          .then(response => response.json())
-          .then(players => {
-            allPlayers = players;
-            loadPlayers('투수');
-          });
+    document.querySelectorAll('.compare-type button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(type === '투수' ? 'pitcherButton' : 'batterButton').classList.add('active');
+
+    player1Select.innerHTML = '<option value="">선수 1 선택</option>';
+    player2Select.innerHTML = '<option value="">선수 2 선택</option>';
+
+    const filtered = allPlayers.filter(player => {
+      const pos = (player.position || '').toUpperCase();
+      return type === '투수' ? (pos === '투수' || pos === 'P') : (pos !== '투수' && pos !== 'P');
+    });
+
+    filtered.forEach(player => {
+      const option1 = document.createElement('option');
+      option1.value = player.pno;
+      option1.textContent = player.name;
+      player1Select.appendChild(option1);
+
+      const option2 = document.createElement('option');
+      option2.value = player.pno;
+      option2.textContent = player.name;
+      player2Select.appendChild(option2);
+    });
+  }
+
+  function extractMainStat(player) {
+    if (!player.stats || player.stats.length === 0) return '-';
+    const statMap = player.stats[0].statMap;
+    const pos = (statMap['Pos.'] || '').toUpperCase();
+    return pos === 'P' ? (statMap['WAR'] || '-') : (statMap['AVG'] || '-');
+  }
+
+  function localizeStats(statMap, isPitcher) {
+    const nameMap = {
+      'ERA': '평균자책', 'WHIP': '출루허용률', 'FIP': 'FIP',
+      'WAR': isPitcher ? '승리기여도' : '출루율',
+      'AVG': '타율', 'OBP': '출루율', 'SLG': '장타율',
+      'HR': '홈런', 'RBI': '타점', 'R/ePA': '승리기여도',
+      'OPS': '종합공격지표', 'dWAR': '수비기여도'
+    };
+    const localized = {};
+    for (const key in statMap) {
+      const newKey = nameMap[key] || key;
+      localized[newKey] = statMap[key];
+    }
+    return localized;
+  }
+
+  function comparePlayers() {
+    const pno1 = document.getElementById('player1').value;
+    const pno2 = document.getElementById('player2').value;
+
+    if (!pno1 || !pno2) {
+      alert('두 명의 선수를 모두 선택하세요.');
+      return;
+    }
+
+    document.getElementById('playerCompareArea').style.display = 'flex';
+
+    Promise.all([
+      fetch(`/api/players/${pno1}`).then(res => res.json()),
+      fetch(`/api/players/${pno2}`).then(res => res.json())
+    ]).then(([player1, player2]) => {
+      document.getElementById('player1Name').textContent = player1.name;
+      document.getElementById('player2Name').textContent = player2.name;
+
+      document.getElementById('player1Img').src = player1.imageUrl || '/images/players/default.png';
+      document.getElementById('player2Img').src = player2.imageUrl || '/images/players/default.png';
+
+      // 이전에 넣었던 <p> 태그 제거
+      const p1Box = document.getElementById('player1Name').parentElement;
+      const p2Box = document.getElementById('player2Name').parentElement;
+      p1Box.querySelectorAll('p.dynamic-stat').forEach(el => el.remove());
+      p2Box.querySelectorAll('p.dynamic-stat').forEach(el => el.remove());
+
+      // 새로 생성해서 삽입
+      const stat1 = document.createElement('p');
+      stat1.textContent = '대표 스탯: ' + extractMainStat(player1);
+      stat1.className = 'mt-2 fw-bold dynamic-stat';
+      stat1.style.color = 'transparent'; // ✅ 글자 안 보이게!
+      p1Box.insertBefore(stat1, p1Box.querySelector('img'));
+
+      const stat2 = document.createElement('p');
+      stat2.textContent = '대표 스탯: ' + extractMainStat(player2);
+      stat2.className = 'mt-2 fw-bold dynamic-stat';
+      stat2.style.color = 'transparent'; // ✅ 이것도!
+      p2Box.insertBefore(stat2, p2Box.querySelector('img'));
+
+      drawBarChart(player1, player2);
+
+      const isPitcher = currentType === '투수';
+      const playerData = {
+        [player1.name]: localizeStats(player1.stats?.[0]?.statMap || {}, isPitcher),
+        [player2.name]: localizeStats(player2.stats?.[0]?.statMap || {}, isPitcher)
       };
 
-      function loadPlayers(type) {
-        currentType = type;
-        const player1Select = document.getElementById('player1');
-        const player2Select = document.getElementById('player2');
+      const readableStats = Object.entries(playerData).map(([name, stats]) => {
+        return Object.entries(stats).map(([k, v]) => `${name}의 ${k}는 ${v}입니다.`).join("\n");
+      }).join("\n\n");
 
-        document.querySelectorAll('.compare-type button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(type === '투수' ? 'pitcherButton' : 'batterButton').classList.add('active');
+      fetch("/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: readableStats })
+      })
+      .then(res => res.text())
+      .then(result => {
+        document.getElementById("analysisText").innerText = result;
+      })
+      .catch(error => {
+        document.getElementById("analysisText").innerText = "❌ 분석 실패: " + error.message;
+      });
+    });
+  }
 
-        player1Select.innerHTML = '<option value="">선수 1 선택</option>';
-        player2Select.innerHTML = '<option value="">선수 2 선택</option>';
+  function drawBarChart(player1, player2) {
+    const statMap1 = player1.stats?.[0]?.statMap || {};
+    const statMap2 = player2.stats?.[0]?.statMap || {};
+    const headers = currentType === '투수'
+      ? ['ERA', 'WHIP', 'FIP', 'WAR']
+      : ['AVG', 'OBP', 'SLG', 'HR'];
 
-        const filtered = allPlayers.filter(player => {
-          const pos = (player.position || '').toUpperCase();
-          return type === '투수' ? (pos === '투수' || pos === 'P') : (pos !== '투수' && pos !== 'P');
-        });
+    const labels = headers.map(key => key);
+    const data1 = headers.map(key => parseFloat(statMap1[key]) || 0);
+    const data2 = headers.map(key => parseFloat(statMap2[key]) || 0);
 
-        filtered.forEach(player => {
-          const option1 = document.createElement('option');
-          option1.value = player.pno;
-          option1.textContent = player.name;
-          player1Select.appendChild(option1);
+    const ctx = document.getElementById('compareChart').getContext('2d');
+    if (barChart) barChart.destroy();
 
-          const option2 = document.createElement('option');
-          option2.value = player.pno;
-          option2.textContent = player.name;
-          player2Select.appendChild(option2);
-        });
-      }
-
-      function extractMainStat(player) {
-        if (!player.stats || player.stats.length === 0) return '-';
-        const statMap = player.stats[0].statMap;
-        const pos = (statMap['Pos.'] || '').toUpperCase();
-        return pos === 'P' ? (statMap['WAR'] || '-') : (statMap['AVG'] || '-');
-      }
-
-      function localizeStats(statMap, isPitcher) {
-        const nameMap = {
-          'ERA': '평균자책', 'WHIP': '출루허용률', 'FIP': 'FIP',
-          'WAR': isPitcher ? '승리기여도' : '출루율',
-          'AVG': '타율', 'OBP': '출루율', 'SLG': '장타율',
-          'HR': '홈런', 'RBI': '타점', 'R/ePA': '승리기여도',
-          'OPS': '종합공격지표', 'dWAR': '수비기여도'
-        };
-        const localized = {};
-        for (const key in statMap) {
-          const newKey = nameMap[key] || key;
-          localized[newKey] = statMap[key];
-        }
-        return localized;
-      }
-
-      function comparePlayers() {
-        const pno1 = document.getElementById('player1').value;
-        const pno2 = document.getElementById('player2').value;
-
-        if (!pno1 || !pno2) {
-          alert('두 명의 선수를 모두 선택하세요.');
-          return;
-        }
-
-        document.getElementById('playerCompareArea').style.display = 'flex';
-
-        Promise.all([
-          fetch(`/api/players/${pno1}`).then(res => res.json()),
-          fetch(`/api/players/${pno2}`).then(res => res.json())
-        ]).then(([player1, player2]) => {
-          document.getElementById('player1Name').textContent = player1.name;
-          document.getElementById('player2Name').textContent = player2.name;
-
-          document.getElementById('player1Img').src = player1.imageUrl || '/images/players/default.png';
-          document.getElementById('player2Img').src = player2.imageUrl || '/images/players/default.png';
-
-          const mainStat1 = extractMainStat(player1);
-          const mainStat2 = extractMainStat(player2);
-          document.getElementById('player1Stat').textContent = mainStat1;
-          document.getElementById('player2Stat').textContent = mainStat2;
-
-          drawBarChart(player1, player2);
-
-          const isPitcher = currentType === '투수';
-          const playerData = {
-            [player1.name]: localizeStats(player1.stats?.[0]?.statMap || {}, isPitcher),
-            [player2.name]: localizeStats(player2.stats?.[0]?.statMap || {}, isPitcher)
-          };
-
-          const readableStats = Object.entries(playerData).map(([name, stats]) => {
-            return Object.entries(stats).map(([k, v]) => `${name}의 ${k}는 ${v}입니다.`).join("\n");
-          }).join("\n\n");
-
-          fetch("/api/ai/analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: readableStats })
-          })
-          .then(res => res.text())
-          .then(result => {
-            document.getElementById("analysisText").innerText = result;
-          })
-          .catch(error => {
-            document.getElementById("analysisText").innerText = "❌ 분석 실패: " + error.message;
-          });
-        });
-      }
-
-      function drawBarChart(player1, player2) {
-        const statMap1 = player1.stats?.[0]?.statMap || {};
-        const statMap2 = player2.stats?.[0]?.statMap || {};
-        const headers = currentType === '투수'
-          ? ['ERA', 'WHIP', 'FIP', 'WAR']
-          : ['AVG', 'OBP', 'SLG', 'HR'];
-
-        const labels = headers.map(key => key);
-        const data1 = headers.map(key => parseFloat(statMap1[key]) || 0);
-        const data2 = headers.map(key => parseFloat(statMap2[key]) || 0);
-
-        const ctx = document.getElementById('compareChart').getContext('2d');
-        if (barChart) barChart.destroy();
-
-        barChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              { label: player1.name, data: data1, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
-              { label: player2.name, data: data2, backgroundColor: 'rgba(255, 99, 132, 0.7)' }
-            ]
+    barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: player1.name, data: data1, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
+          { label: player2.name, data: data2, backgroundColor: 'rgba(255, 99, 132, 0.7)' }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: { size: 16 }
+            }
           },
-          options: {
-        	  responsive: true,
-        	  plugins: {
-        	    legend: {
-        	      position: 'top',
-        	      labels: {
-        	        font: {
-        	          size: 16  // ← 글자 크기 키움
-        	        }
-        	      }
-        	    },
-        	    title: {
-        	      display: true,
-        	      text: currentType + ' 주요 스탯 비교',
-        	      font: {
-        	        size: 20  // ← 제목 글자 크기
-        	      }
-        	    }
-        	  },
-        	  scales: {
-        	    y: {
-        	      beginAtZero: true,
-        	      ticks: {
-        	        font: {
-        	          size: 14  // ← y축 숫자 크기
-        	        }
-        	      }
-        	    },
-        	    x: {
-        	      ticks: {
-        	        font: {
-        	          size: 14  // ← x축 레이블 크기
-        	        }
-        	      }
-        	    }
-        	  }
-        	}
-
-        });
+          title: {
+            display: true,
+            text: currentType + ' 주요 스탯 비교',
+            font: { size: 20 }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { font: { size: 14 } }
+          },
+          x: {
+            ticks: { font: { size: 14 } }
+          }
+        }
       }
-    </script>
+    });
+  }
+</script>
+
   </th:block>
 </body>
 </html>
