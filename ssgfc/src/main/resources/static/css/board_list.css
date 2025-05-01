@@ -121,3 +121,18 @@ body {
 .pagination a:hover {
   background-color: #f8d7da;
 }
+
+/* ✅ 공지사항 강조 스타일 */
+.notice-row {
+  background-color: #fff6f6;
+  font-weight: bold;
+}
+.notice-row a {
+  color: #c8102e;
+}
+.notice-row .like-icon {
+  color: #b00020;
+}
+.notice-row .badge-circle {
+  background-color: #b00020;
+}

@@ -43,6 +43,16 @@
                 <th>작성자</th>
                 <td th:text="${board.user.nick_name}"></td>
             </tr>
+            <!-- ✅ 작성자 IP -->
+		    <tr>
+		        <th>작성자 IP</th>
+		        <td th:text="${board.user != null and board.user.ip != null ? board.user.ip : '알 수 없음'}">작성자IP</td>
+		    </tr>
+		    <!-- ✅ 게시글 작성 IP -->
+		    <tr>
+		        <th>게시글 작성 IP</th>
+		        <td th:text="${board.ip != null ? board.ip : '알 수 없음'}">작성시 IP</td>
+		    </tr>
             <tr>
                 <th>작성일</th>
                 <td th:text="${#temporals.format(board.createDate, 'yyyy-MM-dd HH:mm')}"></td>
@@ -82,38 +92,45 @@
 		</th:block>
     </div>
 	<input type="hidden" id="reportId" th:value="${report != null ? report.id : 0}" />
-    <!-- ✅ 댓글 리스트 -->
-    <div class="mt-5">
-        <h5>댓글</h5>
-        <ul class="list-group">
-            <th:block th:each="comment : ${board.comments}" th:if="${comment.parent == null}">
-                <li class="list-group-item" th:insert="~{this :: commentFragment(${comment})}"></li>
-            </th:block>
-        </ul>
-    </div>
+	
+	<!-- ✅ 댓글 리스트 -->
+	<div class="mt-5">
+	    <h5>댓글</h5>
+	    <ul class="list-unstyled mt-3">
+	        <th:block th:each="comment : ${board.comments}" th:if="${comment.parent == null}">
+	            <li th:insert="~{this :: commentFragment(${comment}, 0)}"></li>
+	        </th:block>
+	    </ul>
+	</div>
 
 </div>
 </th:block>
 
-<!-- ✅ 댓글 재귀 fragment -->
-<th:block th:fragment="commentFragment(comment)">
-    <div th:id="${comment.id == commentId ? 'highlight-target' : null}" class="d-flex justify-content-between">
-        <span>
-            <b th:text="${comment.user != null ? comment.user.nick_name : '익명'}"></b>
-            (IP: <span th:text="${comment.ip}"></span>) :
-            <span th:text="${comment.content}"></span>
-        </span>
-        <form th:if="${report == null}" th:action="@{/admin/board/comment/delete/{id}(id=${comment.id})}" method="post">
-            <input type="hidden" name="boardId" th:value="${comment.board.id}">
-            <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
-        </form>
-    </div>
-    <ul class="list-group mt-2 ms-4">
+<!-- ✅ 댓글 재귀 -->
+<th:block th:fragment="commentFragment(comment, depth)">
+    <th:block th:with="margin=${depth * 30}">
+        <div th:id="${comment.id == commentId ? 'highlight-target' : null}"
+             th:style="|margin-left: ${margin}px; padding: 10px 0; border-bottom: 1px solid #ddd;|"
+             class="d-flex justify-content-between">
+            <span>
+                <b th:text="${comment.user != null ? comment.user.nick_name : '익명'}"></b>
+                (IP: <span th:text="${comment.ip}"></span>) :
+                <span th:text="${comment.content}"></span>
+            </span>
+            <form th:if="${report == null}"
+                  th:action="@{/admin/board/comment/delete/{id}(id=${comment.id})}"
+                  method="post">
+                <input type="hidden" name="boardId" th:value="${comment.board.id}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+            </form>
+        </div>
+		<!-- ✅ 자식 댓글 재귀-->
         <th:block th:each="child : ${comment.children}">
-            <li class="list-group-item reply" th:insert="~{this :: commentFragment(${child})}"></li>
+            <li th:insert="~{this :: commentFragment(${child}, ${depth + 1})}"></li>
         </th:block>
-    </ul>
+    </th:block>
 </th:block>
+
 
 <!-- ✅ 스크립트: 강조 처리 -->
 <th:block layout:fragment="script">
