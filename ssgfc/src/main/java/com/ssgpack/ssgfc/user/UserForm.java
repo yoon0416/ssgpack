@@ -10,7 +10,7 @@ import lombok.Setter;
 public class UserForm {
 	
 	@NotEmpty(message="닉네임은 필수 항목입니다.")
-	@Size(min=4,max=20)
+	@Size(min=2,max=20)
 	private String nick_name;
 	
 	@NotEmpty(message="비밀번호는 필수 항목입니다.")

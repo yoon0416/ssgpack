@@ -6,11 +6,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.ssgpack.ssgfc.board.board.Board;
 import com.ssgpack.ssgfc.board.comment.Comment;
 import com.ssgpack.ssgfc.board.like.Like;
+import com.ssgpack.ssgfc.vote.UserVote;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -101,6 +108,10 @@ public class User implements Serializable {
     // 좋아요 기록
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
+    
+    // 투표 기록
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserVote> userVotes = new ArrayList<>();
 
     // IP 자동 설정 메서드
     public void setIp() {

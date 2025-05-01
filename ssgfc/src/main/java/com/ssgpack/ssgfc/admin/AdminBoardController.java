@@ -86,16 +86,6 @@ public class AdminBoardController {
         @RequestParam(required = false) Long parentId,
         Model model) {
 
-        // ✅ 게시글 존재 여부 확인
-        Board board = boardService.findByIdOrNull(boardId);
-        if (board == null) {
-            if (reportId != null) {
-                reportService.processReport(reportId); // 신고는 처리 상태로 전환
-            }
-            model.addAttribute("errorMessage", "⚠️ 해당 게시글은 삭제된 상태입니다.");
-            return "admin/board/alert"; // alert 템플릿 사용
-        }
-
         // ✅ 댓글 존재 여부 확인
         if (commentId != null) {
             Comment comment = commentService.findByIdOrNull(commentId); // 댓글이 존재하지 않을 수 있음
@@ -106,6 +96,16 @@ public class AdminBoardController {
                 model.addAttribute("errorMessage", "⚠️ 해당 댓글은 삭제된 상태입니다.");
                 return "admin/board/alert";
             }
+        }
+    	
+        // ✅ 게시글 존재 여부 확인
+        Board board = boardService.findByIdOrNull(boardId);
+        if (board == null) {
+            if (reportId != null) {
+                reportService.processReport(reportId); // 신고는 처리 상태로 전환
+            }
+            model.addAttribute("errorMessage", "⚠️ 해당 게시글은 삭제된 상태입니다.");
+            return "admin/board/alert"; // alert 템플릿 사용
         }
 
         model.addAttribute("board", board);
