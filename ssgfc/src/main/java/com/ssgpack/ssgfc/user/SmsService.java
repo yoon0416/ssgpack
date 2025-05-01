@@ -30,7 +30,7 @@ public class SmsService {
 
         HashMap<String, String> params = new HashMap<>();
         params.put("to", to);         // 수신번호
-        params.put("from", "01071842171");       // 발신번호 (coolsms에 등록한걸로 고정시킴)
+        params.put("from", "01054093770");       // 발신번호 (coolsms에 등록한걸로 고정시킴)
         params.put("type", "SMS");
         params.put("text", "인증번호 [" + authCode + "] 입니다.");
         params.put("app_version", "ssgfc 1.0");
