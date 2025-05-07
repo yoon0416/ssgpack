@@ -10,6 +10,11 @@
 ## 🔍 관련문서 바로가기
 - [버전 히스토리 보기](./version.md)
 - [트러블슈팅 목록](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)
+- 기능구현영상
+  - [안윤기 user+시큐리티+](https://youtu.be/pWBEOX9JKqc)
+  - [박인 board+vote+신고+](https://youtu.be/ePs5JN8RhW0)
+  - [김재원 경기 데이터 크롤링+날씨api+](https://youtu.be/nX0wIDsvyUM)
+  - [조율비 선수 데이터 크롤링+뉴스api+](https://www.youtube.com/watch?v=q3qigNTTAMc)
 
 ---
 
