@@ -170,7 +170,7 @@ public void addResourceHandlers(ResourceHandlerRegistry registry) {
 1. **인스턴스 유형 `t2.medium`으로 업그레이드**
    - 탄력적 IP 사용 안 함
    - 반드시 테스트 후 인스턴스 **중지 또는 삭제**
-   - 하루 500원 예상이지만, 최댓값은 예측 불가
+   - 하루 10시간씩 30일 돌리면 최소 2만원 과금 예측, 최댓값은 예측 불가
 
 2. **우분투 내부에 이미지 파일 직접 업로드**
    - `/home/ubuntu/uploads` 경로에 이미지 저장
