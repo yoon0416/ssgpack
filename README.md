@@ -11,6 +11,7 @@
 - [버전 히스토리 보기](./version.md)
 - [트러블슈팅 목록](https://github.com/yoon0416/ssgpack/blob/main/%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85.md)
 - [시큐리티 업그레이드 예정](https://github.com/yoon0416/ssgpack/blob/main/%EC%8B%9C%ED%81%90%EB%A6%AC%ED%8B%B0.md)
+- [AWS 설정](https://github.com/yoon0416/ssgpack/blob/main/aws.md)
 - 기능구현영상
   - [안윤기_ user+시큐리티+](https://youtu.be/pWBEOX9JKqc)
   - [박인_ board+vote+신고+](https://youtu.be/ePs5JN8RhW0)
