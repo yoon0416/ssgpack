@@ -85,6 +85,7 @@ clear
 ---
 
 ## 🐬 MySQL 8 설치 및 기본 설정
+> - mysql열 때 'sudo'까지 안할 시 권한 부족으로 update, insert 못할 수 있음
 
 ```bash
 sudo apt-get install mysql-server-8.0 -y
